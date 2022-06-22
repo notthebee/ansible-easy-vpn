@@ -21,6 +21,8 @@ all:
     # Set the time at which the system should reboot after installing updates (24H format)
     autoupdate_reboot_time: 03:00
 
+    docker_dir: "/opt/docker"
+
     # You can set it to a different port in order to avoid automated scanner bots
     ssh_port: 22
 

@@ -6,6 +6,10 @@
 - name: Generate and install a public key pair
   when: (not authorized_keys.stat.exists) or ((authorized_keys.stat.exists) and (authorized_keys.stat.size == 0))
   block:
+    - name: Install cryptography
+      pip:
+        name: cryptography
+
     - name: Generate an SSH key pair
       openssh_keypair:
         path: /tmp/id_ssh_ed25519
