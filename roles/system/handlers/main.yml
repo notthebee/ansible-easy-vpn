@@ -1,4 +1,3 @@
 - name: reboot
   reboot:
     msg: The system is going down for reboot NOW
-  when: reboot_required.stat.exists
