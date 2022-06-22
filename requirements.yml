@@ -1,4 +1,0 @@
----
-roles:
-  - name: geerlingguy.security
-  - name: oefenweb.dns
