@@ -8,8 +8,6 @@
   roles:
     - role: system
 
-    - role: ssh
-
     - role: docker
 
     - role: fail2ban
@@ -19,3 +17,5 @@
       when: enable_ufw | default(False)
 
     - role: wireguard
+
+    - role: ssh
