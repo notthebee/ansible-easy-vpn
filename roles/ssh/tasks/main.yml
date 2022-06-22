@@ -5,6 +5,8 @@
 
 - name: Generate and install a public key pair
   when: (not authorized_keys.stat.exists) or (authorized_keys.stat.size == 0)
+  notify:
+    - notify_user
   block:
     - name: Install cryptography
       pip:
@@ -34,6 +36,8 @@
         mode: 600
 
 - name: Update SSH configuration to be more secure
+  notify:
+    - restart_ssh
   lineinfile:
     dest: "/etc/ssh/sshd_config"
     regexp: "{{ item.regexp }}"

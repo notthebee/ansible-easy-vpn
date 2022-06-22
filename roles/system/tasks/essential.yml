@@ -12,6 +12,7 @@
 - name: Schedule a reboot if required
   stat:
     path: /var/run/reboot-required
+  register: reboot_required
   notify:
     - reboot
 

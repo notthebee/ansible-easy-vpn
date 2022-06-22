@@ -19,3 +19,7 @@
       when: enable_ufw | default(False)
 
     - role: wireguard
+
+  post_tasks:
+    - name: Flush handlers
+      meta: flush_handlers

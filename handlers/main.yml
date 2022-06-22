@@ -1,0 +1,15 @@
+- name: notify_user
+  pause:
+    prompt: |
+      Almost done! Now you need to copy the private SSH key to your host machine
+      1. Open a new terminal window
+
+      2. Type the following command: 
+      scp -P 22 root@{{ ipify_public_ip }}:/tmp/id_ssh_ed25519 ~/.ssh/id_vpn_{{ username }}
+
+      3. Test the SSH key by typing this command: 
+      ssh -p 22 {{ username }}@{{ ipify_public_ip }} -i ~/.ssh/id_vpn_{{ username }}
+
+      4. After that's done, return to this terminal window and press [Enter]. The system will likely reboot to install the kernel updates
+
+      5. You will be able to log back into the system again by typing the above command
