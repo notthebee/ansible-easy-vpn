@@ -15,6 +15,7 @@
         notify_action: "restart the SSH daemon to apply its settings"
       when: not reboot_required.stat.exists
 
+    - name: Ask for user input
       pause:
         prompt: |
           Almost done! Now you need to copy the private SSH key to your host machine
