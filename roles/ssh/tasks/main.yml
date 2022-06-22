@@ -4,7 +4,7 @@
   register: authorized_keys
 
 - name: Generate and install a public key pair
-  when: (not authorized_keys.stat.exists) or ((authorized_keys.stat.exists) and (authorized_keys.stat.size == 0))
+  when: (not authorized_keys.stat.exists) or (authorized_keys.stat.size == 0)
   block:
     - name: Install cryptography
       pip:
@@ -17,10 +17,18 @@
         type: ed25519
         passphrase: "{{ password }}"
 
+    - name: Create the SSH directory
+      file:
+        path: "/home/{{ username }}/.ssh"
+        state: directory
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: 700
+
     - name: Install the public key
       copy:
         src: /tmp/id_ssh_ed25519.pub
-        dest: /home/{{ username }}/.ssh/authorized_keys
+        dest: "/home/{{ username }}/.ssh/authorized_keys"
         owner: "{{ username }}"
         group: "{{ username }}"
         mode: 600
