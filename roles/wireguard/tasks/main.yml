@@ -1,7 +1,6 @@
 ---
 - name: get public IP
   ipify_facts:
-  register: public_ip
 
 - name: Make sure the Wireguard container is created and running
   docker_container:
@@ -16,7 +15,7 @@
       - sys_module
     state: "started"
     env:
-      "SERVERURL": "{{ public_ip.ipify_public_ip }}"
+      "SERVERURL": "{{ ipify_public_ip }}"
       "PEERS": "{{ ', '.join(wireguard_peers) }}"
       "INTERNAL_SUBNET": "10.13.13.0"
       "ALLOWEDIPS": "0.0.0.0/0"
