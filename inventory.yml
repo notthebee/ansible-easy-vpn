@@ -26,6 +26,8 @@ all:
     # Change to 'no' if you already have one
     enable_username_creation: yes
 
+    user_shell: /bin/bash
+
     # Whether or not you want to generate a public key pair for SSH auth
     # The playbook will not generate a new pair if $HOME/.ssh/authorized_keys exists and isn't empty
     enable_ssh_keygen: yes
