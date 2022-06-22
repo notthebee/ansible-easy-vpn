@@ -23,3 +23,11 @@
     owner: "{{ username }}"
     group: "{{ username }}"
     recurse: yes
+
+- name: Copy the Ansible playbook to the new user
+  copy:
+    src: "/root/ansible-easy-vpn"
+    dest: "/home/{{ username }}/ansible-easy-vpn"
+    recusrse: yes
+    owner: "{{ username }}"
+    group: "{{ username }}"
