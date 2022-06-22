@@ -6,8 +6,6 @@
 
 - name: Generate and install a public key pair
   when: (not authorized_keys.stat.exists) or (authorized_keys.stat.size == 0)
-  notify:
-    - notify user
   block:
     - name: Install cryptography
       pip:
@@ -37,8 +35,7 @@
         mode: 600
 
 - name: Update SSH configuration to be more secure
-  notify:
-    - notify user
+  register: ssh_config
   lineinfile:
     dest: "/etc/ssh/sshd_config"
     regexp: "{{ item.regexp }}"
@@ -57,3 +54,7 @@
       line: "PermitEmptyPasswords no"
     - regexp: "^X11Forwarding"
       line: "X11Forwarding no"
+
+- name: Notify user about changes
+  when: ssh_config.changed or authorized_keys.changed
+  import_tasks: notify_user.yml
