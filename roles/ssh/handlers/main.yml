@@ -1,0 +1,2 @@
+- name: notify_user
+  import_tasks: tasks/notify_user.yml

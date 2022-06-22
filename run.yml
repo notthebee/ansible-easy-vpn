@@ -19,7 +19,3 @@
       when: enable_ufw | default(False)
 
     - role: wireguard
-
-  handlers:
-    - name: notify_user
-      import_tasks: tasks/notify_user.yml

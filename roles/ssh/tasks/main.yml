@@ -2,6 +2,7 @@
   stat:
     path: /home/{{ username }}/.ssh/authorized_keys
   register: authorized_keys
+  changed_when: (not authorized_keys.stat.exists) or (authorized_keys.stat.size == 0)
 
 - name: Generate and install a public key pair
   when: (not authorized_keys.stat.exists) or (authorized_keys.stat.size == 0)
@@ -37,7 +38,7 @@
 
 - name: Update SSH configuration to be more secure
   notify:
-    - restart_ssh
+    - notify_user
   lineinfile:
     dest: "/etc/ssh/sshd_config"
     regexp: "{{ item.regexp }}"
