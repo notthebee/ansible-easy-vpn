@@ -1,10 +1,10 @@
-- name: Check if there's already something in authorized_keys
+- name: Check if there's authorized_keys
   stat:
     path: /home/{{ username }}/.ssh/authorized_keys
   register: authorized_keys
 
 - name: Generate and install a public key pair
-  when: authorized_keys.stat.islink is defined
+  when: (not authorized_keys.stat.exists) or ((authorized_keys.stat.exists) and (authorized_keys.stat.size == 0))
   block:
     - name: Generate an SSH key pair
       openssh_keypair:
