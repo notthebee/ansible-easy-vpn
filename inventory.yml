@@ -28,6 +28,8 @@ all:
     # Change to 'no' if you alredy have one
     enable_ssh_keygen: yes
 
+    locale: en_US.UTF-8
+
     enable_ufw: true
     ufw_ports:
       - port: "51820"
