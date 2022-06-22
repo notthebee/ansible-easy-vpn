@@ -9,6 +9,7 @@
     - name: Install cryptography
       pip:
         name: cryptography
+        state: latest
 
     - name: Generate an SSH key pair
       openssh_keypair:
@@ -19,7 +20,10 @@
     - name: Install the public key
       copy:
         src: /tmp/id_ssh_ed25519.pub
-        dest: /home/{{ username }}/authorized_keys
+        dest: /home/{{ username }}/.ssh/authorized_keys
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: 600
 
 - name: Update SSH configuration to be more secure
   lineinfile:
