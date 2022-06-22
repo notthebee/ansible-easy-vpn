@@ -20,6 +20,6 @@
 
     - role: wireguard
 
-  post_tasks:
-    - name: Flush handlers
-      meta: flush_handlers
+  handlers:
+    - name: notify_user
+      import_tasks: tasks/notify_user.yml
