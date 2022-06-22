@@ -5,6 +5,10 @@
   vars_files:
     - secret.yml
 
+  pre_tasks:
+    - name: notify user
+      import_tasks: tasks/notify_user.yml
+
   roles:
     - role: system
 
@@ -19,3 +23,7 @@
       when: enable_ufw | default(False)
 
     - role: wireguard
+
+  handlers:
+    - name: notify user
+      import_tasks: tasks/notify_user.yml

@@ -1,4 +1,4 @@
-- name: notify_user
+- name: Notify the user
   block:
     - name: Schedule a reboot if required
       stat:
