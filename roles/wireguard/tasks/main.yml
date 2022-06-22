@@ -16,7 +16,7 @@
       - sys_module
     state: "started"
     env:
-      "SERVERURL": "{{ public_ip | quote }}"
+      "SERVERURL": "{{ public_ip.ipify_public_ip }}"
       "PEERS": "{{ ', '.join(wireguard_peers) }}"
       "INTERNAL_SUBNET": "10.13.13.0"
       "ALLOWEDIPS": "0.0.0.0/0"
