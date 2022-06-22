@@ -9,14 +9,6 @@
     autoremove: yes
     update_cache: yes
 
-- name: Schedule a reboot if required
-  stat:
-    path: /var/run/reboot-required
-  register: reboot_required
-  changed_when: reboot_required.stat.exists
-  notify:
-    - reboot
-
 - name: Install unattended upgrades package
   package:
     name: unattended-upgrades
