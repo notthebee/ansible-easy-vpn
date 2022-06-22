@@ -1,0 +1,39 @@
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+
+  vars:
+    # The username which you'll use
+    username: notthebee
+    password: "{{ password }}"
+
+    # Whether or not a non-root user should be created
+    # Change to 'no' if you already have one
+    enable_username_creation: yes
+
+    # Clients that you will be using the VPN on
+    wireguard_peers:
+      - main_laptop
+      - phone_1
+      - phone_2
+
+    # Set the time at which the system should reboot after installing updates (24H format)
+    autoupdate_reboot_time: 03:00
+
+    # You can set it to a different port in order to avoid automated scanner bots
+    ssh_port: 22
+
+    # Whether or not you want to generate a public key pair
+    # Change to 'no' if you alredy have one
+    enable_ssh_keygen: yes
+
+    enable_ufw: true
+    ufw_ports:
+      - port: "51820"
+        proto: "udp"
+      - port: "{{ ssh_port }}"
+        proto: "tcp"
+
+    # Fail2Ban comes with SSH and Wireguard jails
+    enable_fail2ban: true

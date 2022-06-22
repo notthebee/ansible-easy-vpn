@@ -1,0 +1,21 @@
+#!/usr/bin/env ansible-playbook
+
+- hosts: all
+  become: yes
+  vars_files:
+    - secret.yml
+
+  roles:
+    - role: system
+
+    - role: ssh
+
+    - role: docker
+
+    - role: fail2ban
+      when: enable_fail2ban | default(False)
+
+    - role: ufw
+      when: enable_ufw | default(False)
+
+    - role: wireguard

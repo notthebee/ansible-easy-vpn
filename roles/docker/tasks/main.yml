@@ -1,0 +1,69 @@
+---
+- name: Set amd64 arch
+  set_fact:
+    repo_arch: amd64
+  when: ansible_architecture == "x86_64"
+
+- name: Set arm64 arch
+  set_fact:
+    repo_arch: "{{ ansible_architecture }}"
+  when: ansible_architecture == "arm64"
+
+- name: Include OS-specific variables
+  include_vars: "{{ ansible_facts['distribution'] }}.yml"
+- name: Install required system packages
+  package:
+    state: present
+    name: "{{ docker_deps }}"
+
+- name: Install Docker (Ubuntu)
+  when: ansible_facts['distribution'] == 'Ubuntu'
+  block:
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: "deb [arch={{ repo_arch }}] https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }} {{ ansible_lsb['codename'] }} stable"
+        state: present
+
+- name: Update apt and install docker-ce
+  when: ansible_facts['os_family'] == 'Debian'
+  apt:
+    update_cache: yes
+    name: "{{ docker_packages }}"
+    state: present
+
+- name: Ensure group docker exists
+  group:
+    name: docker
+    state: present
+
+- name: Add user "{{ username }}" to group docker
+  user:
+    name: "{{ username }}"
+    groups:
+      - docker
+    append: yes
+
+- name: Install Docker Module for Python
+  pip:
+    name: docker
+
+- name: Make sure Docker is running and enabled
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Chmod the data folder
+  become: true
+  file:
+    dest: "{{ docker_dir }}"
+    state: directory
+    owner: "{{ username }}"
+    mode: "0775"
+    group: "users"
+    recurse: yes

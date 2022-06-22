@@ -1,0 +1,23 @@
+- name: Create a login user
+  user:
+    name: "{{ username }}"
+    password: "{{ password | password_hash('sha512') }}"
+    groups:
+      - sudo
+      - users
+    state: present
+    append: true
+
+- name: Ensure group "{{ username }}" exists
+  group:
+    name: "{{ username }}"
+    state: present
+
+- name: Chmod the user home directory
+  file:
+    path: "/home/{{ username }}"
+    state: directory
+    mode: 0755
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    recurse: yes

@@ -1,0 +1,38 @@
+- name: Check if there's already something in authorized_keys
+  stat:
+    path: /home/{{ username }}/.ssh/authorized_keys
+  register: authorized_keys
+
+- name: Generate and install a public key pair
+  when: authorized_keys.stat.islink is defined
+  block:
+    - name: Generate an SSH key pair
+      openssh_keypair:
+        path: /tmp/id_ssh_ed25519
+        type: ed215519
+        passphrase: "{{ password }}"
+
+    - name: Install the public key
+      copy:
+        src: /tmp/id_ssh_ed25519.pub
+        dest: /home/{{ username }}/authorized_keys
+
+- name: Update SSH configuration to be more secure
+  lineinfile:
+    dest: "/etc/ssh/sshd_config"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+    validate: "sshd -T -f %s"
+    mode: 0644
+  with_items:
+    - regexp: "^PasswordAuthentication"
+      line: "PasswordAuthentication no"
+    - regexp: "^PermitRootLogin"
+      line: "PermitRootLogin no"
+    - regexp: "^Port"
+      line: "Port {{ ssh_port }}"
+    - regexp: "^PermitEmptyPasswords"
+      line: "PermitEmptyPasswords no"
+    - regexp: "^X11Forwarding"
+      line: "X11Forwarding no"

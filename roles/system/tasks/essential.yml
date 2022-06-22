@@ -1,0 +1,32 @@
+- name: Generate the locale
+  locale_gen:
+    name: "{{ locale }}"
+    state: present
+
+- name: Update and upgrade apt packages
+  apt:
+    upgrade: yes
+    autoremove: yes
+    update_cache: yes
+
+- name: Schedule a reboot if required
+  stat:
+    path: /var/run/reboot-required
+  notify:
+    - reboot
+
+- name: Install unattended upgrades package
+  package:
+    name: unattended-upgrades
+    state: present
+
+- name: Copy unattended-upgrades configuration files in place
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/apt/apt.conf.d/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - 10periodic
+    - 50unattended-upgrades

@@ -1,0 +1,21 @@
+- name: Install UFW
+  package:
+    name: ufw
+    state: present
+
+- name: Enable UFW logging
+  ufw:
+    logging: on
+
+- name: Allow SSH
+  ufw:
+    rule: allow
+    proto: "{{ item.proto }}"
+    port: "{{ item.port }}"
+  with_items:
+    - "{{ ufw_ports }}"
+
+- name: Deny everything and enable UFW
+  ufw:
+    state: enabled
+    policy: deny
