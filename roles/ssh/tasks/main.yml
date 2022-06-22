@@ -24,7 +24,7 @@
         state: directory
         owner: "{{ username }}"
         group: "{{ username }}"
-        mode: 700
+        mode: 0700
 
     - name: Install the public key
       copy:
@@ -32,7 +32,7 @@
         dest: "/home/{{ username }}/.ssh/authorized_keys"
         owner: "{{ username }}"
         group: "{{ username }}"
-        mode: 600
+        mode: 0600
 
 - name: Update SSH configuration to be more secure
   register: ssh_config
