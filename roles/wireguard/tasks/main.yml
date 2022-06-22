@@ -26,3 +26,11 @@
       - "{{ docker_dir }}/{{ container_name }}/config:/config"
       - "/lib/modules:/lib/modules"
     restart_policy: unless-stopped
+
+- name: Add wireguard alias to .bashrc
+  lineinfile:
+    state: present
+    line: "{{ item }}"
+  with_items:
+    - alias show_peer="docker exec -it wireguard /app/show-peer"
+    - alias wg_restart="docker restart wireguard"
