@@ -26,6 +26,7 @@
 
           3. Test the SSH key by typing this command: 
           ssh -p 22 {{ username }}@{{ ipify_public_ip }} -i ~/.ssh/id_vpn_{{ username }}
+          Make sure the password prompt says `Enter passphrase for key` and not `{{ username }}@{{ ipify_public_ip }} password`
 
           4. After that's done, return to this terminal window and press [Enter]. 
           Your system will {{ notify_action }}. You will be logged out automatically
