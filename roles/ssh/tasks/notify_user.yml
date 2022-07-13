@@ -35,8 +35,9 @@
           5. After a couple of minutes, you should be able to log back into the system again by typing:
           ssh -p 22 {{ username }}@{{ ipify_public_ip }} -i ~/.ssh/id_vpn_{{ username }}
 
-          6. You can show the QR codes for your clients by typing:
-          show_peer client_name
+          6. You can show the QR codes and text configs for your clients by typing:
+          show_qr client_name 
+          show_config client_name
 
     - name: Reboot the system if updates are pending
       when: reboot_required.stat.exists

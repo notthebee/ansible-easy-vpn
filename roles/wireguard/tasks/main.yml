@@ -1,7 +1,6 @@
 ---
 - name: get public IP
   ipify_facts:
-
 - name: Make sure the Wireguard container is created and running
   docker_container:
     name: "wireguard"
@@ -27,11 +26,15 @@
       - "/lib/modules:/lib/modules"
     restart_policy: unless-stopped
 
-- name: Add wireguard alias to .bashrc
-  lineinfile:
+- name: Add Wireguard aliases to .bashrc
+  blockinfile:
     state: present
     path: "/home/{{ username }}/.bashrc"
     line: "{{ item }}"
-  with_items:
-    - alias show_peer="docker exec -it wireguard /app/show-peer"
-    - alias wg_restart="docker restart wireguard"
+    block: |
+      alias show_qr="docker exec -it wireguard /app/show-peer"
+      alias wg_restart="docker restart wireguard"
+      function show_config(peer) {
+        cat {{ docker_dir }}/{{ container_name }}/config/peer_$peer/peer_$peer.conf
+      }
+      export -f show_config
