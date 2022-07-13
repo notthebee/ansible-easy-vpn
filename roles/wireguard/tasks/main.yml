@@ -33,7 +33,7 @@
     block: |
       alias show_qr="docker exec -it wireguard /app/show-peer"
       alias wg_restart="docker restart wireguard"
-      function show_config(peer) {
-        cat {{ docker_dir }}/{{ container_name }}/config/peer_$peer/peer_$peer.conf
+      function show_config {
+        cat {{ docker_dir }}/{{ container_name }}/config/peer_$1/peer_$1.conf
       }
       export -f show_config
