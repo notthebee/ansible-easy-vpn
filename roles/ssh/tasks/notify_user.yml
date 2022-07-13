@@ -15,9 +15,10 @@
         notify_action: "restart the SSH daemon to apply its settings"
       when: not reboot_required.stat.exists
 
-    - name: Ask for user input
+    - name: ""
       pause:
         prompt: |
+
           Almost done! Now you need to copy the private SSH key to your host machine
           1. Open a new terminal window
 
@@ -31,7 +32,11 @@
           4. After that's done, return to this terminal window and press [Enter]. 
           Your system will {{ notify_action }}. You will be logged out automatically
 
-          5. You will be able to log back into the system again by typing the above command
+          5. After a couple of minutes, you should be able to log back into the system again by typing:
+          ssh -p 22 {{ username }}@{{ ipify_public_ip }} -i ~/.ssh/id_vpn_{{ username }}
+
+          6. You can show the QR codes for your clients by typing:
+          show_peer client_name
 
     - name: Reboot the system if updates are pending
       when: reboot_required.stat.exists

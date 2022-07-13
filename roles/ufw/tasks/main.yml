@@ -7,7 +7,7 @@
   ufw:
     logging: on
 
-- name: Allow SSH
+- name: Allow SSH and Wireguard
   ufw:
     rule: allow
     proto: "{{ item.proto }}"
@@ -15,7 +15,7 @@
   with_items:
     - "{{ ufw_ports }}"
 
-- name: Deny everything and enable UFW
+- name: Deny everything else and enable UFW
   ufw:
     state: enabled
     policy: deny
