@@ -30,7 +30,6 @@
   blockinfile:
     state: present
     path: "/home/{{ username }}/.bashrc"
-    line: "{{ item }}"
     block: |
       alias show_qr="docker exec -it wireguard /app/show-peer"
       alias wg_restart="docker restart wireguard"
