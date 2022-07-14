@@ -36,6 +36,14 @@
     state: present
   ignore_errors: true
 
+- name: Fix the dumb Ubuntu Jammy error
+  lineinfile:
+    path: /etc/systemd/system/multi-user.target.wants/docker.service
+    state: present
+    regexp: "fd://"
+    replace: "unix://"
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('22.04', '>=')
+
 - name: Ensure group docker exists
   group:
     name: docker
