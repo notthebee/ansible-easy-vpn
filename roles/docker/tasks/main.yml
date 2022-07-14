@@ -53,7 +53,7 @@
     name: docker
 
 - name: Make sure Docker is running and enabled
-  service:
+  systemd:
     name: docker
     state: started
     enabled: yes
