@@ -36,7 +36,7 @@
 
 - name: Install the existing public key
   when: ssh_public_key is defined
-  authorized_keys:
+  authorized_key:
     user: "{{ username }}"
     key: ssh_public_key
 
