@@ -10,7 +10,7 @@ all:
 
     username: notthebee
     # password: ""
-    host: husbandbehavior.duckdns.org
+    host: example.duckdns.org
 
     #
     # END MUST-CHANGE VARIABLES
