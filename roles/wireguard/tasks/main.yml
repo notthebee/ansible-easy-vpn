@@ -17,7 +17,7 @@
       - sys_module
     state: "started"
     env:
-      "WG_HOST": "{{ host }}"
+      "WG_HOST": "{{ wireguard_host }}"
     ports:
       - "51820:51820/udp"
     volumes:

@@ -27,6 +27,14 @@ all:
     # The playbook will not generate a new pair if $HOME/.ssh/authorized_keys exists and isn't empty
     enable_ssh_keygen: yes
 
+    # Uncomment this line if you already have a public SSH key and put your public key in it
+    # This overrides `enable_ssh_keygen`
+    ssh_public_key: ""
+
+    authelia_host: "auth.{{ host }}"
+
+    wireguard_host: "wg.{{ host }}"
+
     # Language and time settings
     # Check here for the list of possible locales
     # https://docs.oracle.com/cd/E23824_01/html/E26033/glset.html

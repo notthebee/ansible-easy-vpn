@@ -4,7 +4,7 @@
 ###############################################################
 
 jwt_secret: {{ jwt_secret }}
-default_redirection_url: https://auth.{{ host }}
+default_redirection_url: https://{{ authelia_host }}
 
 ntp:
   disable_failure: true
@@ -26,9 +26,9 @@ authentication_backend:
 access_control:
   default_policy: deny
   rules:
-    - domain: auth.{{ host }}
+    - domain: {{ authelia_host }}
       policy: bypass
-    - domain: {{ host }}
+    - domain: {{ wireguard_host }}
       policy: two_factor
 
 session:
@@ -36,7 +36,7 @@ session:
   secret: {{ session_secret }}
   expiration: 3600  # 1 hour
   inactivity: 300  # 5 minutes
-  domain: {{ host }}  # Should match whatever your root protected domain is
+  domain: {{ wireguard_host }}  # Should match whatever your root protected domain is
 
   redis:
     host: redis
@@ -53,5 +53,12 @@ storage:
     path: /config/db.sqlite3
 
 notifier:
+  {% if email_password is defined %}
+  smtp:
+    username: {{ email_login }}
+    password: {{ email_password }}
+    sender: "Authelia <{{ host }}>"
+    host: {{ email_smtp_host }}
+  {% endif %}
   filesystem:
     filename: /config/notification.txt
