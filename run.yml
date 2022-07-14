@@ -7,19 +7,35 @@
 
   roles:
     - role: system
+      tags:
+        - system
 
     - role: docker
+      tags:
+        - docker
 
     - role: fail2ban
       when: enable_fail2ban | default(False)
+      tags:
+        - fail2ban
 
     - role: ufw
       when: enable_ufw | default(False)
+      tags:
+        - ufw
 
     - role: authelia
+      tags:
+        - authelia
 
     - role: bunkerweb
+      tags:
+        - bunkerweb
 
     - role: wireguard
+      tags:
+        - wireguard
 
     - role: ssh
+      tags:
+        - ssh
