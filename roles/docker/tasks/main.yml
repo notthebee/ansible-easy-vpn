@@ -37,7 +37,7 @@
   ignore_errors: true
 
 - name: Fix the dumb Ubuntu Jammy error
-  lineinfile:
+  replace:
     path: /etc/systemd/system/multi-user.target.wants/docker.service
     state: present
     regexp: "fd://"
