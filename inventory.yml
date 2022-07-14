@@ -22,6 +22,7 @@ all:
 
     user_shell: /bin/bash
 
+    enable_passwordless_sudo: yes
     # Whether or not you want to generate a public key pair for SSH auth
     # The playbook will not generate a new pair if $HOME/.ssh/authorized_keys exists and isn't empty
     enable_ssh_keygen: yes

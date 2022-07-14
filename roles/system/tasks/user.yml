@@ -3,6 +3,15 @@
     name: sudo
     state: present
 
+- name: Allow sudo group to have passwordless sudo
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: "^%sudo"
+    line: "%sudo ALL=(ALL) NOPASSWD: ALL"
+    validate: "/usr/sbin/visudo -cf %s"
+  when: enable_passwordless_sudo | default(False)
+
 - name: Create a login user
   user:
     name: "{{ username }}"
