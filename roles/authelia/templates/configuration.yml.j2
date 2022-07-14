@@ -3,7 +3,7 @@
 #                   Authelia configuration                    #
 ###############################################################
 
-jwt_secret: "{{ jwt_secret }}"
+jwt_secret: {{ jwt_secret }}
 default_redirection_url: https://auth.{{ host }}
 
 ntp:
@@ -33,7 +33,7 @@ access_control:
 
 session:
   name: authelia_session
-  secret: "{{ session_secret }}"
+  secret: {{ session_secret }}
   expiration: 3600  # 1 hour
   inactivity: 300  # 5 minutes
   domain: {{ host }}  # Should match whatever your root protected domain is
@@ -48,7 +48,7 @@ regulation:
   ban_time: 300
 
 storage:
-  encryption_key: "{{ storage_encryption_key }}"
+  encryption_key: {{ storage_encryption_key }}
   local:
     path: /config/db.sqlite3
 

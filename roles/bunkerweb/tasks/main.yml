@@ -3,6 +3,8 @@
   docker_container:
     name: "bunkerweb"
     image: "bunkerity/bunkerweb"
+    networks:
+      - name: wg_network
     pull: yes
     state: "started"
     env:
