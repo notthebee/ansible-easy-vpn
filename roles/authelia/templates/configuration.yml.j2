@@ -34,15 +34,13 @@ access_control:
 session:
   name: authelia_session
   secret: "{{ session_secret }}"
-  # This secret can also be set using the env variables AUTHELIA_SESSION_SECRET_FILE
-  secret: unsecure_session_secret
   expiration: 3600  # 1 hour
   inactivity: 300  # 5 minutes
   domain: {{ host }}  # Should match whatever your root protected domain is
 
-redis:
-  host: redis
-  port: 6379
+  redis:
+    host: redis
+    port: 6379
 
 regulation:
   max_retries: 3

@@ -18,7 +18,6 @@
     state: "started"
     env:
       "WG_HOST": "{{ host }}"
-      "PEERS": "{{ ', '.join(wireguard_peers) }}"
     ports:
       - "51820:51820/udp"
     volumes:

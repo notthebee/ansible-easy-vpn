@@ -24,9 +24,15 @@
     group: "{{ username }}"
     recurse: yes
 
+- name: Check if the Ansible playbook is copied to the new user directory
+  stat:
+    path: "/home/{{ username }}/ansible-easy-vpn"
+  register: playbook_copied
+
 - name: Copy the Ansible playbook to the new user
   copy:
     src: "/root/ansible-easy-vpn"
     dest: "/home/{{ username }}"
     owner: "{{ username }}"
     group: "{{ username }}"
+  when: not playbook_copied.stat.exists

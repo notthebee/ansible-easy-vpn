@@ -7,10 +7,9 @@
 
 # List of users
 users:
-  authelia:
+  {{ username }}:
   displayname: "{{ username }}"
-    # Password is authelia
-    password: "{{ password | password_hash('sha512') }}
+    password: "{{ password | password_hash('sha512') }}"
     email: "{{ email }}"
     groups:
       - admins

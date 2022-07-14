@@ -8,17 +8,9 @@ all:
     # MUST-CHANGE VARIABLES
     #
 
-    # The username which you'll use to log in to server
     username: notthebee
     # password: ""
-
-    # Clients that you will be using the VPN on
-    wireguard_peers:
-      - main_laptop
-      - phone_1
-      - phone_2
-
-    host: example.duckdns.org
+    host: husbandbehavior.duckdns.org
 
     #
     # END MUST-CHANGE VARIABLES
@@ -73,12 +65,12 @@ all:
     ufw_ports:
       - port: "51820"
         proto: "udp"
-      - port: "{{ ssh_port }}"
-        proto: "tcp"
       - port: "80"
         proto: "tcp"
       - port: "443"
-        proto: "udp"
+        proto: "tcp"
+      - port: "{{ ssh_port }}"
+        proto: "tcp"
 
     # Fail2Ban only comes with the SSH jail by default
     enable_fail2ban: true
