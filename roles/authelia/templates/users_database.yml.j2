@@ -8,7 +8,7 @@
 # List of users
 users:
   {{ username }}:
-  displayname: "{{ username }}"
+    displayname: "{{ username }}"
     password: "{{ password | password_hash('sha512') }}"
     email: "{{ email }}"
     groups:
