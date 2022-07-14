@@ -62,6 +62,7 @@
 - name: Make sure Docker is running and enabled
   systemd:
     name: docker
+    daemon-reload: yes
     state: started
     enabled: yes
 
