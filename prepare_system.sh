@@ -16,5 +16,6 @@ $SUDO yes | apt-get -o Dpkg::Options::="--force-confold" -fuy install software-p
 [ $(uname -m) == "aarch64" ] && $SUDO yes | apt install gcc python3-dev libffi-dev libssl-dev make -y;
 
 export DEBIAN_FRONTEND=
+export EDITOR=nano
 $SUDO pip3 install ansible jinja2 -U &&
 [ -d "$HOME/ansible-easy-vpn" ] || git clone https://github.com/notthebee/ansible-easy-vpn

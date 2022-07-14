@@ -30,11 +30,11 @@
         state: present
 
 - name: Update apt and install docker-ce
-  when: ansible_facts['os_family'] == 'Debian'
   apt:
     update_cache: yes
     name: "{{ docker_packages }}"
     state: present
+  ignore_errors: true
 
 - name: Ensure group docker exists
   group:
