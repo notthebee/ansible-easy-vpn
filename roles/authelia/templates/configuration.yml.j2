@@ -54,11 +54,13 @@ storage:
 
 notifier:
   {% if email_password is defined %}
-  smtp:
-    username: {{ email_login }}
-    password: {{ email_password }}
-    sender: "Authelia <{{ host }}>"
-    host: {{ email_smtp_host }}
+    smtp:
+      username: {{ email_login }}
+      password: {{ email_password }}
+      sender: "Authelia <{{ email }}>"
+      port: {{ email_smtp_port }}
+      host: {{ email_smtp_host }}
+  {% else %}
+    filesystem:
+      filename: /config/notification.txt
   {% endif %}
-  filesystem:
-    filename: /config/notification.txt
