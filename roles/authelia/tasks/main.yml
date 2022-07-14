@@ -1,7 +1,7 @@
 ---
 - name: Check if the authelia config exists
   stat:
-    path: "{{ docker_dir }}/{{ container_name }}/configuration.yml"
+    path: "{{ docker_dir }}/authelia/configuration.yml"
   register: config_exists
 
 - name: Generate the secrets
