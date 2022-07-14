@@ -38,7 +38,7 @@
   when: ssh_public_key is defined
   authorized_key:
     user: "{{ username }}"
-    key: ssh_public_key
+    key: "{{ ssh_public_key }}"
 
 - name: Update SSH configuration to be more secure
   register: ssh_config
