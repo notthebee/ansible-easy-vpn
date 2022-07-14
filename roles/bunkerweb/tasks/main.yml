@@ -21,16 +21,16 @@
       "REVERSE_PROXY_HOST_999": "http://authelia:9091/api/verify"
       "REVERSE_PROXY_HEADERS_999": 'X-Original-URL $scheme://$http_host$request_uri;Content-Length ""'
       # Authelia
-      "auth.{{ host }}\_REVERSE_PROXY_URL": "/"
-      "auth.{{ host }}\_REVERSE_PROXY_HOST": "http://authelia:9091"
-      "auth.{{ host }}\_REVERSE_PROXY_INTERCEPT_ERRORS": "no"
+      "auth.{{ host | string }}_REVERSE_PROXY_URL": "/"
+      "auth.{{ host | string }}_REVERSE_PROXY_HOST": "http://authelia:9091"
+      "auth.{{ host }}_REVERSE_PROXY_INTERCEPT_ERRORS": "no"
       # Applications
-      "{{ host }}\_REVERSE_PROXY_URL": "/"
-      "{{ host }}\_REVERSE_PROXY_HOST": "http://wg-easy:51821"
-      "{{ host }}\_REVERSE_PROXY_AUTH_REQUEST": "/authelia"
-      "{{ host }}\_REVERSE_PROXY_AUTH_REQUEST_SIGNIN_URL": "https://auth.{{ host }}/?rd=$scheme%3A%2F%2F$host$request_uri"
-      "{{ host }}\_REVERSE_PROXY_AUTH_REQUEST_SET": "$user $upstream_http_remote_user;$groups $upstream_http_remote_groups;$name $upstream_http_remote_name;$email $upstream_http_remote_email"
-      "{{ host }}\_REVERSE_PROXY_HEADERS": "Remote-User $user;Remote-Groups $groups;Remote-Name $name;Remote-Email $email"
+      "{{ host | string }}_REVERSE_PROXY_URL": "/"
+      "{{ host | string }}_REVERSE_PROXY_HOST": "http://wg-easy:51821"
+      "{{ host | string }}_REVERSE_PROXY_AUTH_REQUEST": "/authelia"
+      "{{ host | string }}_REVERSE_PROXY_AUTH_REQUEST_SIGNIN_URL": "https://auth.{{ host }}/?rd=$scheme%3A%2F%2F$host$request_uri"
+      "{{ host | string }}_REVERSE_PROXY_AUTH_REQUEST_SET": "$user $upstream_http_remote_user;$groups $upstream_http_remote_groups;$name $upstream_http_remote_name;$email $upstream_http_remote_email"
+      "{{ host | string }}_REVERSE_PROXY_HEADERS": "Remote-User $user;Remote-Groups $groups;Remote-Name $name;Remote-Email $email"
     ports:
       - "80:8080"
       - "443:8443"
