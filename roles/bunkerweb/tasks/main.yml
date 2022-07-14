@@ -1,4 +1,17 @@
 ---
+- name: Create the folders
+  file:
+    path: "{{ docker_dir }}/bunkerweb/data"
+    recurse: yes
+    owner: root
+    group: 101
+    mode: 0770
+
+- name: Copy the env file
+  template:
+    src: env.j2
+    dest: "{{ docker_dir }}/bunkerweb/.env"
+
 - name: Make sure the Bunkerweb container is created and running
   docker_container:
     name: "bunkerweb"
@@ -7,34 +20,11 @@
       - name: wg_network
     pull: yes
     state: "started"
-    env:
-      "MULTISITE": "yes"
-      "SERVER_NAME": "auth.{{ host }} {{ host }}"
-      "SERVE_FILES": "no"
-      "DISABLE_DEFAULT_SERVER": "yes"
-      "AUTO_LETS_ENCRYPT": "yes"
-      "USE_CLIENT_CACHE": "yes"
-      "USE_GZIP": "yes"
-      "USE_REVERSE_PROXY": "yes"
-      "REVERSE_PROXY_URL_999": "/authelia"
-      "USE_LIMIT_REQ": "no"
-      "REVERSE_PROXY_HOST_999": "http://authelia:9091/api/verify"
-      "REVERSE_PROXY_HEADERS_999": 'X-Original-URL $scheme://$http_host$request_uri;Content-Length ""'
-      # Authelia
-      "auth.{{ host | string }}_REVERSE_PROXY_URL": "/"
-      "auth.{{ host | string }}_REVERSE_PROXY_HOST": "http://authelia:9091"
-      "auth.{{ host }}_REVERSE_PROXY_INTERCEPT_ERRORS": "no"
-      # Applications
-      "{{ host | string }}_REVERSE_PROXY_URL": "/"
-      "{{ host | string }}_REVERSE_PROXY_HOST": "http://wg-easy:51821"
-      "{{ host | string }}_REVERSE_PROXY_AUTH_REQUEST": "/authelia"
-      "{{ host | string }}_REVERSE_PROXY_AUTH_REQUEST_SIGNIN_URL": "https://auth.{{ host }}/?rd=$scheme%3A%2F%2F$host$request_uri"
-      "{{ host | string }}_REVERSE_PROXY_AUTH_REQUEST_SET": "$user $upstream_http_remote_user;$groups $upstream_http_remote_groups;$name $upstream_http_remote_name;$email $upstream_http_remote_email"
-      "{{ host | string }}_REVERSE_PROXY_HEADERS": "Remote-User $user;Remote-Groups $groups;Remote-Name $name;Remote-Email $email"
+    env_file: "{{ docker_dir }}/bunkerweb/.env"
     ports:
       - "80:8080"
       - "443:8443"
     volumes:
-      - "{{ docker_dir }}/bunkerweb/config:/config"
+      - "{{ docker_dir }}/bunkerweb/data:/data"
       - "/lib/modules:/lib/modules"
     restart_policy: unless-stopped
