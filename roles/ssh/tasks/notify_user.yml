@@ -16,6 +16,7 @@
       when: not reboot_required.stat.exists
 
     - name: ""
+      when: ssh_public_key is not defined
       pause:
         prompt: |
 
@@ -23,17 +24,31 @@
           1. Open a new terminal window
 
           2. Type the following command: 
-          scp -P 22 root@{{ ipify_public_ip }}:/tmp/id_ssh_ed25519 ~/.ssh/id_vpn_{{ username }}
+          scp -P {{ ssh_port }} root@{{ ipify_public_ip }}:/tmp/id_ssh_ed25519 ~/.ssh/id_vpn_{{ username }}
 
           3. Test the SSH key by typing this command: 
-          ssh -p 22 {{ username }}@{{ ipify_public_ip }} -i ~/.ssh/id_vpn_{{ username }}
+          ssh -p {{ ssh_port }} {{ username }}@{{ ipify_public_ip }} -i ~/.ssh/id_vpn_{{ username }}
           Make sure the password prompt says `Enter passphrase for key` and not `{{ username }}@{{ ipify_public_ip }} password`
 
           4. After that's done, return to this terminal window and press [Enter]. 
           Your system will {{ notify_action }}. You will be logged out automatically
 
           5. After a couple of minutes, you should be log to Wireguard WebUI in using your username and password
-          http://{{ host }}
+          http://{{ wireguard_host }}
+
+    - name: ""
+      when: ssh_public_key is defined
+      pause:
+        prompt: |
+
+          Almost done! Make sure to test your SSH connection in a new terminal window:
+          ssh -p {{ ssh_port }} {{ username }}@{{ ipify_public_ip }} -i ~/.ssh/path-to-your-key
+
+          After ensuring that it works, return to this terminal window and press [Enter]
+          Your system will {{ notify_action }}. You will be logged out automatically
+
+          After a couple of minutes, you should be log to Wireguard WebUI in using your username and password
+          http://{{ wireguard_host }}
 
     - name: Reboot the system if updates are pending
       when: reboot_required.stat.exists

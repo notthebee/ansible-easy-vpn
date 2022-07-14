@@ -4,27 +4,27 @@
   register: authorized_keys
   changed_when: (not authorized_keys.stat.exists) or (authorized_keys.stat.size == 0)
 
-- name: Generate and install a public key pair
-  when: (not authorized_keys.stat.exists) or (authorized_keys.stat.size == 0)
-  block:
-    - name: Install cryptography
-      pip:
-        name: cryptography
-        state: latest
+- name: Install cryptography
+  pip:
+    name: cryptography
+    state: latest
 
+- name: Create the SSH directory
+  file:
+    path: "/home/{{ username }}/.ssh"
+    state: directory
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0700
+
+- name: Generate and install a public key pair
+  when: (not authorized_keys.stat.exists or authorized_keys.stat.size == 0) and not (ssh_public_key is defined)
+  block:
     - name: Generate an SSH key pair
       openssh_keypair:
         path: /tmp/id_ssh_ed25519
         type: ed25519
         passphrase: "{{ password }}"
-
-    - name: Create the SSH directory
-      file:
-        path: "/home/{{ username }}/.ssh"
-        state: directory
-        owner: "{{ username }}"
-        group: "{{ username }}"
-        mode: 0700
 
     - name: Install the public key
       copy:
@@ -33,6 +33,12 @@
         owner: "{{ username }}"
         group: "{{ username }}"
         mode: 0600
+
+- name: Install the existing public key
+  when: ssh_public_key is defined
+  authorized_keys:
+    user: "{{ username }}"
+    key: ssh_public_key
 
 - name: Update SSH configuration to be more secure
   register: ssh_config
@@ -56,5 +62,5 @@
       line: "X11Forwarding no"
 
 - name: Notify user about changes
-  when: ssh_config.changed or authorized_keys.changed
+  when: (ssh_config.changed or authorized_keys.changed)
   import_tasks: notify_user.yml
