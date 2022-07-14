@@ -56,3 +56,10 @@
     volumes:
       - "{{ docker_dir }}/authelia:/config"
     restart_policy: unless-stopped
+
+- name: Add a 2FA alias to .bashrc
+  blockinfile:
+    path: "/home/{{ username }}/.bashrc"
+    state: present
+    block: |
+      alias show_2fa="sudo cat {{ docker_dir }}/authelia/notification.txt"
