@@ -18,6 +18,8 @@ all:
       - phone_1
       - phone_2
 
+    host: example.duckdns.org
+
     #
     # END MUST-CHANGE VARIABLES
     #
@@ -73,6 +75,10 @@ all:
         proto: "udp"
       - port: "{{ ssh_port }}"
         proto: "tcp"
+      - port: "80"
+        proto: "tcp"
+      - port: "443"
+        proto: "udp"
 
     # Fail2Ban only comes with the SSH jail by default
     enable_fail2ban: true

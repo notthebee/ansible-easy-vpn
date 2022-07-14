@@ -1,39 +1,26 @@
 ---
 - name: get public IP
   ipify_facts:
+
 - name: Make sure the Wireguard container is created and running
   docker_container:
-    name: "wireguard"
-    image: "lscr.io/linuxserver/wireguard"
+    name: "wg-easy"
+    image: "weejewel/wg-easy"
     pull: yes
-    privileged: yes
+    networks:
+      - name: wg_network
     sysctls:
       "net.ipv4.conf.all.src_valid_mark": "1"
+      "net.ipv4.ip_forward": "1"
     capabilities:
       - net_admin
       - sys_module
     state: "started"
     env:
-      "SERVERURL": "{{ ipify_public_ip }}"
+      "WG_HOST": "{{ host }}"
       "PEERS": "{{ ', '.join(wireguard_peers) }}"
-      "INTERNAL_SUBNET": "10.13.13.0"
-      "ALLOWEDIPS": "0.0.0.0/0"
-      "LOG_CONFS": "TRUE"
     ports:
       - "51820:51820/udp"
     volumes:
-      - "{{ docker_dir }}/{{ container_name }}/config:/config"
-      - "/lib/modules:/lib/modules"
+      - "{{ docker_dir }}/wg-easy:/etc/wireguard"
     restart_policy: unless-stopped
-
-- name: Add Wireguard aliases to .bashrc
-  blockinfile:
-    state: present
-    path: "/home/{{ username }}/.bashrc"
-    block: |
-      alias show_qr="docker exec -it wireguard /app/show-peer"
-      alias wg_restart="docker restart wireguard"
-      function show_config {
-        cat {{ docker_dir }}/{{ container_name }}/config/peer_$1/peer_$1.conf
-      }
-      export -f show_config

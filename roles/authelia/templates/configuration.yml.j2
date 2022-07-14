@@ -1,0 +1,59 @@
+---
+###############################################################
+#                   Authelia configuration                    #
+###############################################################
+
+jwt_secret: "{{ jwt_secret }}"
+default_redirection_url: https://auth.{{ host }}
+
+ntp:
+  disable_failure: true
+
+server:
+  host: 0.0.0.0
+  port: 9091
+
+log:
+  level: debug
+
+totp:
+  issuer: authelia.com
+
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+
+access_control:
+  default_policy: deny
+  rules:
+    - domain: auth.{{ host }}
+      policy: bypass
+    - domain: {{ host }}
+      policy: two_factor
+
+session:
+  name: authelia_session
+  secret: "{{ session_secret }}"
+  # This secret can also be set using the env variables AUTHELIA_SESSION_SECRET_FILE
+  secret: unsecure_session_secret
+  expiration: 3600  # 1 hour
+  inactivity: 300  # 5 minutes
+  domain: {{ host }}  # Should match whatever your root protected domain is
+
+redis:
+  host: redis
+  port: 6379
+
+regulation:
+  max_retries: 3
+  find_time: 120
+  ban_time: 300
+
+storage:
+  encryption_key: "{{ storage_encryption_key }}"
+  local:
+    path: /config/db.sqlite3
+
+notifier:
+  filesystem:
+    filename: /config/notification.txt

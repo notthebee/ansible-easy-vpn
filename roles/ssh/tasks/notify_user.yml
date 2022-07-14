@@ -32,8 +32,9 @@
           4. After that's done, return to this terminal window and press [Enter]. 
           Your system will {{ notify_action }}. You will be logged out automatically
 
-          5. After a couple of minutes, you should be able to log back into the system again by typing:
-          ssh -p 22 {{ username }}@{{ ipify_public_ip }} -i ~/.ssh/id_vpn_{{ username }}
+          5. After a couple of minutes, you should be able to access the Wireguard WebUI by navigating to this address in your browser:
+          http://{{ ipify_public_ip }}/
+
 
           6. You can show the QR codes and text configs for your clients by typing:
           show_qr client_name 

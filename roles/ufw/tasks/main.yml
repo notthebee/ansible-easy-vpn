@@ -7,7 +7,7 @@
   ufw:
     logging: on
 
-- name: Allow SSH and Wireguard
+- name: Allow the defined ports
   ufw:
     rule: allow
     proto: "{{ item.proto }}"
