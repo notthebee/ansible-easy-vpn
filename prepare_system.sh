@@ -16,6 +16,6 @@ $SUDO yes | apt-get -o Dpkg::Options::="--force-confold" -fuy install software-p
 $SUDO yes | apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove;
 [ $(uname -m) == "aarch64" ] && $SUDO yes | apt install gcc python3-dev libffi-dev libssl-dev make -y;
 
-pip3 install ansible
+pip3 install ansible -U &&
 export DEBIAN_FRONTEND=
 [ -d "$HOME/ansible-easy-vpn" ] || git clone https://github.com/notthebee/ansible-easy-vpn
