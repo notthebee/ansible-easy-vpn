@@ -36,7 +36,7 @@ session:
   secret: {{ session_secret }}
   expiration: 3600  # 1 hour
   inactivity: 300  # 5 minutes
-  domain: {{ wireguard_host }}  # Should match whatever your root protected domain is
+  domain: {{ host }}  # Should match whatever your root protected domain is
 
   redis:
     host: redis
@@ -55,12 +55,12 @@ storage:
 notifier:
   {% if email_password is defined %}
     smtp:
-      username: {{ email_login }}
-      password: {{ email_password }}
-      sender: "Authelia <{{ email }}>"
-      port: {{ email_smtp_port }}
-      host: {{ email_smtp_host }}
+        username: {{ email_login }}
+        password: {{ email_password }}
+        sender: "Authelia <{{ email }}>"
+        port: {{ email_smtp_port }}
+        host: {{ email_smtp_host }}
   {% else %}
     filesystem:
-      filename: /config/notification.txt
+        filename: /config/notification.txt
   {% endif %}

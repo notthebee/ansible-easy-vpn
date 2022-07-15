@@ -1,7 +1,7 @@
 #!/usr/bin/env ansible-playbook
 
 - hosts: all
-  become: yes
+  become: true
   vars_files:
     - secret.yml
 

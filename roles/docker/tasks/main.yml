@@ -30,18 +30,19 @@
         state: present
 
 - name: Update apt and install docker-ce
-  apt:
-    update_cache: yes
-    name: "{{ docker_packages }}"
-    state: present
-  ignore_errors: true
-
-- name: Fix the dumb Ubuntu Jammy error
-  replace:
-    path: /etc/systemd/system/multi-user.target.wants/docker.service
-    regexp: "fd://"
-    replace: "unix://"
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('22.04', '>=')
+  block:
+    - name: Attempt installation
+      apt:
+        update_cache: yes
+        name: "{{ docker_packages }}"
+        state: present
+  rescue:
+    - name: Fix the dumb Ubuntu Jammy error
+      replace:
+        path: /etc/systemd/system/multi-user.target.wants/docker.service
+        regexp: "fd://"
+        replace: "unix://"
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('22.04', '>=')
 
 - name: Ensure group docker exists
   group:
