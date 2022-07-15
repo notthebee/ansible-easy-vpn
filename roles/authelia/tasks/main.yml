@@ -63,3 +63,5 @@
     state: present
     block: |
       alias show_2fa="sudo cat {{ docker_dir }}/authelia/notification.txt"
+  notify:
+    - source .bashrc
