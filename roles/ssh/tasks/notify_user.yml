@@ -42,6 +42,9 @@
           5. After a couple of minutes, you should be able to login to Wireguard WebUI in using your username and password
           http://{{ wireguard_host }}
 
+          6. If you didn't configure the e-mail functionality during the installation, type `show_2fa` in the CLI after you're
+          prompted for an e-mail confirmation in Authelia.
+
     - name: ""
       when: ssh_public_key is defined
       pause:
@@ -55,6 +58,9 @@
 
           After a couple of minutes, you should be able to login to Wireguard WebUI in using your username and password
           http://{{ wireguard_host }}
+
+          If you didn't configure the e-mail functionality during the installation, type `show_2fa` in the CLI after you're
+          prompted for an e-mail confirmation in Authelia.
 
     - name: Reboot the system if updates are pending
       when: reboot_required.stat.exists
