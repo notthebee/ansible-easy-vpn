@@ -9,29 +9,11 @@ all:
     #
 
     username: notthebee
-    host: example.duckdns.org
 
-    # Secret variables
-    # password:
-    # email_password
+    root_host: example.duckdns.org
 
-    #
-    # END MUST-CHANGE VARIABLES
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
+    # user_password:
+
     # Whether or not a non-root user should be created
     # Change to 'no' if you already have one
     enable_username_creation: yes
@@ -39,21 +21,25 @@ all:
     user_shell: /bin/bash
 
     enable_passwordless_sudo: yes
+
     # Whether or not you want to generate a public key pair for SSH auth
-    # The playbook will not generate a new pair if $HOME/.ssh/authorized_keys exists and isn't empty enable_ssh_keygen: yes
+    # The playbook will not generate a new pair if $HOME/.ssh/authorized_keys exists and isn't empty 
+    enable_ssh_keygen: yes
 
     # Uncomment this line if you already have a public SSH key and put your public key in it
     # This overrides `enable_ssh_keygen`
     # ssh_public_key: ""
 
-    authelia_host: "auth.{{ host }}"
+    authelia_host: "auth.{{ root_host }}"
 
-    wireguard_host: "wg.{{ host }}"
+    wireguard_host: "wg.{{ root_host }}"
 
     # Language and time settings
     # Check here for the list of possible locales
     # https://docs.oracle.com/cd/E23824_01/html/E26033/glset.html
     locale: en_US.UTF-8
+
+    timezone: Europe/Berlin
 
     # Set the time at which the system should reboot after installing updates (24H format)
     autoupdate_reboot_time: 03:00
@@ -66,22 +52,14 @@ all:
     # Optional e-mail for notifications (unattended upgrades, banned IPs, etc.)
     # Leave everything in place if you don't want any notifications
     email: root@localhost.com
-    # email_password: ""
-    email_login: "{{ email }}"
-    email_smtp_host: smtp.localhost.com
-    email_smtp_port: 465
-    email_smtp_port_startls: 587
-    msmtp_accounts:
-      - account: mailbox
-        host: "{{ email_smtp_host }}"
-        port: "{{ email_smtp_port_startls }}"
-        auth: "on"
-        from: "{{ email }}"
-        user: "{{ email }}"
-        password: "{{ email_password }}"
 
-    msmtp_default_account: "mailbox"
-    msmtp_alias_default: "{{ email }}"
+    email_login: "{{ email }}"
+
+    email_smtp_host: smtp.localhost.com
+
+    email_smtp_port: 465
+
+    # email_password:
 
     # By default, only access via the SSH port and 51820/udp is allowed
     # The rest of the ports are closed

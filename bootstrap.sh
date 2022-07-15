@@ -42,7 +42,11 @@ export DEBIAN_FRONTEND=
 
 
 clear
-echo "Welcome to ansible-easy-vpn"
+echo "Welcome to ansible-easy-vpn!"
+echo
+echo "This script is interactive"
+echo "If you prefer to fill in the inventory.yml file manually,"
+echo "press [Ctrl+C] to quit this script"
 echo
 echo "Enter your desired UNIX username"
 read -p "Username: " username
@@ -52,51 +56,52 @@ until [[ "$username" =~ ^[a-z0-9]*$ ]]; do
   read -p "Username: " username
 done
 
-sed -n "s/username: .*/username: $username/g" $HOME/ansible-easy-vpn/inventory.yml
-exit
-echo
-echo "Enter your sudo password"
-read -p -s "Sudo password: " sudo_password
+sed -i "s/username: .*/username: ${username}/g" $HOME/ansible-easy-vpn/inventory.yml
 
 echo
-echo "Encrypting the sudo password"
-echo "You will be prompted for a new vault password"
-sudo_password=$(ansible-vault encrypt_string $sudo_password --name 'password')
+echo "Enter your user password"
+echo "This password will be used for Authelia login,"
+echo "administrative access and SSH login"
+read -s -p "Enter your user password: " user_password
 
 echo
 echo "Enter your domain name"
 echo "The domain name should already resolve to the IP address of your server"
-read -p "Domain name: " domain
-until [[ "$domain" =~ ^[a-z0-9\.]*$ ]]; do
+read -p "Domain name: " root_host
+until [[ "$root_host" =~ ^[a-z0-9\.]*$ ]]; do
   echo "Invalid domain name"
-  read -p "domain: " domain
+  read -p "Domain name: " root_host
 done
+
+sed -i "s/root_host: .*/root_host: ${root_host}/g" $HOME/ansible-easy-vpn/inventory.yml
 
 echo
 echo "Would you like to generate a new SSH key pair?"
 echo "Press 'n' if you already have a public SSH key that you want to use"
-read -p "[y/N]: " new_ssh_key_pair	
+read -p "[y/N]: " new_ssh_key_pair
 until [[ "$new_ssh_key_pair" =~ ^[yYnN]*$ ]]; do
 				echo "$new_ssh_key_pair: invalid selection."
 				read -p "[y/N]: " new_ssh_key_pair
+        sed -i "s/enable_ssh_keygen: .*/enable_ssh_keygen: true/g" $HOME/ansible-easy-vpn/inventory.yml
 done
 
 if [[ "$new_ssh_key_pair" =~ ^[nN]$ ]]; then
   echo
-  read -p "Please enter your SSH public key: " ssh_key_pair	
+  read -p "Please enter your SSH public key: " ssh_key_pair
+  sed -i "s/#+ +ssh_public_key: .*/ssh_public_key: ${ssh_key_pair}/g" $HOME/ansible-easy-vpn/inventory.yml
 fi
 
-echo 
+echo
 echo "Would you like to set up the e-mail functionality?"
-echo "You will be able to use it to confirm the 2FA setup,"
+echo "It will be used to confirm the 2FA setup,"
 echo "restore the password in case you forget it,"
-echo "and receive server notifications (auto-updates, banned IPs, etc.)"
-echo 
+echo "and send you server notifications (auto-updates, banned IPs, etc.)"
+echo
 echo "This requires a working SMTP account (e.g. Mailbox, Tutanota, GMail)"
 echo "If you use GMail, you will need to generate an application pasword"
 echo "https://support.google.com/mail/answer/185833?hl=en-GB"
-echo 
-read -p "[y/N]: " email_setup	
+echo
+read -p "[y/N]: " email_setup
 until [[ "$email_setup" =~ ^[yYnN]*$ ]]; do
 				echo "$email_setup: invalid selection."
 				read -p "[y/N]: " email_setup
@@ -104,19 +109,44 @@ done
 
 if [[ "$email_setup" =~ ^[yY]$ ]]; then
   echo
-  read -p "SMTP server: " smtp_server	
+  read -p "SMTP server: " smtp_server
   until [[ "$smtp_server" =~ ^[a-z0-9\.]*$ ]]; do
     echo "Invalid SMTP server"
     read -p "SMTP server: " smtp_server
   done
   echo
-  read -p "SMTP port: " smtp_port
-  until [[ "$smtp_server" =~ ^[0-9]*$ ]]; do
-    echo "Invalid SMTP port"
-    read -p "SMTP port: " smtp_port
-  done
+  read -p "SMTP port (defaults to 465): " smtp_port
+  if [ -z ${smtp_port} ]; then
+    smtp_port="465"
+  fi
   echo
   read -p "SMTP login: " smtp_login
   echo
   read -p -s "SMTP password: " smtp_password
+
+
+  echo
+  read -p -s "'From' e-mail (leave empty for SMTP login): " email
+  if [ -z ${email} ]; then
+    email=$smtp_login
+  fi
+
+  sed -i "s/email_smtp_host: .*/email_smtp_host: ${smtp_server}/g" $HOME/ansible-easy-vpn/inventory.yml
+  sed -i "s/email_smtp_port: .*/email_smtp_port: ${smtp_port}/g" $HOME/ansible-easy-vpn/inventory.yml
+  sed -i "s/email_login: .*/email_login: ${smtp_login}/g" $HOME/ansible-easy-vpn/inventory.yml
+  sed -i "s/email_smtp_port: .*/email_smtp_port: ${smtp_port}/g" $HOME/ansible-easy-vpn/inventory.yml
 fi
+
+touch $HOME/ansible-easy-vpn/secret.yml
+chmod 600 $HOME/ansible-easy-vpn/secret.yml
+if [ -z ${smtp_password+x} ]; then
+  echo
+else 
+  echo "email_password: ${smtp_password}" >> $HOME/ansible-easy-vpn/secret.yml
+fi
+
+echo "user_password: ${user_password}" > $HOME/ansible-easy-vpn/secret.yml
+
+echo
+echo "Encrypting the variables"
+ansible-vault encrypt $HOME/ansible-easy-vpn/secret.yml
