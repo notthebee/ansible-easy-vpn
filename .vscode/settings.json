@@ -1,5 +1,0 @@
-{
-    "yaml.schemas": {
-        "https://raw.githubusercontent.com/ansible-community/schemas/main/f/ansible.json#/$defs/playbook": "file:///Users/notthebee/Documents/Software/ansible-easy-vpn/run.yml"
-    }
-}
