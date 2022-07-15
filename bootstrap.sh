@@ -118,7 +118,7 @@ if [[ "$email_setup" =~ ^[yY]$ ]]; then
     read -p "SMTP server: " email_smtp_host
   done
   echo
-  read -p "SMTP port (defaults to 465): " email_smtp_port
+  read -p "SMTP port [465]: " email_smtp_port
   if [ -z ${email_smtp_port} ]; then
     email_smtp_port="465"
   fi
@@ -127,7 +127,7 @@ if [[ "$email_setup" =~ ^[yY]$ ]]; then
   echo
   read -s -p "SMTP password: " email_password
   echo
-  read -p -s "'From' e-mail (leave empty for SMTP login): " email
+  read -p "'From' e-mail [${email_login}]: " email
   if [ -z ${email} ]; then
     email=$email_login
   fi
