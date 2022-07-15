@@ -65,10 +65,13 @@ echo
 echo "Enter your user password"
 echo "This password will be used for Authelia login, administrative access and SSH login"
 read -s -p "Password: " user_password
+echo
 read -s -p "Repeat password: " user_password2
-until [[ "$user_password" == "$user_password2 ]]; do
+echo
+until [[ "$user_password" == "$user_password2" ]]; do
   echo "The passwords don't match"
   read -s -p "Password: " user_password
+  echo
   read -s -p "Repeat password: " user_password2
 done
 
