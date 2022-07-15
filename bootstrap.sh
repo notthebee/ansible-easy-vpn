@@ -171,9 +171,9 @@ until [[ "$launch_playbook" =~ ^[yYnN]*$ ]]; do
 done
 
 if [[ "$launch_playbook" =~ ^[yY]$ ]]; then
-  ansible-playbook $HOME/ansible-easy-vpn/run.yml
+  cd $HOME/ansible-easy-vpn && ansible-playbook run.yml
 else
   echo "You can run the playbook by executing the following command"
-  echo "ansible-playbook ${HOME}/ansible-easy-vpn/run.yml"
+  echo "cd ${HOME}/ansible-easy-vpn && ansible-playbook run.yml"
   exit
 fi
