@@ -69,6 +69,7 @@ echo
 read -s -p "Repeat password: " user_password2
 echo
 until [[ "$user_password" == "$user_password2" ]]; do
+  echo
   echo "The passwords don't match"
   read -s -p "Password: " user_password
   echo
@@ -134,6 +135,7 @@ if [[ "$email_setup" =~ ^[yY]$ ]]; then
   read -p "SMTP login: " email_login
   echo
   read -s -p "SMTP password: " email_password
+  echo
   echo
   read -p "'From' e-mail [${email_login}]: " email
   if [ -z ${email} ]; then
