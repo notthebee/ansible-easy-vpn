@@ -9,7 +9,7 @@
 users:
   {{ username }}:
     displayname: "{{ username }}"
-    password: "{{ password | password_hash('sha512') }}"
+    password: "{{ user_password | password_hash('sha512') }}"
     email: "{{ email }}"
     groups:
       - admins
