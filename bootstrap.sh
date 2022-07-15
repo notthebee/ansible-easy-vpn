@@ -52,7 +52,7 @@ until [[ "$username" =~ ^[a-z0-9]*$ ]]; do
   read -p "Username: " username
 done
 
-sed "s/username: .*/username: $username/g" inventory.yml
+sed -n "s/username: .*/username: $username/g" $HOME/ansible-easy-vpn/inventory.yml
 exit
 echo
 echo "Enter your sudo password"
