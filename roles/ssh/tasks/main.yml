@@ -24,7 +24,7 @@
       openssh_keypair:
         path: /tmp/id_ssh_ed25519
         type: ed25519
-        passphrase: "{{ password }}"
+        passphrase: "{{ user_password }}"
 
     - name: Install the public key
       copy:
