@@ -9,13 +9,29 @@ all:
     #
 
     username: notthebee
-    # password: ""
     host: example.duckdns.org
+
+    # Secret variables
+    # password:
+    # email_password
 
     #
     # END MUST-CHANGE VARIABLES
     #
-
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
     # Whether or not a non-root user should be created
     # Change to 'no' if you already have one
     enable_username_creation: yes
@@ -24,12 +40,11 @@ all:
 
     enable_passwordless_sudo: yes
     # Whether or not you want to generate a public key pair for SSH auth
-    # The playbook will not generate a new pair if $HOME/.ssh/authorized_keys exists and isn't empty
-    enable_ssh_keygen: yes
+    # The playbook will not generate a new pair if $HOME/.ssh/authorized_keys exists and isn't empty enable_ssh_keygen: yes
 
     # Uncomment this line if you already have a public SSH key and put your public key in it
     # This overrides `enable_ssh_keygen`
-    ssh_public_key: ""
+    # ssh_public_key: ""
 
     authelia_host: "auth.{{ host }}"
 
