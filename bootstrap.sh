@@ -5,6 +5,9 @@
 # Discard stdin. Needed when running from an one-liner which includes a newline
 read -N 999999 -t 0.001
 
+# Quit on error
+set -e
+
 # Detect OS
 # $os_version variables aren't always in use, but are kept here for convenience
 if grep -qs "ubuntu" /etc/os-release; then
@@ -60,10 +63,10 @@ sed -i "s/username: .*/username: ${username}/g" $HOME/ansible-easy-vpn/inventory
 
 echo
 echo "Enter your user password"
-echo "This password will be used for Authelia login,"
-echo "administrative access and SSH login"
+echo "This password will be used for Authelia login, administrative access and SSH login"
 read -s -p "Enter your user password: " user_password
 
+echo
 echo
 echo "Enter your domain name"
 echo "The domain name should already resolve to the IP address of your server"
@@ -82,13 +85,13 @@ read -p "[y/N]: " new_ssh_key_pair
 until [[ "$new_ssh_key_pair" =~ ^[yYnN]*$ ]]; do
 				echo "$new_ssh_key_pair: invalid selection."
 				read -p "[y/N]: " new_ssh_key_pair
-        sed -i "s/enable_ssh_keygen: .*/enable_ssh_keygen: true/g" $HOME/ansible-easy-vpn/inventory.yml
 done
+sed -i "s/enable_ssh_keygen: .*/enable_ssh_keygen: true/g" $HOME/ansible-easy-vpn/inventory.yml
 
 if [[ "$new_ssh_key_pair" =~ ^[nN]$ ]]; then
   echo
   read -p "Please enter your SSH public key: " ssh_key_pair
-  sed -i "s/#+ +ssh_public_key: .*/ssh_public_key: ${ssh_key_pair}/g" $HOME/ansible-easy-vpn/inventory.yml
+  sed -i "s/# ssh_public_key: .*/ssh_public_key: ${ssh_key_pair}/g" $HOME/ansible-easy-vpn/inventory.yml
 fi
 
 echo
@@ -109,40 +112,38 @@ done
 
 if [[ "$email_setup" =~ ^[yY]$ ]]; then
   echo
-  read -p "SMTP server: " smtp_server
-  until [[ "$smtp_server" =~ ^[a-z0-9\.]*$ ]]; do
+  read -p "SMTP server: " email_smtp_host
+  until [[ "$email_smtp_host" =~ ^[a-z0-9\.]*$ ]]; do
     echo "Invalid SMTP server"
-    read -p "SMTP server: " smtp_server
+    read -p "SMTP server: " email_smtp_host
   done
   echo
-  read -p "SMTP port (defaults to 465): " smtp_port
-  if [ -z ${smtp_port} ]; then
-    smtp_port="465"
+  read -p "SMTP port (defaults to 465): " email_smtp_port
+  if [ -z ${email_smtp_port} ]; then
+    email_smtp_port="465"
   fi
   echo
-  read -p "SMTP login: " smtp_login
+  read -p "SMTP login: " email_login
   echo
-  read -p -s "SMTP password: " smtp_password
-
-
+  read -s -p "SMTP password: " email_password
   echo
   read -p -s "'From' e-mail (leave empty for SMTP login): " email
   if [ -z ${email} ]; then
-    email=$smtp_login
+    email=$email_login
   fi
 
-  sed -i "s/email_smtp_host: .*/email_smtp_host: ${smtp_server}/g" $HOME/ansible-easy-vpn/inventory.yml
-  sed -i "s/email_smtp_port: .*/email_smtp_port: ${smtp_port}/g" $HOME/ansible-easy-vpn/inventory.yml
-  sed -i "s/email_login: .*/email_login: ${smtp_login}/g" $HOME/ansible-easy-vpn/inventory.yml
-  sed -i "s/email_smtp_port: .*/email_smtp_port: ${smtp_port}/g" $HOME/ansible-easy-vpn/inventory.yml
+  sed -i "s/email_smtp_host: .*/email_smtp_host: ${email_smtp_host}/g" $HOME/ansible-easy-vpn/inventory.yml
+  sed -i "s/email_smtp_port: .*/email_smtp_port: ${email_smtp_port}/g" $HOME/ansible-easy-vpn/inventory.yml
+  sed -i "s/email_login: .*/email_login: ${email_login}/g" $HOME/ansible-easy-vpn/inventory.yml
+  sed -i "s/email: .*/email: ${email}/g" $HOME/ansible-easy-vpn/inventory.yml
 fi
 
 touch $HOME/ansible-easy-vpn/secret.yml
 chmod 600 $HOME/ansible-easy-vpn/secret.yml
-if [ -z ${smtp_password+x} ]; then
+if [ -z ${email_password+x} ]; then
   echo
 else 
-  echo "email_password: ${smtp_password}" >> $HOME/ansible-easy-vpn/secret.yml
+  echo "email_password: ${email_password}" >> $HOME/ansible-easy-vpn/secret.yml
 fi
 
 echo "user_password: ${user_password}" > $HOME/ansible-easy-vpn/secret.yml
@@ -150,3 +151,16 @@ echo "user_password: ${user_password}" > $HOME/ansible-easy-vpn/secret.yml
 echo
 echo "Encrypting the variables"
 ansible-vault encrypt $HOME/ansible-easy-vpn/secret.yml
+
+echo
+echo "Success!"
+read -p "Would you like to run the playbook now? [y/N]: " launch_playbook
+until [[ "$launch_playbook" =~ ^[yYnN]*$ ]]; do
+				echo "$launch_playbook: invalid selection."
+				read -p "[y/N]: " launch_playbook
+done
+
+if [[ "$launch_playbook" =~ ^[yY]$ ]]; then
+  ansible-playbook $HOME/ansible-easy-vpn/run.yml
+else
+  exit
