@@ -64,12 +64,20 @@ sed -i "s/username: .*/username: ${username}/g" $HOME/ansible-easy-vpn/inventory
 echo
 echo "Enter your user password"
 echo "This password will be used for Authelia login, administrative access and SSH login"
-read -s -p "Enter your user password: " user_password
+read -s -p "Password: " user_password
+read -s -p "Repeat password: " user_password2
+until [[ "$user_password" == "$user_password2 ]]; do
+  echo "The passwords don't match"
+  read -s -p "Password: " user_password
+  read -s -p "Repeat password: " user_password2
+done
+
 
 echo
 echo
 echo "Enter your domain name"
 echo "The domain name should already resolve to the IP address of your server"
+ehcho
 read -p "Domain name: " root_host
 until [[ "$root_host" =~ ^[a-z0-9\.]*$ ]]; do
   echo "Invalid domain name"
@@ -79,16 +87,17 @@ done
 sed -i "s/root_host: .*/root_host: ${root_host}/g" $HOME/ansible-easy-vpn/inventory.yml
 
 echo
-echo "Would you like to generate a new SSH key pair?"
-echo "Press 'n' if you already have a public SSH key that you want to use"
-read -p "[y/N]: " new_ssh_key_pair
+echo "Would you like to use an existing SSH key?"
+echo "Press 'n' if you want to generate a new SSH key pair"
+echo
+read -p "Use existing SSH key? [y/N]: " new_ssh_key_pair
 until [[ "$new_ssh_key_pair" =~ ^[yYnN]*$ ]]; do
 				echo "$new_ssh_key_pair: invalid selection."
 				read -p "[y/N]: " new_ssh_key_pair
 done
 sed -i "s/enable_ssh_keygen: .*/enable_ssh_keygen: true/g" $HOME/ansible-easy-vpn/inventory.yml
 
-if [[ "$new_ssh_key_pair" =~ ^[nN]$ ]]; then
+if [[ "$new_ssh_key_pair" =~ ^[yY]$ ]]; then
   echo
   read -p "Please enter your SSH public key: " ssh_key_pair
   sed -i "s/# ssh_public_key: .*/ssh_public_key: ${ssh_key_pair}/g" $HOME/ansible-easy-vpn/inventory.yml
@@ -96,15 +105,11 @@ fi
 
 echo
 echo "Would you like to set up the e-mail functionality?"
-echo "It will be used to confirm the 2FA setup,"
-echo "restore the password in case you forget it,"
-echo "and send you server notifications (auto-updates, banned IPs, etc.)"
+echo "It will be used to confirm the 2FA setup and restore the password in case you forget it"
 echo
-echo "This requires a working SMTP account (e.g. Mailbox, Tutanota, GMail)"
-echo "If you use GMail, you will need to generate an application pasword"
-echo "https://support.google.com/mail/answer/185833?hl=en-GB"
+echo "This is optional"
 echo
-read -p "[y/N]: " email_setup
+read -p "Set up e-mail? [y/N]: " email_setup
 until [[ "$email_setup" =~ ^[yYnN]*$ ]]; do
 				echo "$email_setup: invalid selection."
 				read -p "[y/N]: " email_setup
@@ -164,3 +169,4 @@ if [[ "$launch_playbook" =~ ^[yY]$ ]]; then
   ansible-playbook $HOME/ansible-easy-vpn/run.yml
 else
   exit
+fi
