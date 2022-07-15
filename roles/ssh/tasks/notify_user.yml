@@ -2,6 +2,7 @@
   service:
     name: sshd
     state: restarted
+  when: ssh_public_key is defined
 
 - name: Notify the user
   block:
