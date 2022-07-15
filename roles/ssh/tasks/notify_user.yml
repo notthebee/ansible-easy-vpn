@@ -1,3 +1,8 @@
+- name: Restart sshd
+  service:
+    name: sshd
+    state: restarted
+
 - name: Notify the user
   block:
     - name: Schedule a reboot if required
@@ -42,7 +47,7 @@
         prompt: |
 
           Almost done! Make sure to test your SSH connection in a new terminal window:
-          ssh -p 22 {{ username }}@{{ ipify_public_ip }} -i ~/.ssh/path-to-your-key
+          ssh -p {{ ssh_port }} {{ username }}@{{ ipify_public_ip }} -i ~/.ssh/path-to-your-key
 
           After ensuring that it works, return to this terminal window and press [Enter]
           Your system will {{ notify_action }}. You will be logged out automatically
