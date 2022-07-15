@@ -53,7 +53,7 @@ storage:
     path: /config/db.sqlite3
 
 notifier:
-  {% if email_password is defined %}
+  {% if email_password is defined and not 'localhost' in email_smtp_host %}
     smtp:
         username: {{ email_login }}
         password: {{ email_password }}

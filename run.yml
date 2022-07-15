@@ -2,8 +2,6 @@
 
 - hosts: all
   become: true
-  vars_files:
-    - secret.yml
 
   roles:
     - role: system
