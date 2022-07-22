@@ -23,7 +23,7 @@ all:
     enable_passwordless_sudo: yes
 
     # Whether or not you want to generate a public key pair for SSH auth
-    # The playbook will not generate a new pair if $HOME/.ssh/authorized_keys exists and isn't empty 
+    # The playbook will not generate a new pair if $HOME/.ssh/authorized_keys exists and isn't empty
     enable_ssh_keygen: yes
 
     # Uncomment this line if you already have a public SSH key and put your public key in it
@@ -59,7 +59,19 @@ all:
 
     email_smtp_port: 465
 
-    # email_password:
+    # MSMTP
+    msmtp_accounts:
+      - account: mailbox
+        host: "{{ email_smtp_host }}"
+        port: "{{ email_smtp_port }}"
+        auth: "on"
+        from: "{{ email }}"
+        user: "{{ email_login }}"
+        password: "{{ email_password }}"
+
+    msmtp_default_account: "mailbox"
+
+    msmtp_alias_default: "{{ email }}"
 
     # By default, only access via the SSH port and 51820/udp is allowed
     # The rest of the ports are closed

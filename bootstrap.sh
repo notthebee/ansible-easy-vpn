@@ -48,6 +48,7 @@ export DEBIAN_FRONTEND=
 # Clone the Ansible playbook
 [ -d "$HOME/ansible-easy-vpn" ] || git clone https://github.com/notthebee/ansible-easy-vpn
 
+cd $HOME/ansible-easy-vpn && ansible-galaxy install -r requirements.yml
 
 clear
 echo "Welcome to ansible-easy-vpn!"
