@@ -112,7 +112,7 @@ if [[ "$new_ssh_key_pair" =~ ^[yY]$ ]]; then
   read -p "Please enter your SSH public key: " ssh_key_pair
 
   # sed will crash if the SSH key is multi-line
-  sed -i "s/# ssh_public_key: .*/ssh_public_key: ${ssh_key_pair}/g" $HOME/ansible-easy-vpn/inventory.yml || echo "ssh_public_key: ${ssh_key_pair}" >> $HOME/ansible-easy-vpn/inventory.yml
+  sed -i "s/# ssh_public_key: .*/ssh_public_key: ${ssh_key_pair}/g" $HOME/ansible-easy-vpn/inventory.yml || echo "Fixing the sed error..." && echo "    ssh_public_key: ${ssh_key_pair}" >> $HOME/ansible-easy-vpn/inventory.yml
 fi
 
 echo
