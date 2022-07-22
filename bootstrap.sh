@@ -9,7 +9,6 @@ read -N 999999 -t 0.001
 set -e
 
 # Detect OS
-# $os_version variables aren't always in use, but are kept here for convenience
 if grep -qs "ubuntu" /etc/os-release; then
 	os_version=$(grep 'VERSION_ID' /etc/os-release | cut -d '"' -f 2 | tr -d '.')
 else
@@ -18,6 +17,7 @@ Supported distros are Ubuntu 20.04 and 22.04"
 	exit
 fi
 
+# Check if the Ubuntu version is too old
 if [[ "$os" == "ubuntu" && "$os_version" -lt 2004 ]]; then
 	echo "Ubuntu 20.04 or higher is required to use this installer.
 This version of Ubuntu is too old and unsupported."
@@ -25,14 +25,17 @@ This version of Ubuntu is too old and unsupported."
 fi
 
 
-# root or not
+# Check if the user is root or not
 if [[ $EUID -ne 0 ]]; then
   SUDO='sudo -H -E'
 else
   SUDO=''
 fi
 
+# Disable interactive functionality
 export DEBIAN_FRONTEND=noninteractive
+
+# Update apt database, update all packages and install Ansible + dependencies
 $SUDO apt update -y;
 $SUDO yes | apt-get -o Dpkg::Options::="--force-confold" -fuy dist-upgrade;
 $SUDO yes | apt-get -o Dpkg::Options::="--force-confold" -fuy install software-properties-common curl git python3 python3-setuptools python3-apt python3-pip python3-passlib python3-wheel python3-bcrypt aptitude -y;
@@ -41,6 +44,8 @@ $SUDO yes | apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove;
 
 pip3 install ansible -U &&
 export DEBIAN_FRONTEND=
+
+# Clone the Ansible playbook
 [ -d "$HOME/ansible-easy-vpn" ] || git clone https://github.com/notthebee/ansible-easy-vpn
 
 
@@ -148,8 +153,11 @@ if [[ "$email_setup" =~ ^[yY]$ ]]; then
   sed -i "s/email: .*/email: ${email}/g" $HOME/ansible-easy-vpn/inventory.yml
 fi
 
+
+# Set secure permissions for the Vault file
 touch $HOME/ansible-easy-vpn/secret.yml
 chmod 600 $HOME/ansible-easy-vpn/secret.yml
+
 if [ -z ${email_password+x} ]; then
   echo
 else 

@@ -49,4 +49,5 @@
     dest: "/home/{{ username }}"
     owner: "{{ username }}"
     group: "{{ username }}"
+    mode: 0750
   when: not playbook_copied.stat.exists
