@@ -1,4 +1,4 @@
-#!/usr/bin/env ansible-playbook 
+#!/usr/bin/env ansible-playbook
 
 - hosts: all
   become: true
@@ -36,6 +36,10 @@
     - role: wireguard
       tags:
         - wireguard
+
+    - role: chriswayg.msmtp-mailer
+      tags:
+        - msmtp
 
     - role: ssh
       tags:
