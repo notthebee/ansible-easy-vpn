@@ -171,7 +171,7 @@ else
   echo "email_password: ${email_password}" >> $HOME/ansible-easy-vpn/secret.yml
 fi
 
-echo "user_password: ${user_password}" > $HOME/ansible-easy-vpn/secret.yml
+echo "user_password: ${user_password}" >> $HOME/ansible-easy-vpn/secret.yml
 
 echo
 echo "Encrypting the variables"
