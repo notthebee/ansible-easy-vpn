@@ -192,9 +192,9 @@ fi
 
 echo "user_password: ${user_password}" >> $HOME/ansible-easy-vpn/secret.yml
 
-jwt_secret=$(openssl rand -base64 21)
-session_secret=$(openssl rand -base64 21)
-storage_encryption_key=$(openssl rand -base64 21)
+jwt_secret=$(openssl rand -hex 23)
+session_secret=$(openssl rand -hex 23)
+storage_encryption_key=$(openssl rand -hex 23)
 
 echo "jwt_secret: ${jwt_secret}" >> $HOME/ansible-easy-vpn/secret.yml
 echo "session_secret: ${session_secret}" >> $HOME/ansible-easy-vpn/secret.yml
