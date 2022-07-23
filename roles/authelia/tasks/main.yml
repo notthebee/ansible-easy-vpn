@@ -1,16 +1,4 @@
 ---
-- name: Check if the authelia config exists
-  stat:
-    path: "{{ docker_dir }}/authelia/configuration.yml"
-  register: config_exists
-
-- name: Generate the secrets
-  set_fact:
-    jwt_secret: "{{ lookup('community.general.random_string', special=false, length=21) }}"
-    session_secret: "{{ lookup('community.general.random_string', special=false, length=21) }}"
-    storage_encryption_key: "{{ lookup('community.general.random_string', special=false, length=21) }}"
-  when: not config_exists.stat.exists
-
 - name: Create the config folder
   file:
     path: "{{ docker_dir }}/authelia"
@@ -25,7 +13,6 @@
     owner: "{{ username }}"
     group: "{{ username }}"
     mode: 0644
-  when: not config_exists.stat.exists
 
 - name: Copy the users database
   template:
@@ -65,3 +52,4 @@
       alias show_2fa="sudo cat {{ docker_dir }}/authelia/notification.txt"
   notify:
     - source .bashrc
+

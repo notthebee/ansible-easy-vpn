@@ -22,7 +22,6 @@
     state: present
     append: true
     shell: "{{ user_shell }}"
-    update_password: on_create
 
 - name: Ensure group "{{ username }}" exists
   group:
@@ -45,7 +44,7 @@
 
 - name: Copy the Ansible playbook to the new user
   copy:
-    src: "/root/ansible-easy-vpn"
+    src: "/tmp/ansible-easy-vpn"
     dest: "/home/{{ username }}"
     owner: "{{ username }}"
     group: "{{ username }}"

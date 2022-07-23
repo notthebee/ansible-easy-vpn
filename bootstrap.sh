@@ -173,10 +173,19 @@ fi
 
 echo "user_password: ${user_password}" >> $HOME/ansible-easy-vpn/secret.yml
 
+jwt_secret=$(openssl rand -base64 21)
+session_secret=$(openssl rand -base64 21)
+storage_encryption_key=$(openssl rand -base64 21)
+
+echo "jwt_secret: ${jwt_secret}" >> $HOME/ansible-easy-vpn/secret.yml
+echo "session_secret: ${session_secret}" >> $HOME/ansible-easy-vpn/secret.yml
+echo "storage_encryption_key: ${storage_encryption_key}" >> $HOME/ansible-easy-vpn/secret.yml
+
 echo
 echo "Encrypting the variables"
 ansible-vault encrypt $HOME/ansible-easy-vpn/secret.yml
 
+cp -r $HOME/ansible-vpn-easy /tmp/ansible-vpn-easy
 echo
 echo "Success!"
 read -p "Would you like to run the playbook now? [y/N]: " launch_playbook
