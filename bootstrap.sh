@@ -185,7 +185,7 @@ echo
 echo "Encrypting the variables"
 ansible-vault encrypt $HOME/ansible-easy-vpn/secret.yml
 
-cp -r $HOME/ansible-vpn-easy /tmp/ansible-vpn-easy
+cp -r $HOME/ansible-easy-vpn /tmp/ansible-easy-vpn
 echo
 echo "Success!"
 read -p "Would you like to run the playbook now? [y/N]: " launch_playbook
