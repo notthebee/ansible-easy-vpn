@@ -37,6 +37,11 @@
       tags:
         - wireguard
 
+    - role: chriswayg.msmtp-mailer
+      when: email_password is defined
+      tags:
+        - msmtp
+
     - role: ssh
       tags:
         - ssh
