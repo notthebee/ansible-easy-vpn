@@ -71,6 +71,12 @@ echo
 echo "Enter your user password"
 echo "This password will be used for Authelia login, administrative access and SSH login"
 read -s -p "Password: " user_password
+until [[ "${#user_password}" -lt 60 ]]; do
+  echo
+  echo "The password is too long"
+  echo "OpenSSH does not support passwords longer than 72 characters"
+  read -s -p "Password: " user_password
+done
 echo
 read -s -p "Repeat password: " user_password2
 echo
@@ -93,6 +99,10 @@ until [[ "$root_host" =~ ^[a-z0-9\.]*$ ]]; do
   echo "Invalid domain name"
   read -p "Domain name: " root_host
 done
+
+public_ip=$(curl ipinfo.io/ip)
+domain_ip=$(dig +short ${root_host})
+
 
 sed -i "s/root_host: .*/root_host: ${root_host}/g" $HOME/ansible-easy-vpn/inventory.yml
 
