@@ -4,18 +4,10 @@ all:
       ansible_connection: local
 
   vars:
-    #
-    # MUST-CHANGE VARIABLES
-    #
-
     username: notthebee
 
     root_host: example.duckdns.org
 
-    # user_password:
-
-    # Whether or not a non-root user should be created
-    # Change to 'no' if you already have one
     enable_username_creation: yes
 
     user_shell: /bin/bash

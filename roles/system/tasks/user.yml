@@ -22,11 +22,13 @@
     state: present
     append: true
     shell: "{{ user_shell }}"
+  when: enable_username_creation | default(False)
 
 - name: Ensure group "{{ username }}" exists
   group:
     name: "{{ username }}"
     state: present
+  when: enable_username_creation | default(False)
 
 - name: Chmod the user home directory
   file:
@@ -36,6 +38,7 @@
     owner: "{{ username }}"
     group: "{{ username }}"
     recurse: yes
+  when: enable_username_creation | default(False)
 
 - name: Check if the Ansible playbook is copied to the new user directory
   stat:
