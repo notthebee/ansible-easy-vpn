@@ -37,10 +37,6 @@
       tags:
         - wireguard
 
-    - role: chriswayg.msmtp-mailer
-      tags:
-        - msmtp
-
     - role: ssh
       tags:
         - ssh
