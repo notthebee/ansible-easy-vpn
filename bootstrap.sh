@@ -104,8 +104,10 @@ public_ip=$(curl ipinfo.io/ip)
 domain_ip=$(dig +short ${root_host})
 
 until [[ $domain_ip =~ $public_ip ]]; do
-  echo "The domain {$root_host} does not resolve to the public IP of this server (${public_ip})"
+  echo "The domain $root_host does not resolve to the public IP of this server ($public_ip)"
   read -p "Domain name: " root_host
+  public_ip=$(curl ipinfo.io/ip)
+  domain_ip=$(dig +short ${root_host})
 done
 
 
