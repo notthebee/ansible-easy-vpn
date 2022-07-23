@@ -2,6 +2,12 @@
 
 A simple interactive script/Ansible playbook that sets up an Ubuntu-based Wireguard VPN server
 
+### Usage
+
+```
+wget https://raw.githubusercontent.com/notthebee/ansible-easy-vpn/main/bootstrap.sh -O bootstrap.sh && bash bootstrap.sh
+```
+
 ### Features
 * Automated and unattended upgrades
 * SSH hardening
@@ -16,13 +22,7 @@ A simple interactive script/Ansible playbook that sets up an Ubuntu-based Wiregu
 * A KVM-based VPS with a dedicated IPv4 address
 * Ubuntu Server 20.04 or 22.04
 
-### Usage
-
-```
-wget https://raw.githubusercontent.com/notthebee/ansible-easy-vpn/main/bootstrap.sh -O bootstrap.sh && bash bootstrap.sh
-```
-
-
+### FAQ
 **Q: I've run the playbook succesfully, but now I want to change the domain name/username/password. How can I do that?**
 
 Edit the variable files and re-run the playbook:
@@ -30,9 +30,7 @@ Edit the variable files and re-run the playbook:
 ```
 cd $HOME/ansible-easy-vpn
 nano inventory.yml
-# or
 ansible-vault edit secret.yml
-
 ansible-playbook run.yml
 ```
 
