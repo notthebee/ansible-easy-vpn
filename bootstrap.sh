@@ -95,7 +95,7 @@ echo "Enter your domain name"
 echo "The domain name should already resolve to the IP address of your server"
 echo
 read -p "Domain name: " root_host
-until [[ "$root_host" =~ ^[a-z0-9\.]*$ ]]; do
+until [[ "$root_host" =~ ^[a-z0-9\.\-]*$ ]]; do
   echo "Invalid domain name"
   read -p "Domain name: " root_host
 done
