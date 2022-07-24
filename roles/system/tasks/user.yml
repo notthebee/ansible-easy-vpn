@@ -47,7 +47,7 @@
 
 - name: Copy the Ansible playbook to the new user
   copy:
-    src: "/root/ansible-easy-vpn"
+    src: "/{{ lookup('env','HOME') }}/ansible-easy-vpn"
     dest: "/home/{{ username }}"
     owner: "{{ username }}"
     decrypt: no
