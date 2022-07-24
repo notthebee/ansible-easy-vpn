@@ -102,10 +102,13 @@ done
 
 public_ip=$(curl -s ipinfo.io/ip)
 domain_ip=$(dig +short ${root_host})
+wg_domain_ip=$(dig +short wg.${root_host})
+auth_domain_ip=$(dig +short auth.${root_host})
 
-until [[ $domain_ip =~ $public_ip ]]; do
+until [[ $wg_domain_ip =~ $public_ip ]] && [[ $auth_domain_ip =~ $public_ip ]] && [[ $domain_ip =~ $public_ip ]]; do
   echo
   echo "The domain $root_host does not resolve to the public IP of this server ($public_ip)"
+  echo "Make sure that wg.$root_host and auth.$root_host also point to $public_ip"
   read -p "Domain name: " root_host
   public_ip=$(curl -s ipinfo.io/ip)
   domain_ip=$(dig +short ${root_host})
