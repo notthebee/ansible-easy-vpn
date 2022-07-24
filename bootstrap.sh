@@ -94,7 +94,7 @@ echo
 echo "Enter your domain name"
 echo "The domain name should already resolve to the IP address of your server"
 echo "Make sure that 'wg' and 'auth' subdomains also point to that IP (not necessary with DuckDNS)"
-ech
+echo
 read -p "Domain name: " root_host
 until [[ "$root_host" =~ ^[a-z0-9\.\-]*$ ]]; do
   echo "Invalid domain name"
