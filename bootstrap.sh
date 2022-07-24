@@ -93,9 +93,10 @@ echo
 echo
 echo "Enter your domain name"
 echo "The domain name should already resolve to the IP address of your server"
+echo "Make sure that 'wg' and 'auth' subdomains also point to that IP (not necessary with DuckDNS)"
 echo
 read -p "Domain name: " root_host
-until [[ "$root_host" =~ ^[a-z0-9\.]*$ ]]; do
+until [[ "$root_host" =~ ^[a-z0-9\.\-]*$ ]]; do
   echo "Invalid domain name"
   read -p "Domain name: " root_host
 done
@@ -106,6 +107,7 @@ domain_ip=$(dig +short ${root_host})
 until [[ $domain_ip =~ $public_ip ]]; do
   echo
   echo "The domain $root_host does not resolve to the public IP of this server ($public_ip)"
+  echo
   read -p "Domain name: " root_host
   public_ip=$(curl -s ipinfo.io/ip)
   domain_ip=$(dig +short ${root_host})
