@@ -239,7 +239,8 @@ done
 
 if [[ "$launch_playbook" =~ ^[yY]$ ]]; then
   if [[ $EUID -ne 0 ]]; then
-    echo "Please enter your current sudo password when asked for BECOME password"
+    echo
+    echo "Please enter your current sudo password now"
     cd $HOME/ansible-easy-vpn && ansible-playbook -K run.yml
   else
     cd $HOME/ansible-easy-vpn && ansible-playbook run.yml
