@@ -22,25 +22,7 @@
       when: not reboot_required.stat.exists
 
     - name: ""
-      when: aws
-      pause:
-        prompt: |
-          Almost done! Make sure to test your SSH connection in a new terminal window:
-          ssh -p {{ ssh_port }} {{ username }}@{{ ipify_public_ip }} -i ~/.ssh/path-to-your-key
-
-          After ensuring that it works, return to this terminal window and press [Enter]
-          Your system will {{ notify_action }}. You will be logged out automatically
-
-          After a couple of minutes, you should be able to login to Wireguard WebUI in using your username and password
-          http://{{ wireguard_host }}
-
-          Since you're running an AWS EC2 instance, you might need to adjust firewall rules to access the WebUI
-
-          If you didn't configure the e-mail functionality during the installation, type `show_2fa` in the CLI after you're
-          prompted for an e-mail confirmation in Authelia.
-
-    - name: ""
-      when: ssh_public_key is not defined and not aws
+      when: ssh_public_key is not defined
       pause:
         prompt: |
 
@@ -64,7 +46,7 @@
           prompted for an e-mail confirmation in Authelia.
 
     - name: ""
-      when: ssh_public_key is defined and not aws
+      when: ssh_public_key is defined
       pause:
         prompt: |
 
