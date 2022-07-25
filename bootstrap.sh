@@ -27,8 +27,9 @@ fi
 
 check_root() {
 # Check if the user is root or not
+
 if [[ $EUID -ne 0 ]]; then
-  SUDO='sudo -E $1'
+  SUDO='sudo -E $*'
 else
   SUDO=''
 fi
