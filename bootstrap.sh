@@ -44,7 +44,7 @@ yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy install software-p
 yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove;
 [ $(uname -m) == "aarch64" ] && $SUDO yes | apt install gcc dnsutils python3-dev libffi-dev libssl-dev make -y;
 
-pip3 install ansible -U &&
+$SUDO -H pip3 install ansible &&
 export DEBIAN_FRONTEND=
 
 # Clone the Ansible playbook

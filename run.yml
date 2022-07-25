@@ -15,7 +15,7 @@
       failed_when: False
 
     - set_fact:
-        is_aws: "{{ aws_uri_check.status == 200 }}"
+        aws: "{{ aws_uri_check.status == 200 }}"
 
   roles:
     - role: system
