@@ -130,7 +130,7 @@ done
 
 echo
 echo "Running certbot in dry-run mode to test the validity of the domain..."
-certbot certonly --non-interactive --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host || \
+certbot certonly --non-interactive --force-renewal --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host || \
   echo; \
   echo "Certbot failed to generate certificates for your domain name"; \
   echo "Please ensure that port 80/tcp is open on the server"; \
