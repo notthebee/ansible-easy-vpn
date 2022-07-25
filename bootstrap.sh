@@ -27,8 +27,10 @@ fi
 
 # Check if the user is root or not
 if [[ $EUID -ne 0 ]]; then
-  SUDO='sudo -H -E'
+  echo "running as non-root"
+  SUDO='sudo -E'
 else
+  echo "running as root"
   SUDO=''
 fi
 
@@ -37,18 +39,18 @@ export DEBIAN_FRONTEND=noninteractive
 
 # Update apt database, update all packages and install Ansible + dependencies
 $SUDO apt update -y;
-$SUDO yes | apt-get -o Dpkg::Options::="--force-confold" -fuy dist-upgrade;
-$SUDO yes | apt-get -o Dpkg::Options::="--force-confold" -fuy install software-properties-common dnsutils curl git python3 python3-setuptools python3-apt python3-pip python3-passlib python3-wheel python3-bcrypt aptitude -y;
-$SUDO yes | apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove;
+yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy dist-upgrade;
+yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy install software-properties-common dnsutils curl git python3 python3-setuptools python3-apt python3-pip python3-passlib python3-wheel python3-bcrypt aptitude -y;
+yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove;
 [ $(uname -m) == "aarch64" ] && $SUDO yes | apt install gcc dnsutils python3-dev libffi-dev libssl-dev make -y;
 
 pip3 install ansible -U &&
 export DEBIAN_FRONTEND=
 
 # Clone the Ansible playbook
-[ -d "$HOME/ansible-easy-vpn" ] || git clone https://github.com/notthebee/ansible-easy-vpn
+[ -d "$HOME/ansible-easy-vpn" ] || git clone https://github.com/notthebee/ansible-easy-vpn -C $HOME/ansible-easy-vpn
 
-cd $HOME/ansible-easy-vpn && ansible-galaxy install -r requirements.yml
+cd $HOME/ansible-easy-vpn && $SUDO ansible-galaxy install -r requirements.yml
 
 clear
 echo "Welcome to ansible-easy-vpn!"
@@ -215,7 +217,7 @@ until [[ "$launch_playbook" =~ ^[yYnN]*$ ]]; do
 done
 
 if [[ "$launch_playbook" =~ ^[yY]$ ]]; then
-  cd $HOME/ansible-easy-vpn && ansible-playbook run.yml
+  cd $HOME/ansible-easy-vpn && $SUDO ansible-playbook run.yml
 else
   echo "You can run the playbook by executing the following command"
   echo "cd ${HOME}/ansible-easy-vpn && ansible-playbook run.yml"
