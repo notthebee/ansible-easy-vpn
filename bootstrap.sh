@@ -141,9 +141,9 @@ if [[ ! "$aws" =~ 200 ]]; then
     sed -i "s/# ssh_public_key: .*/ssh_public_key: ${ssh_key_pair}/g" $HOME/ansible-easy-vpn/inventory.yml || echo "Fixing the sed error..." && echo "    ssh_public_key: ${ssh_key_pair}" >> $HOME/ansible-easy-vpn/inventory.yml
   fi
 else
+  echo
   echo "Looks like you're running this script on an AWS EC2 instance."
-  echo "Please use the public defined in the Management Console"
-  echo "to log in to the server after running the playbook."
+  echo "Please use the public defined in the Management Console to log in to the server after running the playbook."
   echo
   read -n 1 -s -r -p "Press any key to continue"
 fi
