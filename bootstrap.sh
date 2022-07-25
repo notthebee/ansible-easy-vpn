@@ -143,9 +143,10 @@ if [[ ! "$aws" =~ 200 ]]; then
 else
   echo
   echo "Looks like you're running this script on an AWS EC2 instance."
-  echo "Please use the public defined in the Management Console to log in to the server after running the playbook."
+  echo "Please use the SSH keys defined in the Management Console to log in to the server after running the playbook."
   echo
   read -n 1 -s -r -p "Press any key to continue"
+  echo
 fi
 
 echo
