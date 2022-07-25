@@ -28,10 +28,8 @@ fi
 check_root() {
 # Check if the user is root or not
 if [[ $EUID -ne 0 ]]; then
-  echo "running as non-root"
   SUDO='sudo -E $1'
 else
-  echo "running as root"
   SUDO=''
 fi
 }
@@ -58,7 +56,9 @@ check_root
 
 cd $HOME/ansible-easy-vpn && ansible-galaxy install -r requirements.yml
 # Check if we're running on an AWS EC2 instance
+set +e
 aws=$(curl -m 5 -s -o /dev/null -w "%{http_code}" http://169.254.169.254/latest/meta-data/ami-id) || false
+set -e
 
 clear
 echo "Welcome to ansible-easy-vpn!"
