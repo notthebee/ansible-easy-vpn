@@ -27,9 +27,9 @@ fi
 
 check_root() {
 # Check if the user is root or not
-
+argv="$1"
 if [[ $EUID -ne 0 ]]; then
-  SUDO='sudo -E $*'
+  SUDO='sudo -E $argv'
 else
   SUDO=''
 fi
