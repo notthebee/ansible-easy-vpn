@@ -128,7 +128,7 @@ until [[ $domain_ip =~ $public_ip ]]; do
   echo
 done
 
-certbot certonly --non-interactive --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host
+certbot certonly --non-interactive --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host
 exit
 
 sed -i "s/root_host: .*/root_host: ${root_host}/g" $HOME/ansible-easy-vpn/inventory.yml
