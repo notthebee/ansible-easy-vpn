@@ -48,7 +48,7 @@ pip3 install ansible -U &&
 export DEBIAN_FRONTEND=
 
 # Clone the Ansible playbook
-[ -d "$HOME/ansible-easy-vpn" ] || git clone https://github.com/notthebee/ansible-easy-vpn -C $HOME/ansible-easy-vpn
+[ -d "$HOME/ansible-easy-vpn" ] || git clone https://github.com/notthebee/ansible-easy-vpn $HOME/ansible-easy-vpn
 
 cd $HOME/ansible-easy-vpn && $SUDO ansible-galaxy install -r requirements.yml
 
