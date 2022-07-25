@@ -58,7 +58,7 @@ check_root
 
 cd $HOME/ansible-easy-vpn && ansible-galaxy install -r requirements.yml
 # Check if we're running on an AWS EC2 instance
-aws=$(curl -s -o /dev/null -w "%{http_code}" http://169.254.169.254/latest/meta-data/ami-id)
+aws=$(curl -m 5 -s -o /dev/null -w "%{http_code}" http://169.254.169.254/latest/meta-data/ami-id)
 
 clear
 echo "Welcome to ansible-easy-vpn!"
