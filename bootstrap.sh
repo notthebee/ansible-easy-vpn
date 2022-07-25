@@ -51,6 +51,8 @@ export DEBIAN_FRONTEND=
 [ -d "$HOME/ansible-easy-vpn" ] || git clone https://github.com/notthebee/ansible-easy-vpn $HOME/ansible-easy-vpn
 
 cd $HOME/ansible-easy-vpn && ansible-galaxy install -r requirements.yml
+# Check if we're running on an AWS EC2 instance
+aws=$(curl -s -o /dev/null -w "%{http_code}" http://169.254.169.254/latest/meta-data/ami-id)
 
 clear
 echo "Welcome to ansible-easy-vpn!"
@@ -119,23 +121,31 @@ done
 
 sed -i "s/root_host: .*/root_host: ${root_host}/g" $HOME/ansible-easy-vpn/inventory.yml
 
-echo
-echo "Would you like to use an existing SSH key?"
-echo "Press 'n' if you want to generate a new SSH key pair"
-echo
-read -p "Use existing SSH key? [y/N]: " new_ssh_key_pair
-until [[ "$new_ssh_key_pair" =~ ^[yYnN]*$ ]]; do
-				echo "$new_ssh_key_pair: invalid selection."
-				read -p "[y/N]: " new_ssh_key_pair
-done
-sed -i "s/enable_ssh_keygen: .*/enable_ssh_keygen: true/g" $HOME/ansible-easy-vpn/inventory.yml
-
-if [[ "$new_ssh_key_pair" =~ ^[yY]$ ]]; then
+if [[ ! "$aws" =~ 200 ]]; then
   echo
-  read -p "Please enter your SSH public key: " ssh_key_pair
+  echo "Would you like to use an existing SSH key?"
+  echo "Press 'n' if you want to generate a new SSH key pair"
+  echo
+  read -p "Use existing SSH key? [y/N]: " new_ssh_key_pair
+  until [[ "$new_ssh_key_pair" =~ ^[yYnN]*$ ]]; do
+          echo "$new_ssh_key_pair: invalid selection."
+          read -p "[y/N]: " new_ssh_key_pair
+  done
+  sed -i "s/enable_ssh_keygen: .*/enable_ssh_keygen: true/g" $HOME/ansible-easy-vpn/inventory.yml
 
-  # sed will crash if the SSH key is multi-line
-  sed -i "s/# ssh_public_key: .*/ssh_public_key: ${ssh_key_pair}/g" $HOME/ansible-easy-vpn/inventory.yml || echo "Fixing the sed error..." && echo "    ssh_public_key: ${ssh_key_pair}" >> $HOME/ansible-easy-vpn/inventory.yml
+  if [[ "$new_ssh_key_pair" =~ ^[yY]$ ]]; then
+    echo
+    read -p "Please enter your SSH public key: " ssh_key_pair
+
+    # sed will crash if the SSH key is multi-line
+    sed -i "s/# ssh_public_key: .*/ssh_public_key: ${ssh_key_pair}/g" $HOME/ansible-easy-vpn/inventory.yml || echo "Fixing the sed error..." && echo "    ssh_public_key: ${ssh_key_pair}" >> $HOME/ansible-easy-vpn/inventory.yml
+  fi
+else
+  echo "Looks like you're running this script on an AWS EC2 instance."
+  echo "Please use the public defined in the Management Console"
+  echo "to log in to the server after running the playbook."
+  echo
+  read -n 1 -s -r -p "Press any key to continue"
 fi
 
 echo
