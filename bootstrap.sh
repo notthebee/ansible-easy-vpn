@@ -44,13 +44,13 @@ yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy install software-p
 yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove;
 [ $(uname -m) == "aarch64" ] && $SUDO yes | apt install gcc dnsutils python3-dev libffi-dev libssl-dev make -y;
 
-$SUDO pip3 install ansible -U &&
+pip3 install ansible -U &&
 export DEBIAN_FRONTEND=
 
 # Clone the Ansible playbook
 [ -d "$HOME/ansible-easy-vpn" ] || git clone https://github.com/notthebee/ansible-easy-vpn $HOME/ansible-easy-vpn
 
-cd $HOME/ansible-easy-vpn && $SUDO ansible-galaxy install -r requirements.yml
+cd $HOME/ansible-easy-vpn && ansible-galaxy install -r requirements.yml
 
 clear
 echo "Welcome to ansible-easy-vpn!"
@@ -217,7 +217,7 @@ until [[ "$launch_playbook" =~ ^[yYnN]*$ ]]; do
 done
 
 if [[ "$launch_playbook" =~ ^[yY]$ ]]; then
-  cd $HOME/ansible-easy-vpn && $SUDO ansible-playbook run.yml
+  cd $HOME/ansible-easy-vpn && ansible-playbook run.yml
 else
   echo "You can run the playbook by executing the following command"
   echo "cd ${HOME}/ansible-easy-vpn && ansible-playbook run.yml"
