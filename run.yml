@@ -6,6 +6,17 @@
   vars_files:
     - secret.yml
 
+  pre_tasks:
+    - name: Check if inside AWS.
+      uri:
+        url: http://169.254.169.254/latest/meta-data/ami-id
+        timeout: 2
+      register: aws_uri_check
+      failed_when: False
+
+    - set_fact:
+        is_aws: "{{ aws_uri_check.status == 200 }}"
+
   roles:
     - role: system
       tags:

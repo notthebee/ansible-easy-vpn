@@ -1,3 +1,7 @@
+- name: Show username
+  debug:
+    var: "{{ ansible_user_id }}"
+
 - name: Generate the locale
   locale_gen:
     name: "{{ locale }}"
