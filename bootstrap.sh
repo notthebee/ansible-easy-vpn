@@ -130,7 +130,7 @@ done
 
 echo
 echo "Running certbot in dry-run mode to test the validity of the domain..."
-certbot certonly --non-interactive --break-my-certs --force-renewal --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host || echo "it failed lol"
+certbot certonly --non-interactive --quiet --break-my-certs --force-renewal --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host || printf "\nCertbot failed to generate staging certificates\nMake sure that the port 80/tcp is open on the server and the subdomains 'wg' and 'auth' also point to the server's IP" && exit
 
 sed -i "s/root_host: .*/root_host: ${root_host}/g" $HOME/ansible-easy-vpn/inventory.yml
 
