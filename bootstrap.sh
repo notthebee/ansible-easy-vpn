@@ -128,8 +128,14 @@ until [[ $domain_ip =~ $public_ip ]]; do
   echo
 done
 
-certbot certonly --non-interactive --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host
-exit
+echo
+echo "Running certbot in dry-run mode to test the validity of the domain..."
+certbot certonly --non-interactive --quiet --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host || \
+  echo; \
+  echo "Certbot failed to generate certificates for your domain name"; \
+  echo "Please ensure that port 80/tcp is open on the server"; \
+  echo; \
+  exit
 
 sed -i "s/root_host: .*/root_host: ${root_host}/g" $HOME/ansible-easy-vpn/inventory.yml
 
