@@ -25,15 +25,18 @@ This version of Ubuntu is too old and unsupported."
 fi
 
 
+check_root() {
 # Check if the user is root or not
 if [[ $EUID -ne 0 ]]; then
   echo "running as non-root"
-  SUDO='sudo -E'
+  SUDO='sudo -E $1'
 else
   echo "running as root"
   SUDO=''
 fi
+}
 
+check_root
 # Disable interactive functionality
 export DEBIAN_FRONTEND=noninteractive
 
@@ -44,9 +47,12 @@ yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy install software-p
 yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove;
 [ $(uname -m) == "aarch64" ] && $SUDO yes | apt install gcc dnsutils python3-dev libffi-dev libssl-dev make -y;
 
-$SUDO -H pip3 install ansible &&
+check_root "-H"
+
+$SUDO pip3 install ansible &&
 export DEBIAN_FRONTEND=
 
+check_root
 # Clone the Ansible playbook
 [ -d "$HOME/ansible-easy-vpn" ] || git clone https://github.com/notthebee/ansible-easy-vpn $HOME/ansible-easy-vpn
 
