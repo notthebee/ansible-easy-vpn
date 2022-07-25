@@ -234,7 +234,12 @@ until [[ "$launch_playbook" =~ ^[yYnN]*$ ]]; do
 done
 
 if [[ "$launch_playbook" =~ ^[yY]$ ]]; then
-  cd $HOME/ansible-easy-vpn && ansible-playbook run.yml
+  if [[ $EUID -ne 0 ]]; then
+    echo "Please enter your current sudo password when asked for BECOME password"
+    cd $HOME/ansible-easy-vpn && ansible-playbook -K run.yml
+  else
+    cd $HOME/ansible-easy-vpn && ansible-playbook run.yml
+  fi
 else
   echo "You can run the playbook by executing the following command"
   echo "cd ${HOME}/ansible-easy-vpn && ansible-playbook run.yml"
