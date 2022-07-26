@@ -59,6 +59,7 @@ check_root
 [ -d "$HOME/ansible-easy-vpn" ] || git clone https://github.com/notthebee/ansible-easy-vpn $HOME/ansible-easy-vpn
 
 cd $HOME/ansible-easy-vpn && ansible-galaxy install -r requirements.yml
+
 # Check if we're running on an AWS EC2 instance
 set +e
 aws=$(curl -m 5 -s http://169.254.169.254/latest/meta-data/ami-id)
@@ -69,6 +70,7 @@ else
   aws=false
 fi
 set -e
+
 
 
 clear
@@ -141,6 +143,7 @@ $SUDO certbot certonly --non-interactive --quiet --break-my-certs --force-renewa
 echo "OK"
 
 sed -i "s/root_host: .*/root_host: ${root_host}/g" $HOME/ansible-easy-vpn/inventory.yml
+
 
 if [[ ! $aws =~ true ]]; then
   echo

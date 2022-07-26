@@ -18,7 +18,7 @@
     mode: 0700
 
 - name: Generate and install a public key pair
-  when: (not authorized_keys.stat.exists or authorized_keys.stat.size == 0) and not (ssh_public_key is defined) and not aws
+  when: (not authorized_keys.stat.exists or authorized_keys.stat.size == 0) and not (ssh_public_key is defined)
   block:
     - name: Generate an SSH key pair
       openssh_keypair:
@@ -39,15 +39,6 @@
   authorized_key:
     user: "{{ username }}"
     key: "{{ ssh_public_key }}"
-
-- name: Copy the existing public key to a new user (AWS)
-  when: aws
-  copy:
-    src: "/home/ubuntu/.ssh/authorized_keys"
-    dest: "/home/{{ username }}/.ssh/authorized_keys"
-    owner: "{{ username }}"
-    group: "{{ username }}"
-    mode: 0600
 
 - name: Update SSH configuration to be more secure
   register: ssh_config
