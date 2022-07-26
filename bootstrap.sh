@@ -142,7 +142,7 @@ echo "OK"
 
 sed -i "s/root_host: .*/root_host: ${root_host}/g" $HOME/ansible-easy-vpn/inventory.yml
 
-if [[ ! $aws ]]; then
+if [[ ! $aws =~ true ]]; then
   echo
   echo "Would you like to use an existing SSH key?"
   echo "Press 'n' if you want to generate a new SSH key pair"
