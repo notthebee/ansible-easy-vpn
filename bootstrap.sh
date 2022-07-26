@@ -173,6 +173,7 @@ else
   if [[ "$aws_ec2" =~ ^[yY]$ ]]; then
     export AWS_EC2=true
   echo
+  fi
 fi
 
 echo
