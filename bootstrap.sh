@@ -45,7 +45,7 @@ export DEBIAN_FRONTEND=noninteractive
 # Update apt database, update all packages and install Ansible + dependencies
 $SUDO apt update -y;
 yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy dist-upgrade;
-yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy install software-properties-common dnsutils curl git python3 python3-setuptools python3-apt python3-pip python3-passlib python3-wheel python3-bcrypt aptitude -y;
+yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy install software-properties-common certbot dnsutils curl git python3 python3-setuptools python3-apt python3-pip python3-passlib python3-wheel python3-bcrypt aptitude -y;
 yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove;
 [ $(uname -m) == "aarch64" ] && $SUDO yes | apt install gcc dnsutils python3-dev libffi-dev libssl-dev make -y;
 
@@ -59,6 +59,19 @@ check_root
 [ -d "$HOME/ansible-easy-vpn" ] || git clone https://github.com/notthebee/ansible-easy-vpn $HOME/ansible-easy-vpn
 
 cd $HOME/ansible-easy-vpn && ansible-galaxy install -r requirements.yml
+
+# Check if we're running on an AWS EC2 instance
+set +e
+aws=$(curl -m 5 -s http://169.254.169.254/latest/meta-data/ami-id)
+
+if [[ "$aws" =~ ^ami.*$ ]]; then
+  aws=true
+else
+  aws=false
+fi
+set -e
+
+
 
 clear
 echo "Welcome to ansible-easy-vpn!"
@@ -124,26 +137,47 @@ until [[ $domain_ip =~ $public_ip ]]; do
   echo
 done
 
+echo
+echo "Running certbot in dry-run mode to test the validity of the domain..."
+$SUDO certbot certonly --non-interactive --quiet --break-my-certs --force-renewal --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host || exit
+echo "OK"
 
 sed -i "s/root_host: .*/root_host: ${root_host}/g" $HOME/ansible-easy-vpn/inventory.yml
 
-echo
-echo "Would you like to use an existing SSH key?"
-echo "Press 'n' if you want to generate a new SSH key pair"
-echo
-read -p "Use existing SSH key? [y/N]: " new_ssh_key_pair
-until [[ "$new_ssh_key_pair" =~ ^[yYnN]*$ ]]; do
-        echo "$new_ssh_key_pair: invalid selection."
-        read -p "[y/N]: " new_ssh_key_pair
-done
-sed -i "s/enable_ssh_keygen: .*/enable_ssh_keygen: true/g" $HOME/ansible-easy-vpn/inventory.yml
 
-if [[ "$new_ssh_key_pair" =~ ^[yY]$ ]]; then
+if [[ ! $aws =~ true ]]; then
   echo
-  read -p "Please enter your SSH public key: " ssh_key_pair
+  echo "Would you like to use an existing SSH key?"
+  echo "Press 'n' if you want to generate a new SSH key pair"
+  echo
+  read -p "Use existing SSH key? [y/N]: " new_ssh_key_pair
+  until [[ "$new_ssh_key_pair" =~ ^[yYnN]*$ ]]; do
+          echo "$new_ssh_key_pair: invalid selection."
+          read -p "[y/N]: " new_ssh_key_pair
+  done
+  sed -i "s/enable_ssh_keygen: .*/enable_ssh_keygen: true/g" $HOME/ansible-easy-vpn/inventory.yml
 
-  # sed will crash if the SSH key is multi-line
-  sed -i "s/# ssh_public_key: .*/ssh_public_key: ${ssh_key_pair}/g" $HOME/ansible-easy-vpn/inventory.yml || echo "Fixing the sed error..." && echo "    ssh_public_key: ${ssh_key_pair}" >> $HOME/ansible-easy-vpn/inventory.yml
+  if [[ "$new_ssh_key_pair" =~ ^[yY]$ ]]; then
+    echo
+    read -p "Please enter your SSH public key: " ssh_key_pair
+
+    # sed will crash if the SSH key is multi-line
+    sed -i "s/# ssh_public_key: .*/ssh_public_key: ${ssh_key_pair}/g" $HOME/ansible-easy-vpn/inventory.yml || echo "Fixing the sed error..." && echo "    ssh_public_key: ${ssh_key_pair}" >> $HOME/ansible-easy-vpn/inventory.yml
+  fi
+else
+  echo
+  read -p "Are you running this script on an AWS EC2 instance? [y/N]: " aws_ec2
+  until [[ "$aws_ec2" =~ ^[yYnN]*$ ]]; do
+          echo "$aws_ec2: invalid selection."
+          read -p "[y/N]: " aws_ec2
+  done
+  if [[ "$aws_ec2" =~ ^[yY]$ ]]; then
+    export AWS_EC2=true
+  echo
+  echo "Please use the SSH keys that you specified in the AWS Management Console to log in to the server."
+  echo "Also, make sure that your Security Group allows inbound connections on 51820/udp, 80/tcp and 443/tcp."
+  echo
+  fi
 fi
 
 echo

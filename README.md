@@ -47,17 +47,6 @@ Another reason might be wrong SMTP credentials. Check out Authelia logs:
 docker logs authelia
 ```
 
-**Q: I get 'Permission denied' when trying to run the playbook**
-
-On some VPS instances with a non-root login user (e.g. AWS) you might need to run the bootstrap.sh script with `sudo -E`:
-```
-wget https://raw.githubusercontent.com/notthebee/ansible-easy-vpn/main/bootstrap.sh -O bootstrap.sh && sudo -E bash bootstrap.sh
-```
-Same goes for running the playbook separately:
-```
-cd $HOME/ansible-easy-vpn
-sudo -E ansible-playbook run.yml
-```
 
 **Q: I can't copy the SSH key to my Windows machine**
 

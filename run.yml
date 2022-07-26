@@ -6,6 +6,10 @@
   vars_files:
     - secret.yml
 
+  pre_tasks:
+    - set_fact:
+        aws: "{{ lookup('ansible.builtin.env', 'AWS_EC2') == 'true' }}"
+
   roles:
     - role: system
       tags:
