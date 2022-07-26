@@ -169,9 +169,11 @@ else
           echo "$aws_ec2: invalid selection."
           read -p "[y/N]: " aws_ec2
   done
-  echo
   if [[ "$aws_ec2" =~ ^[yY]$ ]]; then
     export AWS_EC2=true
+  echo
+  echo "Please use the SSH keys that you specified in the AWS Management Console to log in to the server."
+  echo "Also, make sure that your Security Group allows inbound connections on 51820/udp, 80/tcp and 443/tcp."
   echo
   fi
 fi
