@@ -19,7 +19,7 @@ wget https://raw.githubusercontent.com/notthebee/ansible-easy-vpn/main/bootstrap
 * Hardened web server (Bunkerweb)
 
 ### Requirements
-* A KVM-based VPS with a dedicated IPv4 address
+* A KVM-based VPS (or an AWS EC2 instance) with a dedicated IPv4 address
 * Ubuntu Server 20.04 or 22.04
 
 ### FAQ
