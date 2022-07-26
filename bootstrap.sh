@@ -164,10 +164,14 @@ if [[ ! $aws ]]; then
   fi
 else
   echo
-  echo "Looks like you're running this script on an AWS EC2 instance."
-  echo "Please use the SSH keys defined in the Management Console to log in to the server after running the playbook."
+  read -p "Are you running this script on an AWS EC2 instance? [y/N]: " aws_ec2
+  until [[ "$aws_ec2" =~ ^[yYnN]*$ ]]; do
+          echo "$aws_ec2: invalid selection."
+          read -p "[y/N]: " aws_ec2
+  done
   echo
-  read -n 1 -s -r -p "Press any key to continue"
+  if [[ "$aws_ec2" =~ ^[yY]$ ]]; then
+    export AWS_EC2=true
   echo
 fi
 
