@@ -25,10 +25,11 @@ wget https://raw.githubusercontent.com/notthebee/ansible-easy-vpn/main/bootstrap
 ### FAQ
 **Q: I've run the playbook succesfully, but now I want to change the domain name/username/password. How can I do that?**
 
-Edit the variable files and re-run the playbook:
+Edit the variable files, install dependencies for the new user and re-run the playbook:
 
 ```
 cd $HOME/ansible-easy-vpn
+ansible-galaxy install -r requirements.yml
 nano inventory.yml
 ansible-vault edit secret.yml
 ansible-playbook run.yml
