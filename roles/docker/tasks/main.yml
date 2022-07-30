@@ -7,7 +7,7 @@
 - name: Set arm64 arch
   set_fact:
     repo_arch: "{{ ansible_architecture }}"
-  when: ansible_architecture == "arm64"
+  when: (ansible_architecture == "arm64") or (ansible_architecture == "aarch64")
 
 - name: Include OS-specific variables
   include_vars: "{{ ansible_facts['distribution'] }}.yml"
