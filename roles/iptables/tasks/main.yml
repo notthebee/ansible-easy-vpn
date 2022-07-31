@@ -13,6 +13,17 @@
 - name: Allow connections on multiple ports
   ansible.builtin.iptables:
     chain: INPUT
+    ctstate: NEW, ESTABLISHED
+    protocol: "{{ item.proto }}"
+    destination_port: "{{ item.port }}"
+    jump: ACCEPT
+  with_items:
+    - "{{ firewall_ports }}"
+
+- name: Allow connections on multiple ports
+  ansible.builtin.iptables:
+    chain: OUTPUT
+    ctstate: NEW, ESTABLISHED
     protocol: "{{ item.proto }}"
     destination_port: "{{ item.port }}"
     jump: ACCEPT
