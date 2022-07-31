@@ -15,10 +15,6 @@
       tags:
         - system
 
-    - role: docker
-      tags:
-        - docker
-
     - role: fail2ban
       when: enable_fail2ban | default(False)
       tags:
@@ -33,6 +29,10 @@
       when: enable_iptables | default(False)
       tags:
         - iptables
+
+    - role: docker
+      tags:
+        - docker
 
     - role: authelia
       tags:

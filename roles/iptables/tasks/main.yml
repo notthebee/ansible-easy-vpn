@@ -16,7 +16,7 @@
     flush: yes
   with_items:  [ 'INPUT', 'FORWARD', 'OUTPUT' ]
 
-- name: Allow connections on multiple ports
+- name: Allow connections INPUT on multiple ports
   ansible.builtin.iptables:
     chain: INPUT
     ctstate: NEW,ESTABLISHED
@@ -26,7 +26,7 @@
   with_items:
     - "{{ firewall_ports }}"
 
-- name: Allow connections on multiple ports
+- name: Allow connections OUTPUT on multiple ports
   ansible.builtin.iptables:
     chain: OUTPUT
     ctstate: NEW,ESTABLISHED
@@ -35,3 +35,6 @@
     jump: ACCEPT
   with_items:
     - "{{ firewall_ports }}"
+
+- name: Make rule persistent
+  shell: netfilter-persistent save
