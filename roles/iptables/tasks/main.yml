@@ -10,6 +10,12 @@
     jump: ACCEPT
   become: yes
 
+- name: Iptables flush filter
+  ansible.builtin.iptables:
+    chain: "{{ item }}"
+    flush: yes
+  with_items:  [ 'INPUT', 'FORWARD', 'OUTPUT' ]
+
 - name: Allow connections on multiple ports
   ansible.builtin.iptables:
     chain: INPUT
@@ -29,9 +35,3 @@
     jump: ACCEPT
   with_items:
     - "{{ firewall_ports }}"
-
-- name: Iptables flush filter
-  ansible.builtin.iptables:
-    chain: "{{ item }}"
-    flush: yes
-  with_items:  [ 'INPUT', 'FORWARD', 'OUTPUT' ]
