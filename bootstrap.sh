@@ -24,20 +24,6 @@ This version of Ubuntu/Debian is too old and unsupported."
 	exit
 fi
 
-# Set Firewall per Distro
-if grep -qs "ubuntu" /etc/os-release; then
-  sed -i "s/enable_ufw: .*/enable_ufw: true/g" $HOME/ansible-easy-vpn/inventory.yml
-else
-  sed -i "s/enable_ufw: .*/enable_ufw: false/g" $HOME/ansible-easy-vpn/inventory.yml
-fi
-
-# Set Firewall per Distro
-if [ "$(grep -c "debian" /etc/os-release)" -gt 0 ]; then
-  sed -i "s/enable_iptables: .*/enable_iptables: true/g" $HOME/ansible-easy-vpn/inventory.yml
-else
-  sed -i "s/enable_iptables: .*/enable_iptables: false/g" $HOME/ansible-easy-vpn/inventory.yml
-fi
-
 
 check_root() {
 # Check if the user is root or not
@@ -85,7 +71,19 @@ else
 fi
 set -e
 
+# Set Firewall per Distro
+if grep -qs "ubuntu" /etc/os-release; then
+  sed -i "s/enable_ufw: .*/enable_ufw: true/g" $HOME/ansible-easy-vpn/inventory.yml
+else
+  sed -i "s/enable_ufw: .*/enable_ufw: false/g" $HOME/ansible-easy-vpn/inventory.yml
+fi
 
+# Set Firewall per Distro
+if [ "$(grep -c "debian" /etc/os-release)" -gt 0 ]; then
+  sed -i "s/enable_iptables: .*/enable_iptables: true/g" $HOME/ansible-easy-vpn/inventory.yml
+else
+  sed -i "s/enable_iptables: .*/enable_iptables: false/g" $HOME/ansible-easy-vpn/inventory.yml
+fi
 
 clear
 echo "Welcome to ansible-easy-vpn!"
