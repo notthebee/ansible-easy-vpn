@@ -68,13 +68,17 @@ all:
     # By default, only access via the SSH port and 51820/udp is allowed
     # The rest of the ports are closed
     enable_ufw: true
-    ufw_ports:
+    enable_iptables: true
+
+    firewall_ports:
       - port: "51820"
         proto: "udp"
       - port: "80"
         proto: "tcp"
       - port: "443"
         proto: "tcp"
+      - port: "53"
+        proto: "udp"
       - port: "{{ ssh_port }}"
         proto: "tcp"
 

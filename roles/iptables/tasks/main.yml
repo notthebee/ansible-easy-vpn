@@ -1,0 +1,26 @@
+- name: Install iptables-persistent
+  package:
+    name: iptables-persistent
+    state: present
+
+- name: Allow related and established connections
+  ansible.builtin.iptables:
+    chain: INPUT
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+  become: yes
+
+- name: Allow connections on multiple ports
+  ansible.builtin.iptables:
+    chain: INPUT
+    protocol: "{{ item.proto }}"
+    destination_port: "{{ item.port }}"
+    jump: ACCEPT
+  with_items:
+    - "{{ firewall_ports }}"
+
+- name: Iptables flush filter
+  ansible.builtin.iptables:
+    chain: "{{ item }}"
+    flush: yes
+  with_items:  [ 'INPUT', 'FORWARD', 'OUTPUT' ]

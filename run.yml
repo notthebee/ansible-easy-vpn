@@ -28,6 +28,11 @@
       when: enable_ufw | default(False)
       tags:
         - ufw
+    
+    - role: iptables
+      when: enable_iptables | default(False)
+      tags:
+        - iptables
 
     - role: authelia
       tags:

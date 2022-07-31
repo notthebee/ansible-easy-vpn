@@ -9,18 +9,18 @@ read -N 999999 -t 0.001
 set -e
 
 # Detect OS
-if grep -qs "ubuntu" /etc/os-release; then
+if grep -qs "ubuntu" /etc/os-release || grep -c "debian" /etc/os-release > 0; then
 	os_version=$(grep 'VERSION_ID' /etc/os-release | cut -d '"' -f 2 | tr -d '.')
 else
 	echo "This installer seems to be running on an unsupported distribution.
-Supported distros are Ubuntu 20.04 and 22.04"
+Supported distros are Ubuntu 20.04 and 22.04 and Debian 10 and 11"
 	exit
 fi
 
 # Check if the Ubuntu version is too old
-if [[ "$os" == "ubuntu" && "$os_version" -lt 2004 ]]; then
-	echo "Ubuntu 20.04 or higher is required to use this installer.
-This version of Ubuntu is too old and unsupported."
+if [[ "$os" == "ubuntu" && "$os_version" -lt 2004 ]] || [[ [[ "$os_version" -gt 10 ]] ]]; then
+	echo "Minimum version is Ubuntu 20.04 or Debian 10 to use this installer.
+This version of Ubuntu/Debian is too old and unsupported."
 	exit
 fi
 

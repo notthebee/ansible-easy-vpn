@@ -13,7 +13,7 @@
     proto: "{{ item.proto }}"
     port: "{{ item.port }}"
   with_items:
-    - "{{ ufw_ports }}"
+    - "{{ firewall_ports }}"
 
 - name: Deny everything else and enable UFW
   ufw:
