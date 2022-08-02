@@ -26,6 +26,12 @@ all:
 
     wireguard_host: "wg.{{ root_host }}"
 
+    wireguard_port: "51820"
+
+    dns_nameservers:
+      - 1.1.1.1
+      - 1.0.0.1
+
     # Language and time settings
     # Check here for the list of possible locales
     # https://docs.oracle.com/cd/E23824_01/html/E26033/glset.html
@@ -45,6 +51,8 @@ all:
     # Leave everything in place if you don't want any notifications
     email: root@localhost.com
 
+    email_recipient: "{{ email }}"
+
     email_login: "{{ email }}"
 
     email_smtp_host: smtp.localhost.com
@@ -57,7 +65,7 @@ all:
         host: "{{ email_smtp_host }}"
         port: "{{ email_smtp_port }}"
         auth: "on"
-        from: "{{ email }}"
+        from: "{{ email_recipient }}"
         user: "{{ email_login }}"
         password: "{{ email_password }}"
 
@@ -69,7 +77,7 @@ all:
     # The rest of the ports are closed
     enable_ufw: true
     ufw_ports:
-      - port: "51820"
+      - port: "{{ wireguard_port }}"
         proto: "udp"
       - port: "80"
         proto: "tcp"
