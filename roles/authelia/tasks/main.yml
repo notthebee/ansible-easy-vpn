@@ -10,8 +10,8 @@
   template:
     src: configuration.yml.j2
     dest: "{{ docker_dir }}/authelia/configuration.yml"
-    owner: "{{ username }}"
-    group: "{{ username }}"
+    owner: "root"
+    group: "root"
     mode: 0644
   notify: restart authelia
 
@@ -19,8 +19,8 @@
   template:
     src: users_database.yml.j2
     dest: "{{ docker_dir }}/authelia/users_database.yml"
-    owner: "{{ username }}"
-    group: "{{ username }}"
+    owner: "root"
+    group: "root"
     mode: 0644
   notify: restart authelia
 
