@@ -126,15 +126,15 @@ until [[ "$root_host" =~ ^[a-z0-9\.\-]*$ ]]; do
 done
 
 public_ip=$(curl -s ipinfo.io/ip)
-domain_ip=$(dig +short ${root_host})
+domain_ip=$(dig +short @1.1.1.1 ${root_host})
 
 until [[ $domain_ip =~ $public_ip ]]; do
   echo
   echo "The domain $root_host does not resolve to the public IP of this server ($public_ip)"
   echo
-  read -p "Domain name: " root_host
+  read -p "Domain name [$root_host]: " root_host
   public_ip=$(curl -s ipinfo.io/ip)
-  domain_ip=$(dig +short ${root_host})
+  domain_ip=$(dig +short @1.1.1.1 ${root_host})
   echo
 done
 
