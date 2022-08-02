@@ -67,16 +67,6 @@
     state: started
     enabled: yes
 
-- name: Chmod the data folder
-  become: true
-  file:
-    dest: "{{ docker_dir }}"
-    state: directory
-    owner: "{{ username }}"
-    mode: "0775"
-    group: "users"
-    recurse: yes
-
 - name: Create the wg network
   docker_network:
     name: wg_network
