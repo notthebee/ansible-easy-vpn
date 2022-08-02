@@ -215,14 +215,20 @@ if [[ "$email_setup" =~ ^[yY]$ ]]; then
   echo
   echo
   read -p "'From' e-mail [${email_login}]: " email
-  if [ -z ${email} ]; then
-    email=$email_login
+  if [ ! -z ${email} ]; then
+    echo "email: \"${email}\"" >> $HOME/ansible-easy-vpn/custom.yml
   fi
+
+  read -p "'To' e-mail [${email_login}]: " email_recipient
+  if [ ! -z ${email_recipient} ]; then
+    echo "email_recipient: \"${email_recipient}\"" >> $HOME/ansible-easy-vpn/custom.yml
+  fi
+
+
 
   echo "email_smtp_host: \"${email_smtp_host}\"" >> $HOME/ansible-easy-vpn/custom.yml
   echo "email_smtp_port: \"${email_smtp_port}\"" >> $HOME/ansible-easy-vpn/custom.yml
   echo "email_login: \"${email_login}\"" >> $HOME/ansible-easy-vpn/custom.yml
-  echo "email: \"${email}\"" >> $HOME/ansible-easy-vpn/custom.yml
 fi
 
 
