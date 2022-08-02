@@ -1,7 +1,4 @@
 ---
-- name: get public IP
-  ipify_facts:
-
 - name: Make sure the Wireguard container is created and running
   docker_container:
     name: "wg-easy"
