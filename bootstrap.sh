@@ -132,7 +132,11 @@ until [[ $domain_ip =~ $public_ip ]]; do
   echo
   echo "The domain $root_host does not resolve to the public IP of this server ($public_ip)"
   echo
-  read -p "Domain name [$root_host]: " root_host
+  root_host_prev=$root_host
+  read -p "Domain name [$root_host_prev]: " root_host
+  if [ -z ${root_host} ]; then
+    root_host=$root_host_prev
+  fi
   public_ip=$(curl -s ipinfo.io/ip)
   domain_ip=$(dig +short @1.1.1.1 ${root_host})
   echo
