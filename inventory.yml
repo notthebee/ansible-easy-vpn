@@ -52,11 +52,11 @@ all:
 
     # Optional e-mail for notifications (unattended upgrades, banned IPs, etc.)
     # Leave everything in place if you don't want any notifications
-    email: root@localhost.com
+    email_login: root@localhost
 
-    email_recipient: "{{ email }}"
+    email: "{{ email_login }}"
 
-    email_login: "{{ email }}"
+    email_recipient: "{{ email_login }}"
 
     email_smtp_host: smtp.localhost.com
 
@@ -68,7 +68,7 @@ all:
         host: "{{ email_smtp_host }}"
         port: "{{ email_smtp_port }}"
         auth: "on"
-        from: "{{ email_recipient }}"
+        from: "{{ email_login }}"
         user: "{{ email_login }}"
         password: "{{ email_password }}"
 
