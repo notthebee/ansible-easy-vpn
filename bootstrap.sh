@@ -233,10 +233,10 @@ chmod 600 $HOME/ansible-easy-vpn/secret.yml
 if [ -z ${email_password+x} ]; then
   echo
 else 
-  echo 'email_password: "${email_password}"' >> $HOME/ansible-easy-vpn/secret.yml
+  echo "email_password: \"${email_password}\"" >> $HOME/ansible-easy-vpn/secret.yml
 fi
 
-echo 'user_password: "${user_password}"' >> $HOME/ansible-easy-vpn/secret.yml
+echo "user_password: \"${user_password}\"" >> $HOME/ansible-easy-vpn/secret.yml
 
 jwt_secret=$(openssl rand -hex 23)
 session_secret=$(openssl rand -hex 23)
