@@ -4,6 +4,7 @@
   become: true
 
   vars_files:
+    - custom.yml
     - secret.yml
 
   handlers:
