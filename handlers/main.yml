@@ -1,0 +1,15 @@
+---
+- name: restart authelia
+  docker_container:
+    name: authelia
+    restart: yes
+
+- name: restart wg-easy
+  docker_container:
+    name: wg-easy
+    restart: yes
+
+- name: restart bunkerweb
+  docker_container:
+    name: bunkerweb
+    restart: yes
