@@ -4,3 +4,7 @@
     cmd: source $HOME/.bashrc
   ignore_errors: true
 
+- name: restart authelia
+  docker_container:
+    name: authelia
+    restart: yes

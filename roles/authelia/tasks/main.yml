@@ -13,6 +13,7 @@
     owner: "{{ username }}"
     group: "{{ username }}"
     mode: 0644
+  notify: restart authelia
 
 - name: Copy the users database
   template:
@@ -21,6 +22,7 @@
     owner: "{{ username }}"
     group: "{{ username }}"
     mode: 0644
+  notify: restart authelia
 
 - name: Make sure the Redis container is created and running
   docker_container:
@@ -52,4 +54,3 @@
       alias show_2fa="sudo cat {{ docker_dir }}/authelia/notification.txt"
   notify:
     - source .bashrc
-
