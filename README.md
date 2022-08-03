@@ -2,13 +2,13 @@
 
 A simple interactive script/Ansible playbook that sets up an Ubuntu-based Wireguard VPN server
 
-### Usage
+## Usage
 
 ```
 wget https://raw.githubusercontent.com/notthebee/ansible-easy-vpn/main/bootstrap.sh -O bootstrap.sh && bash bootstrap.sh
 ```
 
-### Features
+## Features
 * Automated and unattended upgrades
 * SSH hardening
 * SSH public key pair generation (optional, you can also use your own keys)
@@ -18,38 +18,47 @@ wget https://raw.githubusercontent.com/notthebee/ansible-easy-vpn/main/bootstrap
 * Two-factor authentication for the WebUI (Authelia)
 * Hardened web server (Bunkerweb)
 
-### Requirements
+## Requirements
 * A KVM-based VPS (or an AWS EC2 instance) with a dedicated IPv4 address
 * Ubuntu Server 20.04 or 22.04
 
-### FAQ
-**Q: I've run the playbook succesfully, but now I want to change the domain name/username/password. How can I do that?**
+## FAQ
+### Q: I've run the playbook succesfully, but now I want to change the domain name/username/password. How can I do that?
 
 Edit the variable files, install dependencies for the new user and re-run the playbook:
 
 ```
 cd $HOME/ansible-easy-vpn
 ansible-galaxy install -r requirements.yml
-nano inventory.yml
+nano custom.yml
 ansible-vault edit secret.yml
 ansible-playbook run.yml
 ```
 
 
-**Q: I can't access the Wireguard WebUI after running the playbook**
+### Q: I get a "Secure connection failed" error when trying to access the Wireguard WebUI in the browser
 
-Most likely, the culprit is an incorrect domain name. Check the Bunkerweb logs:
+This usually means that Let's Encrypt has failed to generate the certificates for your domain name.
+
+There are a few reasons why that might happen:
+
+1. Firewall misconfiguration (are the ports 80 and 443 open?)
+2. The server is behind NAT (make sure that the ports 80 and 443 are port-forwarded to the server's internal IP on the router)
+3. Let's Encrypt has time-limited your domain name (try a different domain name)
+
+Check the Bunkerweb logs for more details:
 ```
 docker logs bunkerweb
 ```
 
-Another reason might be wrong SMTP credentials. Check out Authelia logs:
+### Q: I get "500 Internal Server Error" when trying to access the Wireguard WebUI in the browser
+
+Most likely, you chose to configure the e-mail functionality, but entered wrong SMTP credentials. Check out Authelia logs for details:
 ```
 docker logs authelia
 ```
 
-
-**Q: I can't copy the SSH key to my Windows machine**
+### Q: I can't copy the SSH key to my Windows machine
 
 On Windows, you might need to create the `C:\Users\<username>\.ssh` folder manually before running the commands at the end of the playbook:
 ```
