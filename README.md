@@ -58,6 +58,14 @@ Most likely, you chose to configure the e-mail functionality, but entered wrong 
 docker logs authelia
 ```
 
+### Q: I'd like to completely automate the process of setting up the VPN on my machines. How can I do that?
+1. Fork this repository
+2. Fill out the `custom.yml` and `secret.yml` files, either by running the `bootstrap.sh` script, or editing the files manually
+3. Remove `secret.yml` from .gitignore
+4. Commit and push the changes
+
+Consider making your repository private. Even though the Vault file is encrypted, it might be unsafe to make it publicly accessible.
+
 ### Q: I can't copy the SSH key to my Windows machine
 
 On Windows, you might need to create the `C:\Users\<username>\.ssh` folder manually before running the commands at the end of the playbook:
