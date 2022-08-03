@@ -1,7 +1,4 @@
 ---
-- name: get public IP
-  ipify_facts:
-
 - name: Make sure the Wireguard container is created and running
   docker_container:
     name: "wg-easy"
@@ -18,8 +15,10 @@
     state: "started"
     env:
       "WG_HOST": "{{ wireguard_host }}"
+      "WG_DEFAULT_DNS": "{{ ','.join(dns_nameservers) }}"
+      "WG_PORT": "{{ wireguard_port }}"
     ports:
-      - "51820:51820/udp"
+      - "{{ wireguard_port}}:51820/udp"
     volumes:
       - "{{ docker_dir }}/wg-easy:/etc/wireguard"
     restart_policy: unless-stopped

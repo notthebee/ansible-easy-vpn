@@ -10,17 +10,19 @@
   template:
     src: configuration.yml.j2
     dest: "{{ docker_dir }}/authelia/configuration.yml"
-    owner: "{{ username }}"
-    group: "{{ username }}"
+    owner: "root"
+    group: "root"
     mode: 0644
+  notify: restart authelia
 
 - name: Copy the users database
   template:
     src: users_database.yml.j2
     dest: "{{ docker_dir }}/authelia/users_database.yml"
-    owner: "{{ username }}"
-    group: "{{ username }}"
+    owner: "root"
+    group: "root"
     mode: 0644
+  notify: restart authelia
 
 - name: Make sure the Redis container is created and running
   docker_container:
@@ -52,4 +54,3 @@
       alias show_2fa="sudo cat {{ docker_dir }}/authelia/notification.txt"
   notify:
     - source .bashrc
-

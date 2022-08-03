@@ -39,7 +39,7 @@ fi
 }
 
 check_root
-# Disable interactive functionality
+# Disable interactive apt functionality
 export DEBIAN_FRONTEND=noninteractive
 
 # Update apt database, update all packages and install Ansible + dependencies
@@ -70,6 +70,7 @@ else
   aws=false
 fi
 set -e
+touch $HOME/ansible-easy-vpn/custom.yml
 
 
 
@@ -77,7 +78,7 @@ clear
 echo "Welcome to ansible-easy-vpn!"
 echo
 echo "This script is interactive"
-echo "If you prefer to fill in the inventory.yml file manually,"
+echo "If you prefer to fill in the custom.yml file manually,"
 echo "press [Ctrl+C] to quit this script"
 echo
 echo "Enter your desired UNIX username"
@@ -88,7 +89,7 @@ until [[ "$username" =~ ^[a-z0-9]*$ ]]; do
   read -p "Username: " username
 done
 
-sed -i "s/username: .*/username: ${username}/g" $HOME/ansible-easy-vpn/inventory.yml
+echo "username: \"${username}\"" >> $HOME/ansible-easy-vpn/custom.yml
 
 echo
 echo "Enter your user password"
@@ -125,15 +126,19 @@ until [[ "$root_host" =~ ^[a-z0-9\.\-]*$ ]]; do
 done
 
 public_ip=$(curl -s ipinfo.io/ip)
-domain_ip=$(dig +short ${root_host})
+domain_ip=$(dig +short @1.1.1.1 ${root_host})
 
 until [[ $domain_ip =~ $public_ip ]]; do
   echo
   echo "The domain $root_host does not resolve to the public IP of this server ($public_ip)"
   echo
-  read -p "Domain name: " root_host
+  root_host_prev=$root_host
+  read -p "Domain name [$root_host_prev]: " root_host
+  if [ -z ${root_host} ]; then
+    root_host=$root_host_prev
+  fi
   public_ip=$(curl -s ipinfo.io/ip)
-  domain_ip=$(dig +short ${root_host})
+  domain_ip=$(dig +short @1.1.1.1 ${root_host})
   echo
 done
 
@@ -142,7 +147,7 @@ echo "Running certbot in dry-run mode to test the validity of the domain..."
 $SUDO certbot certonly --non-interactive --break-my-certs --force-renewal --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host || exit
 echo "OK"
 
-sed -i "s/root_host: .*/root_host: ${root_host}/g" $HOME/ansible-easy-vpn/inventory.yml
+echo "root_host: \"${root_host}\"" >> $HOME/ansible-easy-vpn/custom.yml
 
 
 if [[ ! $aws =~ true ]]; then
@@ -155,14 +160,13 @@ if [[ ! $aws =~ true ]]; then
           echo "$new_ssh_key_pair: invalid selection."
           read -p "[y/N]: " new_ssh_key_pair
   done
-  sed -i "s/enable_ssh_keygen: .*/enable_ssh_keygen: true/g" $HOME/ansible-easy-vpn/inventory.yml
+  echo "enable_ssh_keygen: true" >> $HOME/ansible-easy-vpn/custom.yml
 
   if [[ "$new_ssh_key_pair" =~ ^[yY]$ ]]; then
     echo
     read -p "Please enter your SSH public key: " ssh_key_pair
 
-    # sed will crash if the SSH key is multi-line
-    sed -i "s/# ssh_public_key: .*/ssh_public_key: ${ssh_key_pair}/g" $HOME/ansible-easy-vpn/inventory.yml || echo "Fixing the sed error..." && echo "    ssh_public_key: ${ssh_key_pair}" >> $HOME/ansible-easy-vpn/inventory.yml
+    echo "ssh_public_key: \"${ssh_key_pair}\"" >> $HOME/ansible-easy-vpn/custom.yml
   fi
 else
   echo
@@ -215,14 +219,20 @@ if [[ "$email_setup" =~ ^[yY]$ ]]; then
   echo
   echo
   read -p "'From' e-mail [${email_login}]: " email
-  if [ -z ${email} ]; then
-    email=$email_login
+  if [ ! -z ${email} ]; then
+    echo "email: \"${email}\"" >> $HOME/ansible-easy-vpn/custom.yml
   fi
 
-  sed -i "s/email_smtp_host: .*/email_smtp_host: ${email_smtp_host}/g" $HOME/ansible-easy-vpn/inventory.yml
-  sed -i "s/email_smtp_port: .*/email_smtp_port: ${email_smtp_port}/g" $HOME/ansible-easy-vpn/inventory.yml
-  sed -i "s/email_login: .*/email_login: ${email_login}/g" $HOME/ansible-easy-vpn/inventory.yml
-  sed -i "s/email: .*/email: ${email}/g" $HOME/ansible-easy-vpn/inventory.yml
+  read -p "'To' e-mail [${email_login}]: " email_recipient
+  if [ ! -z ${email_recipient} ]; then
+    echo "email_recipient: \"${email_recipient}\"" >> $HOME/ansible-easy-vpn/custom.yml
+  fi
+
+
+
+  echo "email_smtp_host: \"${email_smtp_host}\"" >> $HOME/ansible-easy-vpn/custom.yml
+  echo "email_smtp_port: \"${email_smtp_port}\"" >> $HOME/ansible-easy-vpn/custom.yml
+  echo "email_login: \"${email_login}\"" >> $HOME/ansible-easy-vpn/custom.yml
 fi
 
 
@@ -233,10 +243,10 @@ chmod 600 $HOME/ansible-easy-vpn/secret.yml
 if [ -z ${email_password+x} ]; then
   echo
 else 
-  echo "email_password: ${email_password}" >> $HOME/ansible-easy-vpn/secret.yml
+  echo "email_password: \"${email_password}\"" >> $HOME/ansible-easy-vpn/secret.yml
 fi
 
-echo "user_password: ${user_password}" >> $HOME/ansible-easy-vpn/secret.yml
+echo "user_password: \"${user_password}\"" >> $HOME/ansible-easy-vpn/secret.yml
 
 jwt_secret=$(openssl rand -hex 23)
 session_secret=$(openssl rand -hex 23)

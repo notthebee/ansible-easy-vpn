@@ -4,7 +4,11 @@
   become: true
 
   vars_files:
+    - custom.yml
     - secret.yml
+
+  handlers:
+    - import_tasks: handlers/main.yml
 
   pre_tasks:
     - set_fact:

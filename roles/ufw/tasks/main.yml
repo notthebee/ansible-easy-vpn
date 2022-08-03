@@ -7,15 +7,32 @@
   ufw:
     logging: on
 
-- name: Allow the defined ports
-  ufw:
-    rule: allow
-    proto: "{{ item.proto }}"
-    port: "{{ item.port }}"
-  with_items:
-    - "{{ ufw_ports }}"
+- name: Configure UFW
+  block:
+    - name: Reset all rules
+      ufw:
+        state: reset
 
-- name: Deny everything else and enable UFW
-  ufw:
-    state: enabled
-    policy: deny
+    - name: Allow the defined ports
+      ufw:
+        rule: allow
+        proto: "{{ item.proto }}"
+        port: "{{ item.port }}"
+      with_items:
+        - "{{ ufw_ports }}"
+
+    - name: Deny everything else and enable UFW
+      ufw:
+        state: enabled
+        policy: deny
+  rescue:
+    - name: Grant SSH access to prevent lockout
+      ufw:
+        rule: allow
+        port: "{{ ssh_port }}"
+        proto: "tcp"
+
+    - name: Deny everything else and enable UFW
+      ufw:
+        state: enabled
+        policy: deny

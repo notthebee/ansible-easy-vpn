@@ -1,3 +1,11 @@
+- name: Get public IP
+  ipify_facts:
+    timeout: 20
+  register: ipify_result
+  retries: 5
+  until: "ipify_result is not failed"
+  delay: 2
+
 - name: Restart sshd
   service:
     name: sshd
