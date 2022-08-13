@@ -49,6 +49,7 @@
 - name: Add a 2FA alias to .bashrc
   blockinfile:
     path: "/home/{{ username }}/.bashrc"
+    create: yes
     state: present
     block: |
       alias show_2fa="sudo cat {{ docker_dir }}/authelia/notification.txt"
