@@ -52,7 +52,7 @@ yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove;
 
 check_root "-H"
 
-$SUDO pip3 install ansible &&
+$SUDO pip3 install ansible==2.9 &&
 export DEBIAN_FRONTEND=
 
 check_root
