@@ -2,7 +2,7 @@
 - name: Make sure the Wireguard container is created and running
   docker_container:
     name: "wg-easy"
-    image: "weejewel/wg-easy"
+    image: "weejewel/wg-easy:7"
     pull: yes
     networks:
       - name: wg_network
@@ -17,6 +17,7 @@
       "WG_HOST": "{{ wireguard_host }}"
       "WG_DEFAULT_DNS": "{{ ','.join(dns_nameservers) }}"
       "WG_PORT": "{{ wireguard_port }}"
+      "WG_PERSISTENT_KEEPALIVE": "25"
     ports:
       - "{{ wireguard_port}}:51820/udp"
     volumes:
