@@ -15,7 +15,7 @@
 - name: Make sure the Bunkerweb container is created and running
   docker_container:
     name: "bunkerweb"
-    image: "bunkerity/bunkerweb"
+    image: "bunkerity/bunkerweb:1.4.2"
     networks:
       - name: wg_network
     pull: yes

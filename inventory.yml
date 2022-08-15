@@ -68,7 +68,7 @@ all:
         host: "{{ email_smtp_host }}"
         port: "{{ email_smtp_port }}"
         auth: "on"
-        from: "{{ email_login }}"
+        from: "{{ email }}"
         user: "{{ email_login }}"
         password: "{{ email_password }}"
 

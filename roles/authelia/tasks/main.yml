@@ -37,7 +37,7 @@
 - name: Make sure the Authelia container is created and running
   docker_container:
     name: "authelia"
-    image: "authelia/authelia"
+    image: "authelia/authelia:4.36"
     networks:
       - name: wg_network
     pull: yes
