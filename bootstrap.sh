@@ -1,77 +1,260 @@
-#!/bin/bash -uxe
+#!/bin/bash -ue
 # A bash script that prepares the OS
 # before running the Ansible playbook
 
-# Discard stdin. Needed when running from an one-liner which includes a newline
-read -N 999999 -t 0.001
+check_aws() {
+	# Check if we're running on an AWS EC2 instance
+	set +e
+	aws=$(curl -m 5 -s http://169.254.169.254/latest/meta-data/ami-id)
 
-# Quit on error
-set -e
-
-# Detect OS
-if grep -qs "ubuntu" /etc/os-release; then
-  os="ubuntu"
-  os_version=$(grep 'VERSION_ID' /etc/os-release | cut -d '"' -f 2 | tr -d '.')
-else
-  echo "This installer seems to be running on an unsupported distribution."
-  echo "Supported distros are Ubuntu 20.04 and 22.04"
-  exit
-fi
-
-# Check if the Ubuntu version is too old
-if [[ "$os" == "ubuntu" && "$os_version" -lt 2004 ]]; then
-  echo "Ubuntu 20.04 or higher is required to use this installer."
-  echo "This version of Ubuntu is too old and unsupported."
-  exit
-fi
-
-
-check_root() {
-# Check if the user is root or not
-if [[ $EUID -ne 0 ]]; then
-  if [[ ! -z "$1" ]]; then
-    SUDO='sudo -E -H'
-  else
-    SUDO='sudo -E'
-  fi
-else
-  SUDO=''
-fi
+	if [[ "${aws}" =~ ^ami.*$ ]]; then
+		aws=true
+		ssh_keys_aws
+	else
+		aws=false
+		ssh_keys_non_aws
+	fi
+	set -e
 }
 
-check_root
-# Disable interactive apt functionality
-export DEBIAN_FRONTEND=noninteractive
+check_certbot_dryrun() {
+	echo
+	echo "Running certbot in dry-run mode to test the validity of the domain..."
+	"${SUDO}" certbot certonly \
+		--non-interactive \
+		--break-my-certs \
+		--force-renewal \
+		--agree-tos \
+		--email root@localhost.com \
+		--standalone \
+		--staging \
+		-d "${root_host}" \
+		-d "wg.${root_host}" \
+		-d "auth.${root_host}" || exit
+	echo "OK"
+}
 
-# Update apt database, update all packages and install Ansible + dependencies
-$SUDO apt update -y;
-yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy dist-upgrade;
-yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy install software-properties-common certbot dnsutils curl git python3 python3-setuptools python3-apt python3-pip python3-passlib python3-wheel python3-bcrypt aptitude -y;
-yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove;
-[ $(uname -m) == "aarch64" ] && $SUDO yes | apt install gcc dnsutils python3-dev libffi-dev libssl-dev make -y;
+check_os() {
+	# Detect OS
+	if grep -qs "ubuntu" /etc/os-release; then
+		os="ubuntu"
+		os_version=$(
+			grep 'VERSION_ID' /etc/os-release | \
+				cut -d '"' -f 2 | tr -d '.'
+		)
+	else
+		echo "This installer seems to be running on an unsupported distribution."
+		echo "Supported distros are Ubuntu 20.04 and 22.04"
+		exit
+	fi
 
-check_root "-H"
+	# Check if the Ubuntu version is too old
+	[[ "${os}" == "ubuntu" && "${os_version}" -lt 2004 ]] && {
+		echo "Ubuntu 20.04 or higher is required to use this installer."
+		echo "This version of Ubuntu is too old and unsupported."
+		exit
+	}
+}
 
-$SUDO pip3 install ansible~=6.2 &&
-export DEBIAN_FRONTEND=
+check_root() {
+	# Check if the user is root or not
+	if [[ ${EUID} -ne 0 ]]; then
+		if [[ -n "$1" ]]; then
+			SUDO='sudo -E -H'
+		else
+			SUDO='sudo -E'
+		fi
+	else
+		SUDO=''
+	fi
+}
 
-check_root
-# Clone the Ansible playbook
-[ -d "$HOME/ansible-easy-vpn" ] || git clone https://github.com/notthebee/ansible-easy-vpn $HOME/ansible-easy-vpn
+do_email_setup() {
+	echo
+	email_smtp_host=
+	until [[ ${email_smtp_host} =~ ^[a-z0-9\.]*$ ]]; do
+		[[ -n "${email_smtp_host}" ]] && echo "Invalid SMTP server"
+		read -r -p "SMTP server: " email_smtp_host
+	done
+	echo
+	read -r -p "SMTP port [465]: " email_smtp_port
+	email_smtp_port=${email_smtp_port:-465}
+	echo
+	read -r -p "SMTP login: " email_login
+	echo
+	local email_password=
+	until [[ -n ${email_password} ]]; do
+		[[ -z ${email_password} ]] && echo "The password is empty"
+		read -r -s -p "SMTP password: " email_password
+	done
+	echo
+	echo
+	read -r -p "'From' e-mail: " email
+	[[ -n ${email} ]] && {
+		echo "email: \"${email}\"" |tee -a "${CUSTOM_FILE}"
+	}
 
-cd $HOME/ansible-easy-vpn && ansible-galaxy install -r requirements.yml
+	read -r -p "'To' e-mail: " email_recipient
+	[[ -n "${email_recipient}" ]] && {
+		echo "email_recipient: \"${email_recipient}\"" |tee -a "${CUSTOM_FILE}"
+	}
 
-# Check if we're running on an AWS EC2 instance
-set +e
-aws=$(curl -m 5 -s http://169.254.169.254/latest/meta-data/ami-id)
+	(
+	echo "email_smtp_host: \"${email_smtp_host}\""
+	echo "email_smtp_port: \"${email_smtp_port}\""
+	echo "email_login: \"${email_login}\""
+	) |tee -a "${CUSTOM_FILE}"
 
-if [[ "$aws" =~ ^ami.*$ ]]; then
-  aws=true
-else
-  aws=false
-fi
-set -e
-touch $HOME/ansible-easy-vpn/custom.yml
+	if [ -z ${email_password+x} ]; then
+		echo
+	else 
+		# SECRET_FILE setup previously, save the secret
+		echo "email_password: \"${email_password}\"" >> "${SECRET_FILE}"
+	fi
+
+}
+
+get_ip_list() {
+	dig -t a +short @"${DNS_HOST}" "${1}" | grep '^[1-9]'  | tr '\n' ' '
+}
+
+install_packages_for_ansible_and_dependencies() {
+	# Disable interactive apt functionality
+	export DEBIAN_FRONTEND=noninteractive
+
+	# Update apt database, update all packages and install Ansible + dependencies
+	declare -a REQUIRED_PACKAGES=(
+	software-properties-common
+	certbot
+	dnsutils
+	curl
+	git
+	python3
+	python3-setuptools
+	python3-apt
+	python3-pip
+	python3-passlib
+	python3-wheel
+	python3-bcrypt
+	aptitude
+	)
+
+	check_root
+	"${SUDO}" apt update -y
+
+	yes | "${SUDO}" apt-get -o Dpkg::Options::="--force-confold" -fuy dist-upgrade
+
+	yes | "${SUDO}" apt-get -o Dpkg::Options::="--force-confold" -fuy install \
+		"${REQUIRED_PACKAGES[@]}"
+
+	yes | "${SUDO}" apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove
+
+	aptitude show "${REQUIRED_ANSIBLE_PACKAGES[@]}"
+	# Extra packages for arm64 (aarch64)
+	[[ $(uname -m) == "aarch64" ]] && {
+		"${SUDO}" yes | apt install -y \
+			gcc python3-dev libffi-dev libssl-dev make
+	}
+
+	# Enable interactive apt functionality (FWIW, not running apt again)
+	export DEBIAN_FRONTEND=
+}
+
+install_and_setup_homedir_files() {
+	# Do pip3 install in user's homedir (which may be root anyway)
+	check_root "-H"
+	"${SUDO}" pip3 install ansible~=6.2 &&
+
+	check_root
+	# Clone the Ansible playbook
+	[ -d "${ANSIBLE_WORK_DIR}" ] || {
+		git clone "${GITHUB_REPO}" "${ANSIBLE_WORK_DIR}"
+	}
+
+	cd "${ANSIBLE_WORK_DIR}" && {
+		ansible-galaxy install -r requirements.yml
+	}
+}
+
+ssh_keys_aws() {
+	echo
+	aws_ec2=
+	until [[ ${aws_ec2} =~ ^[yYnN].*$ ]]; do
+		[[ -n ${aws_ec2} ]] && echo "${aws_ec2}: invalid selection."
+		read -r -p "Are you running this script on an AWS EC2 instance? [y/N]: " aws_ec2
+	done
+	if [[ "${aws_ec2}" =~ ^[yY].*$ ]]; then
+		export AWS_EC2=true
+		echo
+		echo "Please use the SSH keys that you specified in the AWS Management Console to log in to the server."
+		echo "Also, make sure that your Security Group allows inbound connections on 51820/udp, 80/tcp and 443/tcp."
+		echo
+	fi
+}
+
+ssh_keys_non_aws() {
+	echo
+	echo "Would you like to use an existing SSH key?"
+	echo "Press 'n' if you want to generate a new SSH key pair"
+	echo
+	new_ssh_key_pair=
+	until [[ ${new_ssh_key_pair} =~ ^[yYnN].*$ ]]; do
+		[[ -n ${new_ssh_key_pair} ]] && {
+			echo "${new_ssh_key_pair}: invalid selection."
+		}
+		read -r -p "Use existing SSH key? [y/N]: " new_ssh_key_pair
+	done
+	echo "enable_ssh_keygen: true" |tee -a "${CUSTOM_FILE}"
+
+	[[ "${new_ssh_key_pair}" =~ ^[yY].*$ ]] && {
+		# NO checks done for public key....
+		echo
+		read -r -p "Please enter your SSH public key: " ssh_key_pair
+		echo "ssh_public_key: \"${ssh_key_pair}\"" |tee -a "${CUSTOM_FILE}"
+	}
+}
+
+
+# Main
+
+ANSIBLE_WORK_DIR="${HOME}/ansible-easy-vpn"
+GITHUB_REPO="https://github.com/notthebee/ansible-easy-vpn"
+
+#### WHY? It kills the script with this heere... ?????
+## Discard stdin. Needed when running from an one-liner which includes a newline
+#read -r -N 999999 -t 0.001
+
+## Quit on error
+## -- already set in shebang line ????
+#set -e
+
+check_os
+install_packages_for_ansible_and_dependencies
+install_and_setup_homedir_files
+
+
+# Set secure permissions for the Vault file
+SECRET_FILE="${HOME}/ansible-easy-vpn/secret.yml"
+[[ -f "${SECRET_FILE}" ]] && {
+	echo
+	echo "WARNING:"
+	echo "${SECRET_FILE} already exists..."
+	echo
+}
+chmod 600 "${SECRET_FILE}"
+
+
+# Permissions are not critical with the CUSTOM_FILE
+# - secrets are not kept in this file
+CUSTOM_FILE="${HOME}/ansible-easy-vpn/custom.yml"
+[[ -f "${CUSTOM_FILE}" ]] && {
+	echo
+	echo "WARNING:"
+	echo "${CUSTOM_FILE} already exists..."
+	echo
+}
+
+
 
 
 
@@ -79,39 +262,47 @@ clear
 echo "Welcome to ansible-easy-vpn!"
 echo
 echo "This script is interactive"
-echo "If you prefer to fill in the custom.yml file manually,"
+echo "If you prefer to fill in the ${CUSTOM_FILE} file manually,"
 echo "press [Ctrl+C] to quit this script"
 echo
 echo "Enter your desired UNIX username"
-read -p "Username: " username
-until [[ "$username" =~ ^[a-z0-9]*$ ]]; do
-  echo "Invalid username"
-  echo "Make sure the username only contains lowercase letters and numbers"
-  read -p "Username: " username
+username=
+until [[ ${username} =~ ^[a-z0-9]*$ && -n ${username} ]]; do
+	[[ -n ${username} ]] && echo "Invalid username"
+	echo "Make sure the username only contains lowercase letters and numbers"
+	read -r -p "Username: " username
 done
+# First write to CUSTOM_FILE, old content will be lost
+echo "username: \"${username}\"" |tee "${CUSTOM_FILE}"
 
-echo "username: \"${username}\"" >> $HOME/ansible-easy-vpn/custom.yml
 
 echo
 echo "Enter your user password"
 echo "This password will be used for Authelia login, administrative access and SSH login"
-read -s -p "Password: " user_password
-until [[ "${#user_password}" -lt 60 ]]; do
-  echo
-  echo "The password is too long"
-  echo "OpenSSH does not support passwords longer than 72 characters"
-  read -s -p "Password: " user_password
+echo "Passwords longer trhan 72 bytes are not supported by OpenSSH private key format"
+echo " -- is this really true these days???"
+echo "Also, the password cannot be empty"
+while :
+do
+	user_password=
+	until [[ ${#user_password} -lt 73 && -n ${user_password} ]]; do
+		echo
+		[[ ${#user_password} -gt 72 ]] && echo "The password is too long"
+		read -s -r -p "Password: " user_password
+	done
+	echo
+	user_password2=
+	until [[ ${#user_password2} -lt 73 && -n ${user_password2} ]]; do
+		echo
+		[[ ${#user_password2} -gt 72 ]] && echo "The password is too long"
+		read -s -r -p "Repeat password: " user_password2
+	done
+	echo
+	[[ "${user_password}" == "${user_password2}" ]] && break
+	echo "The passwords don't match"
 done
-echo
-read -s -p "Repeat password: " user_password2
-echo
-until [[ "$user_password" == "$user_password2" ]]; do
-  echo
-  echo "The passwords don't match"
-  read -s -p "Password: " user_password
-  echo
-  read -s -p "Repeat password: " user_password2
-done
+# First write to SECRET_FILE, old content will be lost
+echo "user_password: \"${user_password}\"" > "${SECRET_FILE}"
 
 
 echo
@@ -120,70 +311,61 @@ echo "Enter your domain name"
 echo "The domain name should already resolve to the IP address of your server"
 echo "Make sure that 'wg' and 'auth' subdomains also point to that IP (not necessary with DuckDNS)"
 echo
-read -p "Domain name: " root_host
-until [[ "$root_host" =~ ^[a-z0-9\.\-]*$ ]]; do
-  echo "Invalid domain name"
-  read -p "Domain name: " root_host
+root_host=
+until [[ ${root_host} =~ ^[a-z0-9\.\-]*$ && -n ${root_host} ]]; do
+	[[ -n ${root_host} ]] && echo "Invalid domain name"
+	read -r -p "Domain name: " root_host
 done
 
-public_ip=$(curl -s ipinfo.io/ip)
-domain_ip=$(dig +short @1.1.1.1 ${root_host})
-
-until [[ $domain_ip =~ $public_ip ]]; do
-  echo
-  echo "The domain $root_host does not resolve to the public IP of this server ($public_ip)"
-  echo
-  root_host_prev=$root_host
-  read -p "Domain name [$root_host_prev]: " root_host
-  if [ -z ${root_host} ]; then
-    root_host=$root_host_prev
-  fi
-  public_ip=$(curl -s ipinfo.io/ip)
-  domain_ip=$(dig +short @1.1.1.1 ${root_host})
-  echo
-done
 
 echo
-echo "Running certbot in dry-run mode to test the validity of the domain..."
-$SUDO certbot certonly --non-interactive --break-my-certs --force-renewal --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host || exit
-echo "OK"
+[[ -f /etc/resolv.conf ]] && {
+	echo "Entries in /etc/resolv.conf for nameserver(s)"
+	grep ^nameserver /etc/resolv.conf
+	echo
+}
+read -r -p "Enter the IP address of the Nameserver to use for DNS queires [1.1.1.1]: " DNS_HOST
+DNS_HOST=${DNS_HOST:-1.1.1.1}
+#declare -p DNS_HOST
+echo
 
-echo "root_host: \"${root_host}\"" >> $HOME/ansible-easy-vpn/custom.yml
+while :
+do
+	# Okay, a "list of IPs" probably doesn't make sense for WG,
+	# but checking for the sub domains does make sense.
+	# - got this using main domain for sub domains right now
+	# Probably can't do round robin DNS for WG ....
+	public_ip=$(curl -s ipinfo.io/ip)
+	domain_ip_list=$(get_ip_list "${root_host}")
+	wg_domain_ip_list=$(get_ip_list "${root_host}")
+	auth_domain_ip_list=$(get_ip_list "${root_host}")
+	#wg_domain_ip_list=$(get_ip_list "wg.${root_host}")
+	#auth_domain_ip_list=$(get_ip_list "auth.${root_host}")
 
+	(
+	echo "public_ip: ${public_ip}"
+	echo "domain_ip_list: ${domain_ip_list}"
+	echo "wg.domain_ip_list: ${wg_domain_ip_list}"
+	echo "auth.domain_ip_list: ${auth_domain_ip_list}"
+	) | column -t
+	# The public_ip MUST be in the list of returned IPv4 addresses
+	[[ ${domain_ip_list} =~ ${public_ip} && 
+		${wg_domain_ip_list} =~ ${public_ip} &&
+		${auth_domain_ip_list} =~ ${public_ip} ]] && break
+	echo
+	echo "The domain ${root_host} does not resolve to the public IP of this server (${public_ip})"
+	echo
+	root_host_prev="${root_host}"
+	read -r -p "Domain name [${root_host_prev}]: " root_host
+	[[ -z ${root_host} ]] && root_host="${root_host_prev}"
+	echo
+done
 
-if [[ ! $aws =~ true ]]; then
-  echo
-  echo "Would you like to use an existing SSH key?"
-  echo "Press 'n' if you want to generate a new SSH key pair"
-  echo
-  read -p "Use existing SSH key? [y/N]: " new_ssh_key_pair
-  until [[ "$new_ssh_key_pair" =~ ^[yYnN]*$ ]]; do
-          echo "$new_ssh_key_pair: invalid selection."
-          read -p "[y/N]: " new_ssh_key_pair
-  done
-  echo "enable_ssh_keygen: true" >> $HOME/ansible-easy-vpn/custom.yml
+# Check certbot to make sure host is okay
+check_certbot_dryrun
+echo "root_host: \"${root_host}\"" |tee -a "${CUSTOM_FILE}"
 
-  if [[ "$new_ssh_key_pair" =~ ^[yY]$ ]]; then
-    echo
-    read -p "Please enter your SSH public key: " ssh_key_pair
-
-    echo "ssh_public_key: \"${ssh_key_pair}\"" >> $HOME/ansible-easy-vpn/custom.yml
-  fi
-else
-  echo
-  read -p "Are you running this script on an AWS EC2 instance? [y/N]: " aws_ec2
-  until [[ "$aws_ec2" =~ ^[yYnN]*$ ]]; do
-          echo "$aws_ec2: invalid selection."
-          read -p "[y/N]: " aws_ec2
-  done
-  if [[ "$aws_ec2" =~ ^[yY]$ ]]; then
-    export AWS_EC2=true
-  echo
-  echo "Please use the SSH keys that you specified in the AWS Management Console to log in to the server."
-  echo "Also, make sure that your Security Group allows inbound connections on 51820/udp, 80/tcp and 443/tcp."
-  echo
-  fi
-fi
+check_aws
 
 echo
 echo "Would you like to set up the e-mail functionality?"
@@ -191,94 +373,49 @@ echo "It will be used to confirm the 2FA setup and restore the password in case 
 echo
 echo "This is optional"
 echo
-read -p "Set up e-mail? [y/N]: " email_setup
-until [[ "$email_setup" =~ ^[yYnN]*$ ]]; do
-				echo "$email_setup: invalid selection."
-				read -p "[y/N]: " email_setup
+email_setup=
+until [[ ${email_setup} =~ ^[yYnN].*$ ]]; do
+	[[ -n ${email_setup} ]] && echo "${email_setup}: invalid selection."
+	read -r -p "Set up e-mail? [y/N]: " email_setup
 done
-
-if [[ "$email_setup" =~ ^[yY]$ ]]; then
-  echo
-  read -p "SMTP server: " email_smtp_host
-  until [[ "$email_smtp_host" =~ ^[a-z0-9\.]*$ ]]; do
-    echo "Invalid SMTP server"
-    read -p "SMTP server: " email_smtp_host
-  done
-  echo
-  read -p "SMTP port [465]: " email_smtp_port
-  if [ -z ${email_smtp_port} ]; then
-    email_smtp_port="465"
-  fi
-  echo
-  read -p "SMTP login: " email_login
-  echo
-  read -s -p "SMTP password: " email_password
-  until [[ ! -z "$email_password" ]]; do
-    echo "The password is empty"
-    read -s -p "SMTP password: " email_password
-  done
-  echo
-  echo
-  read -p "'From' e-mail [${email_login}]: " email
-  if [ ! -z ${email} ]; then
-    echo "email: \"${email}\"" >> $HOME/ansible-easy-vpn/custom.yml
-  fi
-
-  read -p "'To' e-mail [${email_login}]: " email_recipient
-  if [ ! -z ${email_recipient} ]; then
-    echo "email_recipient: \"${email_recipient}\"" >> $HOME/ansible-easy-vpn/custom.yml
-  fi
+[[ "${email_setup}" =~ ^[yY].*$ ]] && do_email_setup
 
 
+# Save other secrets
+(
+for _secret in jwt_secret session_secret storage_encryption_key
+do
+	echo "${_secret}: $(openssl rand -hex 23)"
+done
+) >> "${SECRET_FILE}"
 
-  echo "email_smtp_host: \"${email_smtp_host}\"" >> $HOME/ansible-easy-vpn/custom.yml
-  echo "email_smtp_port: \"${email_smtp_port}\"" >> $HOME/ansible-easy-vpn/custom.yml
-  echo "email_login: \"${email_login}\"" >> $HOME/ansible-easy-vpn/custom.yml
-fi
 
-
-# Set secure permissions for the Vault file
-touch $HOME/ansible-easy-vpn/secret.yml
-chmod 600 $HOME/ansible-easy-vpn/secret.yml
-
-if [ -z ${email_password+x} ]; then
-  echo
-else 
-  echo "email_password: \"${email_password}\"" >> $HOME/ansible-easy-vpn/secret.yml
-fi
-
-echo "user_password: \"${user_password}\"" >> $HOME/ansible-easy-vpn/secret.yml
-
-jwt_secret=$(openssl rand -hex 23)
-session_secret=$(openssl rand -hex 23)
-storage_encryption_key=$(openssl rand -hex 23)
-
-echo "jwt_secret: ${jwt_secret}" >> $HOME/ansible-easy-vpn/secret.yml
-echo "session_secret: ${session_secret}" >> $HOME/ansible-easy-vpn/secret.yml
-echo "storage_encryption_key: ${storage_encryption_key}" >> $HOME/ansible-easy-vpn/secret.yml
-
+# Protect all the secrets in the SECRET_FILE
 echo
 echo "Encrypting the variables"
-ansible-vault encrypt $HOME/ansible-easy-vpn/secret.yml
-
+ansible-vault encrypt "${SECRET_FILE}"
 echo
 echo "Success!"
-read -p "Would you like to run the playbook now? [y/N]: " launch_playbook
-until [[ "$launch_playbook" =~ ^[yYnN]*$ ]]; do
-				echo "$launch_playbook: invalid selection."
-				read -p "[y/N]: " launch_playbook
-done
 
-if [[ "$launch_playbook" =~ ^[yY]$ ]]; then
-  if [[ $EUID -ne 0 ]]; then
-    echo
-    echo "Please enter your current sudo password now"
-    cd $HOME/ansible-easy-vpn && ansible-playbook -K run.yml
-  else
-    cd $HOME/ansible-easy-vpn && ansible-playbook run.yml
-  fi
+
+# Ready to launch the playbook now!
+launch_playbook=
+until [[ ${launch_playbook} =~ ^[yYnN].*$ && -n ${launch_playbook} ]]; do
+	[[ -n ${launch_playbook} ]] && echo "$launch_playbook: invalid selection."
+	read -r -p "Would you like to run the playbook now? [y/N]: " launch_playbook
+done
+if [[ ${launch_playbook} =~ ^[yY].*$ ]]; then
+	if [[ ${EUID} -ne 0 ]]; then
+		echo
+		echo "Please enter your current sudo password now"
+		cd "${ANSIBLE_WORK_DIR}" && ansible-playbook -K run.yml
+	else
+		cd "${ANSIBLE_WORK_DIR}" && ansible-playbook run.yml
+	fi
 else
-  echo "You can run the playbook by executing the following command"
-  echo "cd ${HOME}/ansible-easy-vpn && ansible-playbook run.yml"
-  exit
+	echo "You can run the playbook by executing the following command"
+	echo "cd \"${ANSIBLE_WORK_DIR}\" && ansible-playbook run.yml"
+	exit
 fi
+
+exit 0
