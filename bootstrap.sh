@@ -1,6 +1,8 @@
 #!/bin/bash -ue
 # A bash script that prepares the OS
 # before running the Ansible playbook
+ANSIBLE_WORK_DIR="${HOME}/ansible-easy-vpn"
+GITHUB_REPO="https://github.com/notthebee/ansible-easy-vpn"
 
 check_aws() {
 	# Check if we're running on an AWS EC2 instance
@@ -232,16 +234,6 @@ ssh_keys_non_aws() {
 
 # Main
 
-ANSIBLE_WORK_DIR="${HOME}/ansible-easy-vpn"
-GITHUB_REPO="https://github.com/notthebee/ansible-easy-vpn"
-
-#### WHY? It kills the script with this heere... ?????
-## Discard stdin. Needed when running from an one-liner which includes a newline
-#read -r -N 999999 -t 0.001
-
-## Quit on error
-## -- already set in shebang line ????
-#set -e
 
 check_os
 install_packages_for_ansible_and_dependencies
@@ -250,6 +242,7 @@ install_and_setup_homedir_files
 
 # Set secure permissions for the Vault file
 SECRET_FILE="${HOME}/ansible-easy-vpn/secret.yml"
+touch ${SECRET_FILE}
 [[ -f "${SECRET_FILE}" ]] && {
 	echo
 	echo "WARNING:"
@@ -262,6 +255,7 @@ chmod 600 "${SECRET_FILE}"
 # Permissions are not critical with the CUSTOM_FILE
 # - secrets are not kept in this file
 CUSTOM_FILE="${HOME}/ansible-easy-vpn/custom.yml"
+touch ${CUSTOM_FILE}
 [[ -f "${CUSTOM_FILE}" ]] && {
 	echo
 	echo "WARNING:"
