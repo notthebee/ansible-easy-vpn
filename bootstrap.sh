@@ -114,7 +114,7 @@ do_email_setup() {
 }
 
 
-install_packages_for_ansible_and_dependencies() {
+install_dependencies() {
 	# Disable interactive apt functionality
 	export DEBIAN_FRONTEND=noninteractive
 
@@ -151,16 +151,17 @@ install_packages_for_ansible_and_dependencies() {
 			gcc python3-dev libffi-dev libssl-dev make
 	}
 
-	# Enable interactive apt functionality (FWIW, not running apt again)
+	# Enable interactive apt functionality again
 	export DEBIAN_FRONTEND=
+
+	# Install Ansible
+	check_root "-H"
+	${SUDO} pip3 install ansible~=6.2
+	check_root
 }
 
-install_and_setup_homedir_files() {
-	# Do pip3 install in user's homedir (which may be root anyway)
-	check_root "-H"
-	${SUDO} pip3 install ansible~=6.2 &&
+clone_repo_galaxy() {
 
-	check_root
 	# Clone the Ansible playbook
 	[ -d "${ANSIBLE_WORK_DIR}" ] || {
 		git clone "${GITHUB_REPO}" "${ANSIBLE_WORK_DIR}"
@@ -186,7 +187,7 @@ ssh_keys_aws() {
 		echo "Please use the SSH keys that you specified in the AWS Management Console to log in to the server."
 		echo "Also, make sure that your Security Group allows inbound connections on 51820/udp, 80/tcp and 443/tcp."
 		echo
-		read -n 1 -s -r -p "Press [Enter] to continue"
+		read -n 1 -s -r -p "Press [Enter] to continue "
 	fi
 }
 
@@ -215,34 +216,27 @@ ssh_keys_non_aws() {
 
 
 # Main
-
-
 check_os
-install_packages_for_ansible_and_dependencies
-install_and_setup_homedir_files
+install_dependencies
+clone_repo_galaxy
 
 
 # Set secure permissions for the Vault file
 SECRET_FILE="${HOME}/ansible-easy-vpn/secret.yml"
 touch ${SECRET_FILE}
 [[ -f "${SECRET_FILE}" ]] && {
-	echo
+	clear
 	echo "WARNING: ${SECRET_FILE} already exists"
+	echo "Running this script will overwrite its contents"
+	read -n 1 -s -r -p "Press [Enter] to continue or Ctrl+C to abort "
 	echo
 }
 chmod 600 "${SECRET_FILE}"
-
 
 # Permissions are not critical with the CUSTOM_FILE
 # - secrets are not kept in this file
 CUSTOM_FILE="${HOME}/ansible-easy-vpn/custom.yml"
 touch ${CUSTOM_FILE}
-[[ -f "${CUSTOM_FILE}" ]] && {
-	echo
-	echo "WARNING: ${CUSTOM_FILE} already exists"
-	echo
-}
-
 
 
 clear
@@ -254,20 +248,17 @@ echo "If you prefer to fill in the ${CUSTOM_FILE} file manually,"
 echo "press [Ctrl+C] to quit this script"
 echo
 echo "Enter your desired UNIX username"
+
 username=
 until [[ ${username} =~ ^[a-z0-9]*$ && -n ${username} ]]; do
 	[[ -n ${username} ]] && echo "Invalid username"
 	echo "Make sure the username only contains lowercase letters and numbers"
 	read -r -p "Username: " username
 done
-# First write to CUSTOM_FILE, old content will be lost
-# - appending to file anyway, last entry will count, may end up using
-#   sed method later to not have multiple entries to confuse things.
+
 echo "username: \"${username}\"" >> "${CUSTOM_FILE}"
 
-
 clear
-echo
 echo "Enter your user password"
 echo "This password will be used for Authelia login, administrative access and SSH login"
 while :
@@ -278,7 +269,6 @@ do
 		[[ ${#user_password} -gt 72 ]] && echo "The password is too long"
 		read -s -r -p "Password: " user_password
 	done
-	echo
 	user_password2=
 	until [[ -n ${user_password2} ]]; do
 		echo
@@ -287,13 +277,14 @@ do
 	echo
 	[[ "${user_password}" == "${user_password2}" ]] && break
 	echo "The passwords don't match"
+	echo
 done
-# First write to SECRET_FILE, old content will be lost
+
+# Overwrite the secret file
 echo "user_password: \"${user_password}\"" > "${SECRET_FILE}"
 
 
 clear
-echo
 echo "Enter your domain name"
 echo "The domain name should already resolve to the IP address of your server"
 echo "Make sure that 'wg' and 'auth' subdomains also point to that IP (not necessary with DuckDNS)"
@@ -342,7 +333,6 @@ echo "root_host: \"${root_host}\"" >> "${CUSTOM_FILE}"
 check_aws
 
 clear
-echo
 echo "Would you like to set up the e-mail functionality?"
 echo "It will be used to confirm the 2FA setup and restore the password in case you forget it"
 echo
@@ -367,8 +357,8 @@ done
 
 # Protect all the secrets in the SECRET_FILE
 clear
-echo
 echo "Encrypting the variables"
+echo
 ansible-vault encrypt "${SECRET_FILE}"
 echo
 echo "Success!"
@@ -389,6 +379,7 @@ if [[ ${launch_playbook} =~ ^[yY].*$ ]]; then
 		cd "${ANSIBLE_WORK_DIR}" && ansible-playbook run.yml
 	fi
 else
+	echo
 	echo "You can run the playbook by executing the following command"
 	echo "cd \"${ANSIBLE_WORK_DIR}\" && ansible-playbook run.yml"
 	exit
