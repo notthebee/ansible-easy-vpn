@@ -113,7 +113,24 @@ do_email_setup() {
 }
 
 get_ip_list() {
-	dig -t a +short @"${DNS_HOST}" "${1}" | grep '^[1-9]'  | tr '\n' ' '
+	# variable 1 is the main domain
+	# variable 2 if present is (sub) host to query, falls back to $1
+	local main_domain="${1}"
+	local query_domain
+	if [[ $# -eq 1 ]]; then
+		query_domain="${1}"
+	else
+		query_domain="${2}"
+	fi
+
+	declare -a NAMESERVERS=(
+		dig -t ns +short "${main_domain}"
+	)
+	# There should always be at least 2 nameservers, choose one randomly
+	DNS_HOST_IDX=$(( RANDOM % ${#NAMESERVERS[@]} ))
+	DNS_HOST=${NAMESERVERS["${DNS_HOST_IDX}"]}
+	dig -t a +short @"${DNS_HOST}" "${query_domain}" | \
+		grep '^[1-9]'  | tr '\n' ' '
 }
 
 install_packages_for_ansible_and_dependencies() {
@@ -317,16 +334,6 @@ done
 
 
 echo
-[[ -f /etc/resolv.conf ]] && {
-	echo "Entries in /etc/resolv.conf for nameserver(s)"
-	grep ^nameserver /etc/resolv.conf
-	echo
-}
-read -r -p "Enter the IP address of the Nameserver to use for DNS queires [1.1.1.1]: " DNS_HOST
-DNS_HOST=${DNS_HOST:-1.1.1.1}
-#declare -p DNS_HOST
-echo
-
 while :
 do
 	# Okay, a "list of IPs" probably doesn't make sense for WG,
