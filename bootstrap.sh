@@ -173,6 +173,7 @@ install_and_setup_homedir_files() {
 
 ssh_keys_aws() {
 	clear
+	echo
 	aws_ec2=
 	until [[ ${aws_ec2} =~ ^[yYnN].*$ ]]; do
 		[[ -n ${aws_ec2} ]] && echo "${aws_ec2}: invalid selection."
@@ -191,6 +192,7 @@ ssh_keys_aws() {
 
 ssh_keys_non_aws() {
 	clear
+	echo
 	echo "Would you like to use an existing SSH key?"
 	echo "Press 'n' if you want to generate a new SSH key pair"
 	echo
@@ -244,6 +246,7 @@ touch ${CUSTOM_FILE}
 
 
 clear
+echo
 echo "Welcome to ansible-easy-vpn!"
 echo
 echo "This script is interactive"
@@ -264,6 +267,7 @@ echo "username: \"${username}\"" >> "${CUSTOM_FILE}"
 
 
 clear
+echo
 echo "Enter your user password"
 echo "This password will be used for Authelia login, administrative access and SSH login"
 while :
@@ -289,6 +293,7 @@ echo "user_password: \"${user_password}\"" > "${SECRET_FILE}"
 
 
 clear
+echo
 echo "Enter your domain name"
 echo "The domain name should already resolve to the IP address of your server"
 echo "Make sure that 'wg' and 'auth' subdomains also point to that IP (not necessary with DuckDNS)"
@@ -337,6 +342,7 @@ echo "root_host: \"${root_host}\"" >> "${CUSTOM_FILE}"
 check_aws
 
 clear
+echo
 echo "Would you like to set up the e-mail functionality?"
 echo "It will be used to confirm the 2FA setup and restore the password in case you forget it"
 echo
@@ -360,10 +366,11 @@ done
 
 
 # Protect all the secrets in the SECRET_FILE
+clear
 echo
 echo "Encrypting the variables"
 ansible-vault encrypt "${SECRET_FILE}"
-clear
+echo
 echo "Success!"
 
 
