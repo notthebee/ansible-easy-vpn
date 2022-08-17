@@ -97,20 +97,22 @@ do_email_setup() {
 
 	read -r -s -p "SMTP password: " email_password
 	until [[ -n ${email_password} ]]; do
+		echo 
 		echo "The password is empty"
+		echo 
 		read -r -s -p "SMTP password: " email_password
 	done
 	echo
 
 	read -r -p "'From' e-mail [${email_login}]: " email
-	${email}=${email:-$email_login}
+	email=${email:-$email_login}
 	until [[ -n ${email_} ]]; do
 		echo "The e-mail is empty"
 		read -r -s -p "'From' e-mail: " email
 	done
 
 	read -r -p "'To' e-mail [${email}]: " email_recipient
-	${email_recipient}=${email_recipient:-$email}
+	email_recipient=${email_recipient:-$email}
 	until [[ -n ${email_recipient} ]]; do
 		echo "The e-mail is empty"
 		read -r -s -p "'To' email: " email_recipient
