@@ -18,7 +18,7 @@ check_aws() {
 check_certbot_dryrun() {
 	echo
 	echo "Running certbot in dry-run mode to test the validity of the domain..."
-	"${SUDO}" certbot certonly \
+	${SUDO} certbot certonly \
 		--non-interactive \
 		--break-my-certs \
 		--force-renewal \
@@ -155,18 +155,18 @@ install_packages_for_ansible_and_dependencies() {
 	)
 
 	check_root
-	"${SUDO}" apt update -y
+	${SUDO} apt update -y
 
-	yes | "${SUDO}" apt-get -o Dpkg::Options::="--force-confold" -fuy dist-upgrade
+	yes | ${SUDO} apt-get -o Dpkg::Options::="--force-confold" -fuy dist-upgrade
 
-	yes | "${SUDO}" apt-get -o Dpkg::Options::="--force-confold" -fuy install \
+	yes | ${SUDO} apt-get -o Dpkg::Options::="--force-confold" -fuy install \
 		"${REQUIRED_PACKAGES[@]}"
 
-	yes | "${SUDO}" apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove
+	yes | ${SUDO} apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove
 
 	# Extra packages for arm64 (aarch64)
 	[[ $(uname -m) == "aarch64" ]] && {
-		"${SUDO}" yes | apt install -y \
+		${SUDO} yes | apt install -y \
 			gcc python3-dev libffi-dev libssl-dev make
 	}
 
@@ -177,7 +177,7 @@ install_packages_for_ansible_and_dependencies() {
 install_and_setup_homedir_files() {
 	# Do pip3 install in user's homedir (which may be root anyway)
 	check_root "-H"
-	"${SUDO}" pip3 install ansible~=6.2 &&
+	${SUDO} pip3 install ansible~=6.2 &&
 
 	check_root
 	# Clone the Ansible playbook
