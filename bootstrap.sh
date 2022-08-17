@@ -319,33 +319,36 @@ until [[ ${root_host} =~ ^[a-z0-9\.-]*$ && -n ${root_host} ]]; do
 	read -r -p "Domain name: " root_host
 done
 
-
 echo
-while :
-do
-	# Okay, a "list of IPs" probably doesn't make sense for WG,
-	# but checking for the sub domains does make sense.
-	# Probably can't do round robin DNS for WG ....
-	# - but might be useful for other server types using this bootstrap
-	public_ip=$(curl -s ipinfo.io/ip)
-	declare -a DOMAIN=("${root_host}" domain_ip_list=$(get_ip_list "${root_host}"))
-	declare -a WG_DOMAIN=("wg.${root_host}" wg_domain_ip_list=$(get_ip_list "${root_host}" "wg.${root_host}"))
-	declare -a AUTH_DOMAIN=("auth.${root_host}" $(get_ip_list "${root_host}" "auth.${root_host}"))
+echo "Checking if the domain name resolves to the IP of this server..."
+echo
+public_ip=$(curl -s ipinfo.io/ip)
+root_ip=$(get_ip_list ${root_host})
+wg_ip=$(get_ip_list ${root_host} wg.${root_host})
+auth_ip=$(get_ip_list ${root_host} auth.${root_host})
+declare -A DOMAINS=(
+["root"]="$root_ip"
+["wg"]="$wg_ip"
+["auth"]="$auth_ip"
+)
 
-	# The public_ip MUST be in the list of returned IPv4 addresses
-	for domain in DOMAIN WG_DOMAIN AUTH_DOMAIN
-	do
-		if [[ ! "${domain[1]}" =~ "${public_ip}" ]]; then
-		echo "The domain ${domain[0]} does not resolve to the public IP of this server (${public_ip})"
-		break
+# The public_ip MUST be in the list of returned IPv4 addresses
+for domain in "${!DOMAINS[@]}"; do
+	until [[ ${DOMAINS[$domain]} =~ $public_ip ]]; do
+		echo
+		echo "The domain ${domain}.${root_host} does not resolve to the public IP of this server (${public_ip})"
+		echo
+		root_host_prev="${root_host}"
+		read -r -p "Domain name [${root_host_prev}]: " root_host
+		[[ -z ${root_host} ]] && root_host="${root_host_prev}"
+		if [[ $domain =~ "root" ]]; then
+			DOMAINS[$domain]=$(get_ip_list ${root_host})
+		else
+			DOMAINS[$domain]=$(get_ip_list ${root_host} $domain.${root_host})
 		fi
 	done
-	echo
-	root_host_prev="${root_host}"
-	read -r -p "Domain name [${root_host_prev}]: " root_host
-	[[ -z ${root_host} ]] && root_host="${root_host_prev}"
-	echo
 done
+echo
 
 # Check certbot to make sure host is okay
 check_certbot_dryrun
