@@ -83,14 +83,18 @@ do_email_setup() {
 	read -r -p "SMTP port [465]: " email_smtp_port
 	email_smtp_port=${email_smtp_port:-465}
 	until [[ ${email_smtp_port} =~ ^[0-9]+$ ]]; do
+		echo
 		echo "Invalid SMTP port"
+		echo
 		read -r -p "SMTP port [465]: " email_smtp_port
 	done
 	echo
 
 	read -r -p "SMTP login: " email_login
 	until [[ -n ${email_login} ]]; do
+		echo
 		echo "The login is empty"
+		echo
 		read -r -s -p "SMTP login: " email_login
 	done
 	echo
@@ -104,17 +108,23 @@ do_email_setup() {
 	done
 	echo
 
+	echo
 	read -r -p "'From' e-mail [${email_login}]: " email
 	email=${email:-$email_login}
-	until [[ -n ${email_} ]]; do
+	until [[ -n ${email} ]]; do
+		echo
 		echo "The e-mail is empty"
+		echo
 		read -r -s -p "'From' e-mail: " email
 	done
 
+	echo
 	read -r -p "'To' e-mail [${email}]: " email_recipient
 	email_recipient=${email_recipient:-$email}
 	until [[ -n ${email_recipient} ]]; do
+		echo
 		echo "The e-mail is empty"
+		echo
 		read -r -s -p "'To' email: " email_recipient
 	done
 
