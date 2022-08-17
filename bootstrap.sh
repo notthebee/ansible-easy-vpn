@@ -291,7 +291,7 @@ do
 	done
 	echo
 	user_password2=
-	until [[ ${#user_password2} -lt 73 && -n ${user_password2} ]]; do
+	until [[ -n ${user_password2} ]]; do
 		echo
 		read -s -r -p "Repeat password: " user_password2
 	done
