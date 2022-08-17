@@ -72,46 +72,55 @@ check_root() {
 
 do_email_setup() {
 	echo
-	email_smtp_host=
+	read -r -p "SMTP server: " email_smtp_host
 	until [[ ${email_smtp_host} =~ ^[a-z0-9\.]+$ ]]; do
 		[[ -n "${email_smtp_host}" ]] && echo "Invalid SMTP server"
 		read -r -p "SMTP server: " email_smtp_host
 	done
 	echo
+
 	read -r -p "SMTP port [465]: " email_smtp_port
 	email_smtp_port=${email_smtp_port:-465}
+	until [[ ${email_smtp_host} =~ ^[0-9]+$ ]]; do
+		[[ -n "${email_smtp_host}" ]] && echo "Invalid SMTP port"
+		read -r -p "SMTP port [465]: " email_smtp_port
+	done
 	echo
+
 	read -r -p "SMTP login: " email_login
+	until [[ -n ${email_login} ]]; do
+		echo "The login is empty"
+		read -r -s -p "SMTP login: " email_login
+	done
 	echo
-	local email_password=
+
+	read -r -s -p "SMTP password: " email_password
 	until [[ -n ${email_password} ]]; do
-		[[ -z ${email_password} ]] && echo "The password is empty"
+		echo "The password is empty"
 		read -r -s -p "SMTP password: " email_password
 	done
 	echo
-	echo
+
 	read -r -p "'From' e-mail [${email_login}]: " email
 	${email}=${email:-$email_login}
-	[[ -n ${email} ]] && {
-		echo "email: \"${email}\"" >> "${CUSTOM_FILE}"
-	}
+	until [[ -n ${email_} ]]; do
+		echo "The e-mail is empty"
+		read -r -s -p "'From' e-mail: " email
+	done
 
 	read -r -p "'To' e-mail [${email}]: " email_recipient
 	${email_recipient}=${email_recipient:-$email}
-	[[ -n "${email_recipient}" ]] && {
-		echo "email_recipient: \"${email_recipient}\"" >> "${CUSTOM_FILE}"
-	}
+	until [[ -n ${email_recipient} ]]; do
+		echo "The e-mail is empty"
+		read -r -s -p "'To' email: " email_recipient
+	done
 
 	echo "email_smtp_host: \"${email_smtp_host}\"" >> "${CUSTOM_FILE}"
 	echo "email_smtp_port: \"${email_smtp_port}\"" >> "${CUSTOM_FILE}"
 	echo "email_login: \"${email_login}\"" >> "${CUSTOM_FILE}"
-
-	if [ -z "${email_password+x}" ]; then
-		echo
-	else 
-		# SECRET_FILE setup previously, save the secret
-		echo "email_password: \"${email_password}\"" >> "${SECRET_FILE}"
-	fi
+	echo "email: \"${email}\"" >> "${CUSTOM_FILE}"
+	echo "email_recipient: \"${email_recipient}\"" >> "${CUSTOM_FILE}"
+	echo "email_password: \"${email_password}\"" >> "${SECRET_FILE}"
 
 }
 
@@ -248,9 +257,9 @@ echo "press [Ctrl+C] to quit this script"
 echo
 echo "Enter your desired UNIX username"
 
-username=
+read -r -p "Username: " username
 until [[ ${username} =~ ^[a-z0-9]+$ && -n ${username} ]]; do
-	[[ -n ${username} ]] && echo "Invalid username"
+	echo "Invalid username"
 	echo "Make sure the username only contains lowercase letters and numbers"
 	read -r -p "Username: " username
 done
@@ -288,15 +297,14 @@ echo "Enter your domain name"
 echo "The domain name should already resolve to the IP address of your server"
 echo "Make sure that 'wg' and 'auth' subdomains also point to that IP (not necessary with DuckDNS)"
 echo
-root_host=
+read -r -p "Domain name: " root_host
 until [[ ${root_host} =~ ^[a-z0-9\.-]+$ && -n ${root_host} ]]; do
-	[[ -n ${root_host} ]] && echo "Invalid domain name"
+	echo "Invalid domain name"
 	read -r -p "Domain name: " root_host
 done
 
 echo
 echo "Checking if the domain name resolves to the IP of this server..."
-echo
 public_ip=$(curl -s ipinfo.io/ip)
 root_ip=$(dig +short @${DNS} ${root_host})
 wg_ip=$(dig +short @${DNS} wg.${root_host})
@@ -323,7 +331,6 @@ for domain in "${!DOMAINS[@]}"; do
 		fi
 	done
 done
-echo
 
 # Check certbot to make sure host is okay
 check_certbot_dryrun
@@ -337,9 +344,9 @@ echo "It will be used to confirm the 2FA setup and restore the password in case 
 echo
 echo "This is optional"
 echo
-email_setup=
+read -r -p "Set up e-mail? [y/N]: " email_setup
 until [[ ${email_setup} =~ ^[yYnN].*$ ]]; do
-	[[ -n ${email_setup} ]] && echo "${email_setup}: invalid selection."
+	echo "${email_setup}: invalid selection."
 	read -r -p "Set up e-mail? [y/N]: " email_setup
 done
 [[ "${email_setup}" =~ ^[yY].*$ ]] && do_email_setup
@@ -364,9 +371,9 @@ echo "Success!"
 
 
 # Ready to launch the playbook now!
-launch_playbook=
+read -r -p "Would you like to run the playbook now? [y/N]: " launch_playbook
 until [[ ${launch_playbook} =~ ^[yYnN].*$ && -n ${launch_playbook} ]]; do
-	[[ -n ${launch_playbook} ]] && echo "$launch_playbook: invalid selection."
+	echo "$launch_playbook: invalid selection."
 	read -r -p "Would you like to run the playbook now? [y/N]: " launch_playbook
 done
 if [[ ${launch_playbook} =~ ^[yY].*$ ]]; then
