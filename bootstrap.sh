@@ -91,13 +91,13 @@ do_email_setup() {
 	echo
 	echo
 	read -r -p "'From' e-mail [${email_login}]: " email
-	${email}=${email:-${email_login}}
+	${email}=${email:-$email_login}
 	[[ -n ${email} ]] && {
 		echo "email: \"${email}\"" >> "${CUSTOM_FILE}"
 	}
 
 	read -r -p "'To' e-mail [${email}]: " email_recipient
-	${email_recipient}=${email_recipient:-${email}}
+	${email_recipient}=${email_recipient:-$email}
 	[[ -n "${email_recipient}" ]] && {
 		echo "email_recipient: \"${email_recipient}\"" >> "${CUSTOM_FILE}"
 	}
