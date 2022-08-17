@@ -328,22 +328,18 @@ do
 	# Probably can't do round robin DNS for WG ....
 	# - but might be useful for other server types using this bootstrap
 	public_ip=$(curl -s ipinfo.io/ip)
-	domain_ip_list=$(get_ip_list "${root_host}")
-	wg_domain_ip_list=$(get_ip_list "${root_host}" "wg.${root_host}")
-	auth_domain_ip_list=$(get_ip_list "${root_host}" "auth.${root_host}")
+	declare -a DOMAIN=("${root_host}" domain_ip_list=$(get_ip_list "${root_host}"))
+	declare -a WG_DOMAIN=("wg.${root_host}" wg_domain_ip_list=$(get_ip_list "${root_host}" "wg.${root_host}"))
+	declare -a AUTH_DOMAIN=("auth.${root_host}" $(get_ip_list "${root_host}" "auth.${root_host}"))
 
-	(
-	echo "public_ip: ${public_ip}"
-	echo "domain_ip_list: ${domain_ip_list}"
-	echo "wg.domain_ip_list: ${wg_domain_ip_list}"
-	echo "auth.domain_ip_list: ${auth_domain_ip_list}"
-	) | column -t
 	# The public_ip MUST be in the list of returned IPv4 addresses
-	[[ ${domain_ip_list} =~ ${public_ip} && 
-		${wg_domain_ip_list} =~ ${public_ip} &&
-		${auth_domain_ip_list} =~ ${public_ip} ]] && break
-	echo
-	echo "The domain ${root_host} does not resolve to the public IP of this server (${public_ip})"
+	for domain in DOMAIN WG_DOMAIN AUTH_DOMAIN
+	do
+		if [[ ! "${domain[1]}" =~ "${public_ip}" ]]; then
+		echo "The domain ${domain[0]} does not resolve to the public IP of this server (${public_ip})"
+		break
+		fi
+	done
 	echo
 	root_host_prev="${root_host}"
 	read -r -p "Domain name [${root_host_prev}]: " root_host
