@@ -3,6 +3,7 @@
 # before running the Ansible playbook
 ANSIBLE_WORK_DIR="${HOME}/ansible-easy-vpn"
 GITHUB_REPO="https://github.com/notthebee/ansible-easy-vpn"
+DNS="1.1.1.1"
 
 check_aws() {
 	# Check if we're running on an AWS EC2 instance
@@ -112,28 +113,6 @@ do_email_setup() {
 
 }
 
-get_ip_list() {
-	# variable 1 is the main domain
-	# variable 2 if present is (sub) host to query, falls back to $1
-	local main_domain="${1}"
-	local query_domain
-	if [[ $# -eq 1 ]]; then
-		query_domain="${1}"
-	else
-		query_domain="${2}"
-	fi
-
-	declare -a NAMESERVERS=(
-		dig -t ns +short "${main_domain}"
-	)
-	# Fallback to Cloudflare DNS if no nameservers are found
-	[[ -n "${NAMESERVERS}" ]] && declare -a NAMESERVERS=("1.1.1.1" "1.0.0.1")
-	# There should always be at least 2 nameservers, choose one randomly
-	DNS_HOST_IDX=$(( RANDOM % ${#NAMESERVERS[@]} ))
-	DNS_HOST=${NAMESERVERS["${DNS_HOST_IDX}"]}
-	dig -t a +short @"${DNS_HOST}" "${query_domain}" | \
-		grep '^[1-9]'  | tr '\n' ' '
-}
 
 install_packages_for_ansible_and_dependencies() {
 	# Disable interactive apt functionality
@@ -323,9 +302,9 @@ echo
 echo "Checking if the domain name resolves to the IP of this server..."
 echo
 public_ip=$(curl -s ipinfo.io/ip)
-root_ip=$(get_ip_list ${root_host})
-wg_ip=$(get_ip_list ${root_host} wg.${root_host})
-auth_ip=$(get_ip_list ${root_host} auth.${root_host})
+root_ip=$(dig +short @${DNS} ${root_host})
+wg_ip=$(dig +short @${DNS} wg.${root_host})
+auth_ip=$(dig +short @${DNS} auth.${root_host})
 declare -A DOMAINS=(
 ["root"]="$root_ip"
 ["wg"]="$wg_ip"
@@ -342,9 +321,9 @@ for domain in "${!DOMAINS[@]}"; do
 		read -r -p "Domain name [${root_host_prev}]: " root_host
 		[[ -z ${root_host} ]] && root_host="${root_host_prev}"
 		if [[ $domain =~ "root" ]]; then
-			DOMAINS[$domain]=$(get_ip_list ${root_host})
+			DOMAINS[$domain]=$(dig +short @${DNS} ${root_host})
 		else
-			DOMAINS[$domain]=$(get_ip_list ${root_host} $domain.${root_host})
+			DOMAINS[$domain]=$(dig +short @${DNS} $domain.${root_host})
 		fi
 	done
 done
