@@ -8,10 +8,8 @@ check_aws() {
 	aws=$(curl -m 5 -s http://169.254.169.254/latest/meta-data/ami-id)
 
 	if [[ "${aws}" =~ ^ami.*$ ]]; then
-		aws=true
 		ssh_keys_aws
 	else
-		aws=false
 		ssh_keys_non_aws
 	fi
 	set -e
@@ -105,7 +103,7 @@ do_email_setup() {
 	echo "email_login: \"${email_login}\""
 	) |tee -a "${CUSTOM_FILE}"
 
-	if [ -z ${email_password+x} ]; then
+	if [ -z "${email_password+x}" ]; then
 		echo
 	else 
 		# SECRET_FILE setup previously, save the secret
@@ -149,7 +147,6 @@ install_packages_for_ansible_and_dependencies() {
 
 	yes | "${SUDO}" apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove
 
-	aptitude show "${REQUIRED_ANSIBLE_PACKAGES[@]}"
 	# Extra packages for arm64 (aarch64)
 	[[ $(uname -m) == "aarch64" ]] && {
 		"${SUDO}" yes | apt install -y \
@@ -185,6 +182,7 @@ ssh_keys_aws() {
 	done
 	if [[ "${aws_ec2}" =~ ^[yY].*$ ]]; then
 		export AWS_EC2=true
+		echo "aws_ec2: \"${aws_ec2}\"" |tee -a "${CUSTOM_FILE}"
 		echo
 		echo "Please use the SSH keys that you specified in the AWS Management Console to log in to the server."
 		echo "Also, make sure that your Security Group allows inbound connections on 51820/udp, 80/tcp and 443/tcp."
@@ -280,7 +278,6 @@ echo
 echo "Enter your user password"
 echo "This password will be used for Authelia login, administrative access and SSH login"
 echo "Passwords longer trhan 72 bytes are not supported by OpenSSH private key format"
-echo " -- is this really true these days???"
 echo "Also, the password cannot be empty"
 while :
 do
@@ -294,7 +291,6 @@ do
 	user_password2=
 	until [[ ${#user_password2} -lt 73 && -n ${user_password2} ]]; do
 		echo
-		[[ ${#user_password2} -gt 72 ]] && echo "The password is too long"
 		read -s -r -p "Repeat password: " user_password2
 	done
 	echo
@@ -312,7 +308,7 @@ echo "The domain name should already resolve to the IP address of your server"
 echo "Make sure that 'wg' and 'auth' subdomains also point to that IP (not necessary with DuckDNS)"
 echo
 root_host=
-until [[ ${root_host} =~ ^[a-z0-9\.\-]*$ && -n ${root_host} ]]; do
+until [[ ${root_host} =~ ^[a-z0-9\.-]*$ && -n ${root_host} ]]; do
 	[[ -n ${root_host} ]] && echo "Invalid domain name"
 	read -r -p "Domain name: " root_host
 done
