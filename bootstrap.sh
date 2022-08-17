@@ -185,6 +185,7 @@ ssh_keys_aws() {
 		echo "Please use the SSH keys that you specified in the AWS Management Console to log in to the server."
 		echo "Also, make sure that your Security Group allows inbound connections on 51820/udp, 80/tcp and 443/tcp."
 		echo
+		read -n 1 -s -r -p "Press [Enter] to continue"
 	fi
 }
 
