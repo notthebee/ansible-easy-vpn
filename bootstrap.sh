@@ -124,7 +124,7 @@ get_ip_list() {
 	fi
 
 	declare -a NAMESERVERS=(
-		dig -t ns +short "${main_domain}"
+		dig -t ns +short "${main_domain}" || "1.1.1.1"
 	)
 	# There should always be at least 2 nameservers, choose one randomly
 	DNS_HOST_IDX=$(( RANDOM % ${#NAMESERVERS[@]} ))
@@ -191,7 +191,7 @@ install_and_setup_homedir_files() {
 }
 
 ssh_keys_aws() {
-	echo
+	clear
 	aws_ec2=
 	until [[ ${aws_ec2} =~ ^[yYnN].*$ ]]; do
 		[[ -n ${aws_ec2} ]] && echo "${aws_ec2}: invalid selection."
@@ -208,7 +208,7 @@ ssh_keys_aws() {
 }
 
 ssh_keys_non_aws() {
-	echo
+	clear
 	echo "Would you like to use an existing SSH key?"
 	echo "Press 'n' if you want to generate a new SSH key pair"
 	echo
@@ -243,8 +243,7 @@ SECRET_FILE="${HOME}/ansible-easy-vpn/secret.yml"
 touch ${SECRET_FILE}
 [[ -f "${SECRET_FILE}" ]] && {
 	echo
-	echo "WARNING:"
-	echo "${SECRET_FILE} already exists..."
+	echo "WARNING: ${SECRET_FILE} already exists"
 	echo
 }
 chmod 600 "${SECRET_FILE}"
@@ -256,12 +255,9 @@ CUSTOM_FILE="${HOME}/ansible-easy-vpn/custom.yml"
 touch ${CUSTOM_FILE}
 [[ -f "${CUSTOM_FILE}" ]] && {
 	echo
-	echo "WARNING:"
-	echo "${CUSTOM_FILE} already exists..."
+	echo "WARNING: ${CUSTOM_FILE} already exists"
 	echo
 }
-
-
 
 
 
@@ -285,11 +281,9 @@ done
 echo "username: \"${username}\"" >> "${CUSTOM_FILE}"
 
 
-echo
+clear
 echo "Enter your user password"
 echo "This password will be used for Authelia login, administrative access and SSH login"
-echo "Passwords longer trhan 72 bytes are not supported by OpenSSH private key format"
-echo "Also, the password cannot be empty"
 while :
 do
 	user_password=
@@ -312,8 +306,7 @@ done
 echo "user_password: \"${user_password}\"" > "${SECRET_FILE}"
 
 
-echo
-echo
+clear
 echo "Enter your domain name"
 echo "The domain name should already resolve to the IP address of your server"
 echo "Make sure that 'wg' and 'auth' subdomains also point to that IP (not necessary with DuckDNS)"
@@ -362,7 +355,7 @@ echo "root_host: \"${root_host}\"" >> "${CUSTOM_FILE}"
 
 check_aws
 
-echo
+clear
 echo "Would you like to set up the e-mail functionality?"
 echo "It will be used to confirm the 2FA setup and restore the password in case you forget it"
 echo
@@ -389,7 +382,7 @@ done
 echo
 echo "Encrypting the variables"
 ansible-vault encrypt "${SECRET_FILE}"
-echo
+clear
 echo "Success!"
 
 
