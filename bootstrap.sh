@@ -91,19 +91,17 @@ do_email_setup() {
 	echo
 	read -r -p "'From' e-mail: " email
 	[[ -n ${email} ]] && {
-		echo "email: \"${email}\"" |tee -a "${CUSTOM_FILE}"
+		echo "email: \"${email}\"" >> "${CUSTOM_FILE}"
 	}
 
 	read -r -p "'To' e-mail: " email_recipient
 	[[ -n "${email_recipient}" ]] && {
-		echo "email_recipient: \"${email_recipient}\"" |tee -a "${CUSTOM_FILE}"
+		echo "email_recipient: \"${email_recipient}\"" >> "${CUSTOM_FILE}"
 	}
 
-	(
-	echo "email_smtp_host: \"${email_smtp_host}\""
-	echo "email_smtp_port: \"${email_smtp_port}\""
-	echo "email_login: \"${email_login}\""
-	) |tee -a "${CUSTOM_FILE}"
+	echo "email_smtp_host: \"${email_smtp_host}\"" >> "${CUSTOM_FILE}"
+	echo "email_smtp_port: \"${email_smtp_port}\"" >> "${CUSTOM_FILE}"
+	echo "email_login: \"${email_login}\"" >> "${CUSTOM_FILE}"
 
 	if [ -z "${email_password+x}" ]; then
 		echo
@@ -201,7 +199,7 @@ ssh_keys_aws() {
 	done
 	if [[ "${aws_ec2}" =~ ^[yY].*$ ]]; then
 		export AWS_EC2=true
-		echo "aws_ec2: \"${aws_ec2}\"" |tee -a "${CUSTOM_FILE}"
+		echo "aws_ec2: \"${aws_ec2}\"" >> "${CUSTOM_FILE}"
 		echo
 		echo "Please use the SSH keys that you specified in the AWS Management Console to log in to the server."
 		echo "Also, make sure that your Security Group allows inbound connections on 51820/udp, 80/tcp and 443/tcp."
@@ -221,13 +219,13 @@ ssh_keys_non_aws() {
 		}
 		read -r -p "Use existing SSH key? [y/N]: " new_ssh_key_pair
 	done
-	echo "enable_ssh_keygen: true" |tee -a "${CUSTOM_FILE}"
+	echo "enable_ssh_keygen: true" >> "${CUSTOM_FILE}"
 
 	[[ "${new_ssh_key_pair}" =~ ^[yY].*$ ]] && {
 		# NO checks done for public key....
 		echo
 		read -r -p "Please enter your SSH public key: " ssh_key_pair
-		echo "ssh_public_key: \"${ssh_key_pair}\"" |tee -a "${CUSTOM_FILE}"
+		echo "ssh_public_key: \"${ssh_key_pair}\"" >> "${CUSTOM_FILE}"
 	}
 }
 
@@ -284,7 +282,7 @@ done
 # First write to CUSTOM_FILE, old content will be lost
 # - appending to file anyway, last entry will count, may end up using
 #   sed method later to not have multiple entries to confuse things.
-echo "username: \"${username}\"" |tee -a "${CUSTOM_FILE}"
+echo "username: \"${username}\"" >> "${CUSTOM_FILE}"
 
 
 echo
@@ -360,7 +358,7 @@ done
 
 # Check certbot to make sure host is okay
 check_certbot_dryrun
-echo "root_host: \"${root_host}\"" |tee -a "${CUSTOM_FILE}"
+echo "root_host: \"${root_host}\"" >> "${CUSTOM_FILE}"
 
 check_aws
 
