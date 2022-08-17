@@ -271,7 +271,9 @@ until [[ ${username} =~ ^[a-z0-9]*$ && -n ${username} ]]; do
 	read -r -p "Username: " username
 done
 # First write to CUSTOM_FILE, old content will be lost
-echo "username: \"${username}\"" |tee "${CUSTOM_FILE}"
+# - appending to file anyway, last entry will count, may end up using
+#   sed method later to not have multiple entries to confuse things.
+echo "username: \"${username}\"" |tee -a "${CUSTOM_FILE}"
 
 
 echo
@@ -329,14 +331,12 @@ while :
 do
 	# Okay, a "list of IPs" probably doesn't make sense for WG,
 	# but checking for the sub domains does make sense.
-	# - got this using main domain for sub domains right now
 	# Probably can't do round robin DNS for WG ....
+	# - but might be useful for other server types using this bootstrap
 	public_ip=$(curl -s ipinfo.io/ip)
 	domain_ip_list=$(get_ip_list "${root_host}")
-	wg_domain_ip_list=$(get_ip_list "${root_host}")
-	auth_domain_ip_list=$(get_ip_list "${root_host}")
-	#wg_domain_ip_list=$(get_ip_list "wg.${root_host}")
-	#auth_domain_ip_list=$(get_ip_list "auth.${root_host}")
+	wg_domain_ip_list=$(get_ip_list "wg.${root_host}")
+	auth_domain_ip_list=$(get_ip_list "auth.${root_host}")
 
 	(
 	echo "public_ip: ${public_ip}"
