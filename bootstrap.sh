@@ -342,8 +342,8 @@ do
 	# - but might be useful for other server types using this bootstrap
 	public_ip=$(curl -s ipinfo.io/ip)
 	domain_ip_list=$(get_ip_list "${root_host}")
-	wg_domain_ip_list=$(get_ip_list "wg.${root_host}")
-	auth_domain_ip_list=$(get_ip_list "auth.${root_host}")
+	wg_domain_ip_list=$(get_ip_list "${root_host}" "wg.${root_host}")
+	auth_domain_ip_list=$(get_ip_list "${root_host}" "auth.${root_host}")
 
 	(
 	echo "public_ip: ${public_ip}"
