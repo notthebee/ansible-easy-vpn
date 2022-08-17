@@ -174,7 +174,6 @@ clone_repo_galaxy() {
 
 ssh_keys_aws() {
 	clear
-	echo
 	aws_ec2=
 	until [[ ${aws_ec2} =~ ^[yYnN].*$ ]]; do
 		[[ -n ${aws_ec2} ]] && echo "${aws_ec2}: invalid selection."
@@ -193,7 +192,6 @@ ssh_keys_aws() {
 
 ssh_keys_non_aws() {
 	clear
-	echo
 	echo "Would you like to use an existing SSH key?"
 	echo "Press 'n' if you want to generate a new SSH key pair"
 	echo
@@ -223,7 +221,6 @@ clone_repo_galaxy
 
 # Set secure permissions for the Vault file
 SECRET_FILE="${HOME}/ansible-easy-vpn/secret.yml"
-touch ${SECRET_FILE}
 [[ -f "${SECRET_FILE}" ]] && {
 	clear
 	echo "WARNING: ${SECRET_FILE} already exists"
@@ -231,6 +228,7 @@ touch ${SECRET_FILE}
 	read -n 1 -s -r -p "Press [Enter] to continue or Ctrl+C to abort "
 	echo
 }
+touch ${SECRET_FILE}
 chmod 600 "${SECRET_FILE}"
 
 # Permissions are not critical with the CUSTOM_FILE
@@ -240,7 +238,6 @@ touch ${CUSTOM_FILE}
 
 
 clear
-echo
 echo "Welcome to ansible-easy-vpn!"
 echo
 echo "This script is interactive"
