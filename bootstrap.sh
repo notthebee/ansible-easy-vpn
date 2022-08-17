@@ -73,7 +73,7 @@ check_root() {
 do_email_setup() {
 	echo
 	email_smtp_host=
-	until [[ ${email_smtp_host} =~ ^[a-z0-9\.]*$ ]]; do
+	until [[ ${email_smtp_host} =~ ^[a-z0-9\.]+$ ]]; do
 		[[ -n "${email_smtp_host}" ]] && echo "Invalid SMTP server"
 		read -r -p "SMTP server: " email_smtp_host
 	done
@@ -90,12 +90,14 @@ do_email_setup() {
 	done
 	echo
 	echo
-	read -r -p "'From' e-mail: " email
+	read -r -p "'From' e-mail [${email_login}]: " email
+	${email}=${email:-${email_login}}
 	[[ -n ${email} ]] && {
 		echo "email: \"${email}\"" >> "${CUSTOM_FILE}"
 	}
 
-	read -r -p "'To' e-mail: " email_recipient
+	read -r -p "'To' e-mail [${email}]: " email_recipient
+	${email_recipient}=${email_recipient:-${email}}
 	[[ -n "${email_recipient}" ]] && {
 		echo "email_recipient: \"${email_recipient}\"" >> "${CUSTOM_FILE}"
 	}
@@ -247,7 +249,7 @@ echo
 echo "Enter your desired UNIX username"
 
 username=
-until [[ ${username} =~ ^[a-z0-9]*$ && -n ${username} ]]; do
+until [[ ${username} =~ ^[a-z0-9]+$ && -n ${username} ]]; do
 	[[ -n ${username} ]] && echo "Invalid username"
 	echo "Make sure the username only contains lowercase letters and numbers"
 	read -r -p "Username: " username
@@ -287,7 +289,7 @@ echo "The domain name should already resolve to the IP address of your server"
 echo "Make sure that 'wg' and 'auth' subdomains also point to that IP (not necessary with DuckDNS)"
 echo
 root_host=
-until [[ ${root_host} =~ ^[a-z0-9\.-]*$ && -n ${root_host} ]]; do
+until [[ ${root_host} =~ ^[a-z0-9\.-]+$ && -n ${root_host} ]]; do
 	[[ -n ${root_host} ]] && echo "Invalid domain name"
 	read -r -p "Domain name: " root_host
 done
