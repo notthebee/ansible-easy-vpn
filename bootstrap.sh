@@ -124,8 +124,10 @@ get_ip_list() {
 	fi
 
 	declare -a NAMESERVERS=(
-		dig -t ns +short "${main_domain}" || "1.1.1.1"
+		dig -t ns +short "${main_domain}"
 	)
+	# Fallback to Cloudflare DNS if no nameservers are found
+	[[ -n "${NAMESERVERS}" ]] && declare -a NAMESERVERS=("1.1.1.1" "1.0.0.1")
 	# There should always be at least 2 nameservers, choose one randomly
 	DNS_HOST_IDX=$(( RANDOM % ${#NAMESERVERS[@]} ))
 	DNS_HOST=${NAMESERVERS["${DNS_HOST_IDX}"]}
