@@ -32,6 +32,7 @@ check_certbot_dryrun() {
 		-d "${root_host}" \
 		-d "wg.${root_host}" \
 		-d "auth.${root_host}" || exit
+	echo
 	echo "OK"
 }
 
@@ -81,8 +82,8 @@ do_email_setup() {
 
 	read -r -p "SMTP port [465]: " email_smtp_port
 	email_smtp_port=${email_smtp_port:-465}
-	until [[ ${email_smtp_host} =~ ^[0-9]+$ ]]; do
-		[[ -n "${email_smtp_host}" ]] && echo "Invalid SMTP port"
+	until [[ ${email_smtp_port} =~ ^[0-9]+$ ]]; do
+		echo "Invalid SMTP port"
 		read -r -p "SMTP port [465]: " email_smtp_port
 	done
 	echo
@@ -259,6 +260,7 @@ echo "Enter your desired UNIX username"
 
 read -r -p "Username: " username
 until [[ ${username} =~ ^[a-z0-9]+$ && -n ${username} ]]; do
+	echo 
 	echo "Invalid username"
 	echo "Make sure the username only contains lowercase letters and numbers"
 	read -r -p "Username: " username
@@ -275,6 +277,7 @@ do
 	until [[ ${#user_password} -lt 73 && -n ${user_password} ]]; do
 		echo
 		[[ ${#user_password} -gt 72 ]] && echo "The password is too long"
+		[[ -n ${user_password} ]] && echo "The password is empty"
 		read -s -r -p "Password: " user_password
 	done
 	user_password2=
