@@ -7,6 +7,7 @@ DNS="1.1.1.1"
 
 CUSTOM_FILE="${ANSIBLE_WORK_DIR}/custom.yml"
 SECRET_FILE="${ANSIBLE_WORK_DIR}/secret.yml"
+REQUIRED_PACKAGES=()
 
 check_aws() {
 	# Check if we're running on an AWS EC2 instance
@@ -50,7 +51,7 @@ check_os() {
 	
 	# Set the dependencies for Ubuntu
 	# TODO: Use this to declare different dependencies for different OSes
-	declare -a REQUIRED_PACKAGES=(
+	REQUIRED_PACKAGES+=(
 		software-properties-common
 		certbot
 		dnsutils
