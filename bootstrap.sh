@@ -5,6 +5,9 @@ ANSIBLE_WORK_DIR="${HOME}/ansible-easy-vpn"
 GITHUB_REPO="https://github.com/notthebee/ansible-easy-vpn"
 DNS="1.1.1.1"
 
+CUSTOM_FILE="${ANSIBLE_WORK_DIR}/custom.yml"
+SECRET_FILE="${ANSIBLE_WORK_DIR}/secret.yml"
+
 check_aws() {
 	# Check if we're running on an AWS EC2 instance
 	set +e
@@ -13,7 +16,7 @@ check_aws() {
 	if [[ "${aws}" =~ ^ami.*$ ]]; then
 		ssh_keys_aws
 	else
-		ssh_keys_non_aws
+		ssh_keys
 	fi
 	set -e
 }
@@ -44,6 +47,25 @@ check_os() {
 			grep 'VERSION_ID' /etc/os-release | \
 				cut -d '"' -f 2 | tr -d '.'
 		)
+	
+	# Set the dependencies for Ubuntu
+	# TODO: Use this to declare different dependencies for different OSes
+	declare -a REQUIRED_PACKAGES=(
+		software-properties-common
+		certbot
+		dnsutils
+		curl
+		git
+		python3
+		python3-setuptools
+		python3-apt
+		python3-pip
+		python3-passlib
+		python3-wheel
+		python3-bcrypt
+		aptitude
+		)
+
 	else
 		echo "This installer seems to be running on an unsupported distribution."
 		echo "Supported distros are Ubuntu 20.04 and 22.04"
@@ -143,22 +165,6 @@ install_dependencies() {
 	export DEBIAN_FRONTEND=noninteractive
 
 	# Update apt database, update all packages and install Ansible + dependencies
-	declare -a REQUIRED_PACKAGES=(
-	software-properties-common
-	certbot
-	dnsutils
-	curl
-	git
-	python3
-	python3-setuptools
-	python3-apt
-	python3-pip
-	python3-passlib
-	python3-wheel
-	python3-bcrypt
-	aptitude
-	)
-
 	check_root
 	${SUDO} apt update -y
 
@@ -185,7 +191,6 @@ install_dependencies() {
 }
 
 clone_repo_galaxy() {
-
 	# Clone the Ansible playbook
 	[ -d "${ANSIBLE_WORK_DIR}" ] || {
 		git clone "${GITHUB_REPO}" "${ANSIBLE_WORK_DIR}"
@@ -198,9 +203,9 @@ clone_repo_galaxy() {
 
 ssh_keys_aws() {
 	clear
-	aws_ec2=
+	read -r -p "Are you running this script on an AWS EC2 instance? [y/N]: " aws_ec2
 	until [[ ${aws_ec2} =~ ^[yYnN].*$ ]]; do
-		[[ -n ${aws_ec2} ]] && echo "${aws_ec2}: invalid selection."
+		echo "${aws_ec2}: invalid selection."
 		read -r -p "Are you running this script on an AWS EC2 instance? [y/N]: " aws_ec2
 	done
 	if [[ "${aws_ec2}" =~ ^[yY].*$ ]]; then
@@ -214,53 +219,87 @@ ssh_keys_aws() {
 	fi
 }
 
-ssh_keys_non_aws() {
+ssh_keys() {
 	clear
 	echo "Would you like to use an existing SSH key?"
 	echo "Press 'n' if you want to generate a new SSH key pair"
 	echo
-	new_ssh_key_pair=
+	read -r -p "Use existing SSH key? [y/N]: " new_ssh_key_pair
 	until [[ ${new_ssh_key_pair} =~ ^[yYnN].*$ ]]; do
-		[[ -n ${new_ssh_key_pair} ]] && {
-			echo "${new_ssh_key_pair}: invalid selection."
-		}
+		echo
+		echo "${new_ssh_key_pair}: invalid selection."
 		read -r -p "Use existing SSH key? [y/N]: " new_ssh_key_pair
 	done
-	echo "enable_ssh_keygen: true" >> "${CUSTOM_FILE}"
 
-	[[ "${new_ssh_key_pair}" =~ ^[yY].*$ ]] && {
+	if [[ "${new_ssh_key_pair}" =~ ^[yY].*$ ]]; then
 		# NO checks done for public key....
 		echo
 		read -r -p "Please enter your SSH public key: " ssh_key_pair
+		until [[ ${ssh_key_pair} =~ ^ssh\-.+$ ]]; do
+			echo
+			echo "Invalid public key. Your SSH key should begin with `ssh-`"
+			read -r -p "Please enter your SSH public key: " ssh_key_pair
+		done
 		echo "ssh_public_key: \"${ssh_key_pair}\"" >> "${CUSTOM_FILE}"
-	}
+	fi
 }
 
+set_permissions() {
+	# Set secure permissions for the Vault file
+	[[ -f "${SECRET_FILE}" ]] && {
+		clear
+		echo "WARNING: ${SECRET_FILE} already exists"
+		echo "Running this script will overwrite its contents"
+		read -n 1 -s -r -p "Press [Enter] to continue or Ctrl+C to abort "
+		echo
+	}
+	touch ${SECRET_FILE}
+	chmod 600 "${SECRET_FILE}"
+
+	# Permissions are not critical with the CUSTOM_FILE
+	# - secrets are not kept in this file
+	touch ${CUSTOM_FILE}
+}
+
+
+check_domain_dns() {
+	public_ip=$(curl -s ipinfo.io/ip)
+	root_ip=$(dig +short @${DNS} ${root_host})
+	wg_ip=$(dig +short @${DNS} wg.${root_host})
+	auth_ip=$(dig +short @${DNS} auth.${root_host})
+
+	# Declare a hash map with subdomains and their respective IPs
+	declare -A DOMAINS=(
+	["root"]="$root_ip"
+	["wg"]="$wg_ip"
+	["auth"]="$auth_ip"
+)
+
+	# Iterate through the subdomain hashmap until all of them resolve to the IP of the server
+	for domain in "${!DOMAINS[@]}"; do
+		until [[ ${DOMAINS[$domain]} =~ $public_ip ]]; do
+			echo
+			echo "The domain ${domain}.${root_host} does not resolve to the public IP of this server (${public_ip})"
+			echo
+			root_host_prev="${root_host}"
+			read -r -p "Domain name [${root_host_prev}]: " root_host
+			[[ -z ${root_host} ]] && root_host="${root_host_prev}"
+			if [[ $domain =~ "root" ]]; then
+				DOMAINS[$domain]=$(dig +short @${DNS} ${root_host})
+			else
+				DOMAINS[$domain]=$(dig +short @${DNS} $domain.${root_host})
+			fi
+		done
+	done
+}
 
 # Main
 check_os
 install_dependencies
 clone_repo_galaxy
+set_permissions
 
-
-# Set secure permissions for the Vault file
-SECRET_FILE="${HOME}/ansible-easy-vpn/secret.yml"
-[[ -f "${SECRET_FILE}" ]] && {
-	clear
-	echo "WARNING: ${SECRET_FILE} already exists"
-	echo "Running this script will overwrite its contents"
-	read -n 1 -s -r -p "Press [Enter] to continue or Ctrl+C to abort "
-	echo
-}
-touch ${SECRET_FILE}
-chmod 600 "${SECRET_FILE}"
-
-# Permissions are not critical with the CUSTOM_FILE
-# - secrets are not kept in this file
-CUSTOM_FILE="${HOME}/ansible-easy-vpn/custom.yml"
-touch ${CUSTOM_FILE}
-
-
+# Greeting
 clear
 echo "Welcome to ansible-easy-vpn!"
 echo
@@ -268,8 +307,9 @@ echo "This script is interactive"
 echo "If you prefer to fill in the ${CUSTOM_FILE} file manually,"
 echo "press [Ctrl+C] to quit this script"
 echo
-echo "Enter your desired UNIX username"
 
+# Username
+echo "Enter your desired UNIX username"
 read -r -p "Username: " username
 until [[ ${username} =~ ^[a-z0-9]+$ && -n ${username} ]]; do
 	echo 
@@ -277,9 +317,10 @@ until [[ ${username} =~ ^[a-z0-9]+$ && -n ${username} ]]; do
 	echo "Make sure the username only contains lowercase letters and numbers"
 	read -r -p "Username: " username
 done
-
 echo "username: \"${username}\"" >> "${CUSTOM_FILE}"
 
+
+# Password
 clear
 echo "Enter your user password"
 echo "This password will be used for Authelia login, administrative access and SSH login"
@@ -307,6 +348,7 @@ done
 echo "user_password: \"${user_password}\"" > "${SECRET_FILE}"
 
 
+# Domain name
 clear
 echo "Enter your domain name"
 echo "The domain name should already resolve to the IP address of your server"
@@ -320,39 +362,18 @@ done
 
 echo
 echo "Checking if the domain name resolves to the IP of this server..."
-public_ip=$(curl -s ipinfo.io/ip)
-root_ip=$(dig +short @${DNS} ${root_host})
-wg_ip=$(dig +short @${DNS} wg.${root_host})
-auth_ip=$(dig +short @${DNS} auth.${root_host})
-declare -A DOMAINS=(
-["root"]="$root_ip"
-["wg"]="$wg_ip"
-["auth"]="$auth_ip"
-)
 
-# The public_ip MUST be in the list of returned IPv4 addresses
-for domain in "${!DOMAINS[@]}"; do
-	until [[ ${DOMAINS[$domain]} =~ $public_ip ]]; do
-		echo
-		echo "The domain ${domain}.${root_host} does not resolve to the public IP of this server (${public_ip})"
-		echo
-		root_host_prev="${root_host}"
-		read -r -p "Domain name [${root_host_prev}]: " root_host
-		[[ -z ${root_host} ]] && root_host="${root_host_prev}"
-		if [[ $domain =~ "root" ]]; then
-			DOMAINS[$domain]=$(dig +short @${DNS} ${root_host})
-		else
-			DOMAINS[$domain]=$(dig +short @${DNS} $domain.${root_host})
-		fi
-	done
-done
-
-# Check certbot to make sure host is okay
+# Check that @, wg and auth all resolve to the server's IP
+check_domain_dns
+# Issue a staging Let's Encrypt cert to make sure the server is reachable
 check_certbot_dryrun
+# Once everything checks out, save the domain name into the custom variables file
 echo "root_host: \"${root_host}\"" >> "${CUSTOM_FILE}"
 
+# Check if the user is running AWS and handle SSH key generation
 check_aws
 
+# E-Mail
 clear
 echo "Would you like to set up the e-mail functionality?"
 echo "It will be used to confirm the 2FA setup and restore the password in case you forget it"
@@ -367,7 +388,7 @@ done
 [[ "${email_setup}" =~ ^[yY].*$ ]] && do_email_setup
 
 
-# Save other secrets
+# Generate and save the Authelia secrets
 (
 for _secret in jwt_secret session_secret storage_encryption_key
 do
@@ -376,7 +397,7 @@ done
 ) >> "${SECRET_FILE}"
 
 
-# Protect all the secrets in the SECRET_FILE
+# Encrypt the ${SECRET_FILE}
 clear
 echo "Encrypting the variables"
 echo
