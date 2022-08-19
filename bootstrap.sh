@@ -7,7 +7,8 @@ DNS="1.1.1.1"
 
 CUSTOM_FILE="${ANSIBLE_WORK_DIR}/custom.yml"
 SECRET_FILE="${ANSIBLE_WORK_DIR}/secret.yml"
-REQUIRED_PACKAGES=()
+declare -a REQUIRED_PACKAGES
+declare -a NAMESERVERS
 
 check_aws() {
 	# Check if we're running on an AWS EC2 instance
@@ -48,23 +49,23 @@ check_os() {
 			grep 'VERSION_ID' /etc/os-release | \
 				cut -d '"' -f 2 | tr -d '.'
 		)
-	
-	# Set the dependencies for Ubuntu
-	# TODO: Use this to declare different dependencies for different OSes
-	REQUIRED_PACKAGES+=(
-		software-properties-common
-		certbot
-		dnsutils
-		curl
-		git
-		python3
-		python3-setuptools
-		python3-apt
-		python3-pip
-		python3-passlib
-		python3-wheel
-		python3-bcrypt
-		aptitude
+
+		# Set the dependencies for Ubuntu
+		# TODO: Use this to declare different dependencies for different OSes
+		REQUIRED_PACKAGES=(
+			software-properties-common
+			certbot
+			dnsutils
+			curl
+			git
+			python3
+			python3-setuptools
+			python3-apt
+			python3-pip
+			python3-passlib
+			python3-wheel
+			python3-bcrypt
+			aptitude
 		)
 
 	else
@@ -124,9 +125,9 @@ do_email_setup() {
 
 	read -r -s -p "SMTP password: " email_password
 	until [[ -n ${email_password} ]]; do
-		echo 
+		echo
 		echo "The password is empty"
-		echo 
+		echo
 		read -r -s -p "SMTP password: " email_password
 	done
 	echo
@@ -151,15 +152,61 @@ do_email_setup() {
 		read -r -s -p "'To' email: " email_recipient
 	done
 
-	echo "email_smtp_host: \"${email_smtp_host}\"" >> "${CUSTOM_FILE}"
-	echo "email_smtp_port: \"${email_smtp_port}\"" >> "${CUSTOM_FILE}"
-	echo "email_login: \"${email_login}\"" >> "${CUSTOM_FILE}"
-	echo "email: \"${email}\"" >> "${CUSTOM_FILE}"
-	echo "email_recipient: \"${email_recipient}\"" >> "${CUSTOM_FILE}"
+	(
+	echo "email_smtp_host: \"${email_smtp_host}\""
+	echo "email_smtp_port: \"${email_smtp_port}\""
+	echo "email_login: \"${email_login}\""
+	echo "email: \"${email}\""
+	echo "email_recipient: \"${email_recipient}\""
+	) >> "${CUSTOM_FILE}"
+
 	echo "email_password: \"${email_password}\"" >> "${SECRET_FILE}"
 
 }
 
+get_authoritive_nameservers() {
+	# Find name servers for a domain name
+	# - may have sub domains to remove to get to the name servers
+	local DOMX=${1}
+	local NEW_DOMX
+	while :
+	do
+		mapfile -t NAMESERVERS < <(
+			dig -t ns "${DOMX}"    |
+				grep -Ev '(^;|^$)' |
+				column -t          |
+				awk '$4 == "NS" {print $5}'
+		)
+		[[ ${#NAMESERVERS[@]} -gt 0 ]] && break
+		NEW_DOMX="${DOMX#*.}"
+		[[ ${DOMX} == "${NEW_DOMX}" ]] && {
+			# This should never happen, but it will if the TLD is invalid
+			# OR there are no name servers setup for the domain name
+			# Besides, if we get to the TLD, we are already in trouble.
+			echo "bad TLD for given domain name OR missing authoritive name servers: ${DOMX}"
+			exit
+		}
+		DOMX="${NEW_DOMX}"
+	done
+}
+
+get_ip_list() {
+	# variable 1 is the main domain
+	# variable 2 if present is (sub) host to query, falls back to $1
+	local main_domain="${1}"
+	local query_domain
+	if [[ $# -eq 1 ]]; then
+		query_domain="${1}"
+	else
+		query_domain="${2}"
+	fi
+	get_authoritive_nameservers "${main_domain}"
+	# There should always be at least 2 nameservers, choose one randomly
+	DNS_HOST_IDX=$(( RANDOM % ${#NAMESERVERS[@]} ))
+	DNS_HOST=${NAMESERVERS["${DNS_HOST_IDX}"]}
+	dig -t a +short @"${DNS_HOST}" "${query_domain}" | \
+		grep '^[1-9]'  | tr '\n' ' '
+}
 
 install_dependencies() {
 	# Disable interactive apt functionality
@@ -236,9 +283,9 @@ ssh_keys() {
 		# NO checks done for public key....
 		echo
 		read -r -p "Please enter your SSH public key: " ssh_key_pair
-		until [[ ${ssh_key_pair} =~ ^ssh\-.+$ ]]; do
+		until [[ ${ssh_key_pair} =~ ^ssh-.+$ ]]; do
 			echo
-			echo "Invalid public key. Your SSH key should begin with `ssh-`"
+			echo "Invalid public key. Your SSH key should begin with \`ssh-\`"
 			read -r -p "Please enter your SSH public key: " ssh_key_pair
 		done
 		echo "ssh_public_key: \"${ssh_key_pair}\"" >> "${CUSTOM_FILE}"
@@ -254,43 +301,87 @@ set_permissions() {
 		read -n 1 -s -r -p "Press [Enter] to continue or Ctrl+C to abort "
 		echo
 	}
-	touch ${SECRET_FILE}
+	touch "${SECRET_FILE}"
 	chmod 600 "${SECRET_FILE}"
 
 	# Permissions are not critical with the CUSTOM_FILE
 	# - secrets are not kept in this file
-	touch ${CUSTOM_FILE}
+	touch "${CUSTOM_FILE}"
 }
 
 
 check_domain_dns() {
+	declare -a ip_array
 	public_ip=$(curl -s ipinfo.io/ip)
-	root_ip=$(dig +short @${DNS} ${root_host})
-	wg_ip=$(dig +short @${DNS} wg.${root_host})
-	auth_ip=$(dig +short @${DNS} auth.${root_host})
 
 	# Declare a hash map with subdomains and their respective IPs
 	declare -A DOMAINS=(
-	["root"]="$root_ip"
-	["wg"]="$wg_ip"
-	["auth"]="$auth_ip"
-)
+		["root"]="$root_ip"
+		["wg"]="$wg_ip"
+		["auth"]="$auth_ip"
+	)
 
 	# Iterate through the subdomain hashmap until all of them resolve to the IP of the server
+	FAILED_CHECK=0
 	for domain in "${!DOMAINS[@]}"; do
-		until [[ ${DOMAINS[$domain]} =~ $public_ip ]]; do
-			echo
-			echo "The domain ${domain}.${root_host} does not resolve to the public IP of this server (${public_ip})"
-			echo
-			root_host_prev="${root_host}"
-			read -r -p "Domain name [${root_host_prev}]: " root_host
-			[[ -z ${root_host} ]] && root_host="${root_host_prev}"
-			if [[ $domain =~ "root" ]]; then
-				DOMAINS[$domain]=$(dig +short @${DNS} ${root_host})
+		while :
+		do
+			if [[ $domain == "root" ]]; then
+				work_domain="${root_host}"
 			else
-				DOMAINS[$domain]=$(dig +short @${DNS} $domain.${root_host})
+				work_domain="${domain}.${root_host}"
 			fi
+			# Get IPv4 address(es) from DNS query
+			# - this may return more than one IPv4 address
+			# - it will also remove CNAME data (if any)
+			DOMAINS[${domain}]=$(
+				dig +short @"${DNS}" \
+					"${work_domain}" |
+					grep '[1-9]*\.[0-9]*\.[0-9]*\.[0-9]*'|tr '\n' ' '
+			)
+			# The public ipv4 address must be found in the set returned
+			# - NB: matching must be a full exact match
+			ip_array=( ${DOMAINS[${domain}]} )
+			declare -p ip_array|grep -q  "\"${public_ip}\""
+			[[ $? == 0 ]] && { echo "${work_domain}: Ok"; break; }
+			echo
+			echo "The domain ${work_domain} does not resolve to the public IP of this server (${public_ip})"
+			echo
+			FAILED_CHECK=1;break
 		done
+		[[ ${FAILED_CHECK} -eq 1 ]] && break
+	done
+}
+
+check_domain_dns_other_not_used() {
+	while :
+	do
+		# Okay, a "list of IPs" probably doesn't make sense for WG,
+		# but checking for the sub domains does make sense.
+		# Probably can't do round robin DNS for WG ....
+		# - but might be useful for other server types using this bootstrap
+		public_ip=$(curl -s ipinfo.io/ip)
+		domain_ip_list=$(get_ip_list "${root_host}")
+		wg_domain_ip_list=$(get_ip_list "${root_host}" "wg.${root_host}")
+		auth_domain_ip_list=$(get_ip_list "${root_host}" "auth.${root_host}")
+
+		(
+		echo "public_ip: ${public_ip}"
+		echo "domain_ip_list: ${domain_ip_list}"
+		echo "wg.domain_ip_list: ${wg_domain_ip_list}"
+		echo "auth.domain_ip_list: ${auth_domain_ip_list}"
+		) | column -t
+		# The public_ip MUST be in the list of returned IPv4 addresses
+		[[ ${domain_ip_list} =~ ${public_ip} &&
+			${wg_domain_ip_list} =~ ${public_ip} &&
+			${auth_domain_ip_list} =~ ${public_ip} ]] && break
+		echo
+		echo "The domain ${root_host} does not resolve to the public IP of this server (${public_ip})"
+		echo
+		root_host_prev="${root_host}"
+		read -r -p "Domain name [${root_host_prev}]: " root_host
+		[[ -z ${root_host} ]] && root_host="${root_host_prev}"
+		echo
 	done
 }
 
@@ -313,7 +404,7 @@ echo
 echo "Enter your desired UNIX username"
 read -r -p "Username: " username
 until [[ ${username} =~ ^[a-z0-9]+$ && -n ${username} ]]; do
-	echo 
+	echo
 	echo "Invalid username"
 	echo "Make sure the username only contains lowercase letters and numbers"
 	read -r -p "Username: " username
@@ -331,7 +422,7 @@ do
 	until [[ ${#user_password} -lt 73 && -n ${user_password} ]]; do
 		echo
 		[[ ${#user_password} -gt 72 ]] && echo "The password is too long"
-		[[ -n ${user_password} ]] && echo "The password is empty"
+		[[ -z ${user_password} ]] && echo "The password is empty"
 		read -s -r -p "Password: " user_password
 	done
 	user_password2=
@@ -363,9 +454,20 @@ done
 
 echo
 echo "Checking if the domain name resolves to the IP of this server..."
-
 # Check that @, wg and auth all resolve to the server's IP
-check_domain_dns
+while :
+do
+	check_domain_dns
+	[[ ${FAILED_CHECK} -eq 0 ]] && break
+	root_host_prev="${root_host}"
+	read -r -p "Domain name [${root_host_prev}]: " root_host
+	[[ -z ${root_host} ]] && root_host="${root_host_prev}"
+	until [[ ${root_host} =~ ^[a-z0-9\.-]+$ && -n ${root_host} ]]; do
+		echo "Invalid domain name"
+		read -r -p "Domain name: " root_host
+	done
+done
+
 # Issue a staging Let's Encrypt cert to make sure the server is reachable
 check_certbot_dryrun
 # Once everything checks out, save the domain name into the custom variables file
@@ -425,7 +527,6 @@ else
 	echo
 	echo "You can run the playbook by executing the following command"
 	echo "cd \"${ANSIBLE_WORK_DIR}\" && ansible-playbook run.yml"
-	exit
 fi
 
 exit 0
