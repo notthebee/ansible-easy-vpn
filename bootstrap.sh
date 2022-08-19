@@ -316,9 +316,9 @@ check_domain_dns() {
 
 	# Declare a hash map with subdomains and their respective IPs
 	declare -A DOMAINS=(
-		["root"]="$root_ip"
-		["wg"]="$wg_ip"
-		["auth"]="$auth_ip"
+		["root"]=""
+		["wg"]=""
+		["auth"]=""
 	)
 
 	# Iterate through the subdomain hashmap until all of them resolve to the IP of the server
