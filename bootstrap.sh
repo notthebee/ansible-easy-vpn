@@ -3,7 +3,6 @@
 # before running the Ansible playbook
 ANSIBLE_WORK_DIR="${HOME}/ansible-easy-vpn"
 GITHUB_REPO="https://github.com/notthebee/ansible-easy-vpn"
-DNS="1.1.1.1"
 
 CUSTOM_FILE="${ANSIBLE_WORK_DIR}/custom.yml"
 SECRET_FILE="${ANSIBLE_WORK_DIR}/secret.yml"
@@ -39,6 +38,53 @@ check_certbot_dryrun() {
 		-d "auth.${root_host}" || exit
 	echo
 	echo "OK"
+}
+
+check_domain_dns() {
+	declare -a ip_array
+	public_ip=$(curl -s ipinfo.io/ip)
+
+	get_authoritive_nameservers "${root_host}"
+	DNS_HOST_IDX=$(( RANDOM % ${#NAMESERVERS[@]} ))
+	DNS_HOST=${NAMESERVERS["${DNS_HOST_IDX}"]}
+
+	# Declare a hash map with subdomains and their respective IPs
+	declare -A DOMAINS=(
+		["root"]=""
+		["wg"]=""
+		["auth"]=""
+	)
+
+	# Iterate through the subdomain hashmap until all of them resolve to the IP of the server
+	FAILED_CHECK=0
+	for domain in "${!DOMAINS[@]}"; do
+		while :
+		do
+			if [[ $domain == "root" ]]; then
+				work_domain="${root_host}"
+			else
+				work_domain="${domain}.${root_host}"
+			fi
+			# Get IPv4 address(es) from DNS query
+			# - this may return more than one IPv4 address
+			# - it will also remove CNAME data (if any)
+			DOMAINS[${domain}]=$(
+				dig +short @"${DNS_HOST}" \
+					"${work_domain}" |
+					grep '[1-9]*\.[0-9]*\.[0-9]*\.[0-9]*'|tr '\n' ' '
+			)
+			# The public ipv4 address must be found in the set returned
+			# - NB: matching must be a full exact match
+			ip_array=( ${DOMAINS[${domain}]} )
+			declare -p ip_array|grep -q  "\"${public_ip}\""
+			[[ $? == 0 ]] && { echo "${work_domain}: Ok"; break; }
+			echo
+			echo "The domain ${work_domain} does not resolve to the public IP of this server (${public_ip})"
+			echo
+			FAILED_CHECK=1;break
+		done
+		[[ ${FAILED_CHECK} -eq 1 ]] && break
+	done
 }
 
 check_os() {
@@ -93,6 +139,17 @@ check_root() {
 	else
 		SUDO=''
 	fi
+}
+
+clone_repo_galaxy() {
+	# Clone the Ansible playbook
+	[ -d "${ANSIBLE_WORK_DIR}" ] || {
+		git clone "${GITHUB_REPO}" "${ANSIBLE_WORK_DIR}"
+	}
+
+	cd "${ANSIBLE_WORK_DIR}" && {
+		ansible-galaxy install -r requirements.yml
+	}
 }
 
 do_email_setup() {
@@ -190,24 +247,6 @@ get_authoritive_nameservers() {
 	done
 }
 
-get_ip_list() {
-	# variable 1 is the main domain
-	# variable 2 if present is (sub) host to query, falls back to $1
-	local main_domain="${1}"
-	local query_domain
-	if [[ $# -eq 1 ]]; then
-		query_domain="${1}"
-	else
-		query_domain="${2}"
-	fi
-	get_authoritive_nameservers "${main_domain}"
-	# There should always be at least 2 nameservers, choose one randomly
-	DNS_HOST_IDX=$(( RANDOM % ${#NAMESERVERS[@]} ))
-	DNS_HOST=${NAMESERVERS["${DNS_HOST_IDX}"]}
-	dig -t a +short @"${DNS_HOST}" "${query_domain}" | \
-		grep '^[1-9]'  | tr '\n' ' '
-}
-
 install_dependencies() {
 	# Disable interactive apt functionality
 	export DEBIAN_FRONTEND=noninteractive
@@ -238,15 +277,21 @@ install_dependencies() {
 	check_root
 }
 
-clone_repo_galaxy() {
-	# Clone the Ansible playbook
-	[ -d "${ANSIBLE_WORK_DIR}" ] || {
-		git clone "${GITHUB_REPO}" "${ANSIBLE_WORK_DIR}"
+set_permissions() {
+	# Set secure permissions for the Vault file
+	[[ -f "${SECRET_FILE}" ]] && {
+		clear
+		echo "WARNING: ${SECRET_FILE} already exists"
+		echo "Running this script will overwrite its contents"
+		read -n 1 -s -r -p "Press [Enter] to continue or Ctrl+C to abort "
+		echo
 	}
+	touch "${SECRET_FILE}"
+	chmod 600 "${SECRET_FILE}"
 
-	cd "${ANSIBLE_WORK_DIR}" && {
-		ansible-galaxy install -r requirements.yml
-	}
+	# Permissions are not critical with the CUSTOM_FILE
+	# - secrets are not kept in this file
+	touch "${CUSTOM_FILE}"
 }
 
 ssh_keys_aws() {
@@ -292,98 +337,6 @@ ssh_keys() {
 	fi
 }
 
-set_permissions() {
-	# Set secure permissions for the Vault file
-	[[ -f "${SECRET_FILE}" ]] && {
-		clear
-		echo "WARNING: ${SECRET_FILE} already exists"
-		echo "Running this script will overwrite its contents"
-		read -n 1 -s -r -p "Press [Enter] to continue or Ctrl+C to abort "
-		echo
-	}
-	touch "${SECRET_FILE}"
-	chmod 600 "${SECRET_FILE}"
-
-	# Permissions are not critical with the CUSTOM_FILE
-	# - secrets are not kept in this file
-	touch "${CUSTOM_FILE}"
-}
-
-
-check_domain_dns() {
-	declare -a ip_array
-	public_ip=$(curl -s ipinfo.io/ip)
-
-	# Declare a hash map with subdomains and their respective IPs
-	declare -A DOMAINS=(
-		["root"]=""
-		["wg"]=""
-		["auth"]=""
-	)
-
-	# Iterate through the subdomain hashmap until all of them resolve to the IP of the server
-	FAILED_CHECK=0
-	for domain in "${!DOMAINS[@]}"; do
-		while :
-		do
-			if [[ $domain == "root" ]]; then
-				work_domain="${root_host}"
-			else
-				work_domain="${domain}.${root_host}"
-			fi
-			# Get IPv4 address(es) from DNS query
-			# - this may return more than one IPv4 address
-			# - it will also remove CNAME data (if any)
-			DOMAINS[${domain}]=$(
-				dig +short @"${DNS}" \
-					"${work_domain}" |
-					grep '[1-9]*\.[0-9]*\.[0-9]*\.[0-9]*'|tr '\n' ' '
-			)
-			# The public ipv4 address must be found in the set returned
-			# - NB: matching must be a full exact match
-			ip_array=( ${DOMAINS[${domain}]} )
-			declare -p ip_array|grep -q  "\"${public_ip}\""
-			[[ $? == 0 ]] && { echo "${work_domain}: Ok"; break; }
-			echo
-			echo "The domain ${work_domain} does not resolve to the public IP of this server (${public_ip})"
-			echo
-			FAILED_CHECK=1;break
-		done
-		[[ ${FAILED_CHECK} -eq 1 ]] && break
-	done
-}
-
-check_domain_dns_other_not_used() {
-	while :
-	do
-		# Okay, a "list of IPs" probably doesn't make sense for WG,
-		# but checking for the sub domains does make sense.
-		# Probably can't do round robin DNS for WG ....
-		# - but might be useful for other server types using this bootstrap
-		public_ip=$(curl -s ipinfo.io/ip)
-		domain_ip_list=$(get_ip_list "${root_host}")
-		wg_domain_ip_list=$(get_ip_list "${root_host}" "wg.${root_host}")
-		auth_domain_ip_list=$(get_ip_list "${root_host}" "auth.${root_host}")
-
-		(
-		echo "public_ip: ${public_ip}"
-		echo "domain_ip_list: ${domain_ip_list}"
-		echo "wg.domain_ip_list: ${wg_domain_ip_list}"
-		echo "auth.domain_ip_list: ${auth_domain_ip_list}"
-		) | column -t
-		# The public_ip MUST be in the list of returned IPv4 addresses
-		[[ ${domain_ip_list} =~ ${public_ip} &&
-			${wg_domain_ip_list} =~ ${public_ip} &&
-			${auth_domain_ip_list} =~ ${public_ip} ]] && break
-		echo
-		echo "The domain ${root_host} does not resolve to the public IP of this server (${public_ip})"
-		echo
-		root_host_prev="${root_host}"
-		read -r -p "Domain name [${root_host_prev}]: " root_host
-		[[ -z ${root_host} ]] && root_host="${root_host_prev}"
-		echo
-	done
-}
 
 # Main
 check_os
