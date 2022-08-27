@@ -8,6 +8,7 @@ DNS="1.1.1.1"
 CUSTOM_FILE="${ANSIBLE_WORK_DIR}/custom.yml"
 SECRET_FILE="${ANSIBLE_WORK_DIR}/secret.yml"
 REQUIRED_PACKAGES=()
+REQUIRED_PACKAGES_ARM64=()
 
 check_aws() {
 	# Check if we're running on an AWS EC2 instance
@@ -49,22 +50,30 @@ check_os() {
 				cut -d '"' -f 2 | tr -d '.'
 		)
 	
-	# Set the dependencies for Ubuntu
-	# TODO: Use this to declare different dependencies for different OSes
-	REQUIRED_PACKAGES+=(
-		software-properties-common
-		certbot
-		dnsutils
-		curl
-		git
-		python3
-		python3-setuptools
-		python3-apt
-		python3-pip
-		python3-passlib
-		python3-wheel
-		python3-bcrypt
-		aptitude
+		# Set the dependencies for Ubuntu
+		# TODO: Use this to declare different dependencies for different OSes
+		REQUIRED_PACKAGES+=(
+			software-properties-common
+			certbot
+			dnsutils
+			curl
+			git
+			python3
+			python3-setuptools
+			python3-apt
+			python3-pip
+			python3-passlib
+			python3-wheel
+			python3-bcrypt
+			aptitude
+		)
+
+		REQUIRED_PACKAGES_ARM64+=(
+			gcc
+			python3-dev
+			libffi-dev
+			libssl-dev
+			make
 		)
 
 	else
@@ -178,8 +187,7 @@ install_dependencies() {
 
 	# Extra packages for arm64 (aarch64)
 	[[ $(uname -m) == "aarch64" ]] && {
-		${SUDO} yes | apt install -y \
-			gcc python3-dev libffi-dev libssl-dev make
+		yes | ${SUDO} apt install -y "${REQUIRED_PACKAGES_ARM64[@]}"
 	}
 
 	# Enable interactive apt functionality again
