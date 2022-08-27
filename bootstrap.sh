@@ -48,7 +48,7 @@ $SUDO apt update -y;
 yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy dist-upgrade;
 yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy install software-properties-common certbot dnsutils curl git python3 python3-setuptools python3-apt python3-pip python3-passlib python3-wheel python3-bcrypt aptitude -y;
 yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove;
-[ $(uname -m) == "aarch64" ] && $SUDO yes | apt install gcc dnsutils python3-dev libffi-dev libssl-dev make -y;
+[ $(uname -m) == "aarch64" ] && yes | $SUDO apt install gcc python3-dev libffi-dev libssl-dev make -y;
 
 check_root "-H"
 
