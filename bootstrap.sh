@@ -6,8 +6,9 @@ GITHUB_REPO="https://github.com/notthebee/ansible-easy-vpn"
 
 CUSTOM_FILE="${ANSIBLE_WORK_DIR}/custom.yml"
 SECRET_FILE="${ANSIBLE_WORK_DIR}/secret.yml"
-declare -a REQUIRED_PACKAGES
-declare -a NAMESERVERS
+declare -a REQUIRED_PACKAGES=()
+declare -a REQUIRED_PACKAGES_ARM64=()
+declare -a NAMESERVERS=()
 
 check_aws() {
 	# Check if we're running on an AWS EC2 instance
@@ -40,53 +41,6 @@ check_certbot_dryrun() {
 	echo "OK"
 }
 
-check_domain_dns() {
-	declare -a ip_array
-	public_ip=$(curl -s ipinfo.io/ip)
-
-	get_authoritive_nameservers "${root_host}"
-	DNS_HOST_IDX=$(( RANDOM % ${#NAMESERVERS[@]} ))
-	DNS_HOST=${NAMESERVERS["${DNS_HOST_IDX}"]}
-
-	# Declare a hash map with subdomains and their respective IPs
-	declare -A DOMAINS=(
-		["root"]=""
-		["wg"]=""
-		["auth"]=""
-	)
-
-	# Iterate through the subdomain hashmap until all of them resolve to the IP of the server
-	FAILED_CHECK=0
-	for domain in "${!DOMAINS[@]}"; do
-		while :
-		do
-			if [[ $domain == "root" ]]; then
-				work_domain="${root_host}"
-			else
-				work_domain="${domain}.${root_host}"
-			fi
-			# Get IPv4 address(es) from DNS query
-			# - this may return more than one IPv4 address
-			# - it will also remove CNAME data (if any)
-			DOMAINS[${domain}]=$(
-				dig +short @"${DNS_HOST}" \
-					"${work_domain}" |
-					grep '[1-9]*\.[0-9]*\.[0-9]*\.[0-9]*'|tr '\n' ' '
-			)
-			# The public ipv4 address must be found in the set returned
-			# - NB: matching must be a full exact match
-			ip_array=( ${DOMAINS[${domain}]} )
-			declare -p ip_array|grep -q  "\"${public_ip}\""
-			[[ $? == 0 ]] && { echo "${work_domain}: Ok"; break; }
-			echo
-			echo "The domain ${work_domain} does not resolve to the public IP of this server (${public_ip})"
-			echo
-			FAILED_CHECK=1;break
-		done
-		[[ ${FAILED_CHECK} -eq 1 ]] && break
-	done
-}
-
 check_os() {
 	# Detect OS
 	if grep -qs "ubuntu" /etc/os-release; then
@@ -98,7 +52,7 @@ check_os() {
 
 		# Set the dependencies for Ubuntu
 		# TODO: Use this to declare different dependencies for different OSes
-		REQUIRED_PACKAGES=(
+		REQUIRED_PACKAGES+=(
 			software-properties-common
 			certbot
 			dnsutils
@@ -112,6 +66,14 @@ check_os() {
 			python3-wheel
 			python3-bcrypt
 			aptitude
+		)
+
+		REQUIRED_PACKAGES_ARM64+=(
+			gcc
+			python3-dev
+			libffi-dev
+			libssl-dev
+			make
 		)
 
 	else
@@ -139,17 +101,6 @@ check_root() {
 	else
 		SUDO=''
 	fi
-}
-
-clone_repo_galaxy() {
-	# Clone the Ansible playbook
-	[ -d "${ANSIBLE_WORK_DIR}" ] || {
-		git clone "${GITHUB_REPO}" "${ANSIBLE_WORK_DIR}"
-	}
-
-	cd "${ANSIBLE_WORK_DIR}" && {
-		ansible-galaxy install -r requirements.yml
-	}
 }
 
 do_email_setup() {
@@ -264,8 +215,7 @@ install_dependencies() {
 
 	# Extra packages for arm64 (aarch64)
 	[[ $(uname -m) == "aarch64" ]] && {
-		${SUDO} yes | apt install -y \
-			gcc python3-dev libffi-dev libssl-dev make
+		yes | ${SUDO} apt install -y "${REQUIRED_PACKAGES_ARM64[@]}"
 	}
 
 	# Enable interactive apt functionality again
@@ -277,21 +227,15 @@ install_dependencies() {
 	check_root
 }
 
-set_permissions() {
-	# Set secure permissions for the Vault file
-	[[ -f "${SECRET_FILE}" ]] && {
-		clear
-		echo "WARNING: ${SECRET_FILE} already exists"
-		echo "Running this script will overwrite its contents"
-		read -n 1 -s -r -p "Press [Enter] to continue or Ctrl+C to abort "
-		echo
+clone_repo_galaxy() {
+	# Clone the Ansible playbook
+	[ -d "${ANSIBLE_WORK_DIR}" ] || {
+		git clone "${GITHUB_REPO}" "${ANSIBLE_WORK_DIR}"
 	}
-	touch "${SECRET_FILE}"
-	chmod 600 "${SECRET_FILE}"
 
-	# Permissions are not critical with the CUSTOM_FILE
-	# - secrets are not kept in this file
-	touch "${CUSTOM_FILE}"
+	cd "${ANSIBLE_WORK_DIR}" && {
+		ansible-galaxy install -r requirements.yml
+	}
 }
 
 ssh_keys_aws() {
@@ -335,6 +279,70 @@ ssh_keys() {
 		done
 		echo "ssh_public_key: \"${ssh_key_pair}\"" >> "${CUSTOM_FILE}"
 	fi
+}
+
+set_permissions() {
+	# Set secure permissions for the Vault file
+	[[ -f "${SECRET_FILE}" ]] && {
+		clear
+		echo "WARNING: ${SECRET_FILE} already exists"
+		echo "Running this script will overwrite its contents"
+		read -n 1 -s -r -p "Press [Enter] to continue or Ctrl+C to abort "
+		echo
+	}
+	touch "${SECRET_FILE}"
+	chmod 600 "${SECRET_FILE}"
+
+	# Permissions are not critical with the CUSTOM_FILE
+	# - secrets are not kept in this file
+	touch "${CUSTOM_FILE}"
+}
+
+check_domain_dns() {
+	declare -a ip_array
+	public_ip=$(curl -s ipinfo.io/ip)
+
+	get_authoritive_nameservers "${root_host}"
+	DNS_HOST_IDX=$(( RANDOM % ${#NAMESERVERS[@]} ))
+	DNS_HOST=${NAMESERVERS["${DNS_HOST_IDX}"]}
+
+	# Declare a hash map with subdomains and their respective IPs
+	declare -A DOMAINS=(
+		["root"]=""
+		["wg"]=""
+		["auth"]=""
+	)
+
+	# Iterate through the subdomain hashmap until all of them resolve to the IP of the server
+	FAILED_CHECK=0
+	for domain in "${!DOMAINS[@]}"; do
+		while :
+		do
+			if [[ $domain == "root" ]]; then
+				work_domain="${root_host}"
+			else
+				work_domain="${domain}.${root_host}"
+			fi
+			# Get IPv4 address(es) from DNS query
+			# - this may return more than one IPv4 address
+			# - it will also remove CNAME data (if any)
+			DOMAINS[${domain}]=$(
+				dig +short @"${DNS_HOST}" \
+					"${work_domain}" |
+					grep '[1-9]*\.[0-9]*\.[0-9]*\.[0-9]*'|tr '\n' ' '
+			)
+			# The public ipv4 address must be found in the set returned
+			# - NB: matching must be a full exact match
+			ip_array=( ${DOMAINS[${domain}]} )
+			declare -p ip_array|grep -q  "\"${public_ip}\""
+			[[ $? == 0 ]] && { echo "${work_domain}: Ok"; break; }
+			echo
+			echo "The domain ${work_domain} does not resolve to the public IP of this server (${public_ip})"
+			echo
+			FAILED_CHECK=1;break
+		done
+		[[ ${FAILED_CHECK} -eq 1 ]] && break
+	done
 }
 
 
