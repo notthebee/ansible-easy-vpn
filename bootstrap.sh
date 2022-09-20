@@ -200,7 +200,7 @@ done
 if [[ "$email_setup" =~ ^[yY]$ ]]; then
   echo
   read -p "SMTP server: " email_smtp_host
-  until [[ "$email_smtp_host" =~ ^[a-z0-9\.]*$ ]]; do
+  until [[ "$email_smtp_host" =~ ^[a-z0-9\-\.]*$ ]]; do
     echo "Invalid SMTP server"
     read -p "SMTP server: " email_smtp_host
   done
