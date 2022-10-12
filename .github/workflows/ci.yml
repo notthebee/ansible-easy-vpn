@@ -110,3 +110,24 @@ jobs:
       - name: Log into the server
         run: >-
           expect -c "spawn ssh $EASYVPN_USERNAME@$SERVER_IPV4 -i ~/.ssh/id_vpn; expect \"*Enter passphrase for key*\"; send -- \"$EASYVPN_PASSWORD\r\""
+
+      - name: Delete the Cloudflare record
+        uses: infraway/delete-dns-record@v2.0
+        with:
+          name: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          zone: ${{ secrets.CLOUDFLARE_ZONE }}
+
+      - name: Delete the Cloudflare record (auth)
+        uses: infraway/delete-dns-record@v2.0
+        with:
+          name: "auth.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          zone: ${{ secrets.CLOUDFLARE_ZONE }}
+
+      - name: Delete the Cloudflare record (wg)
+        uses: infraway/delete-dns-record@v2.0
+        with:
+          name: "wg.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          zone: ${{ secrets.CLOUDFLARE_ZONE }}
