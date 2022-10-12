@@ -50,25 +50,7 @@ expect {
 }
 
 expect -re ".*Set up e-mail?.*"
-send -- "y\r"
-
-expect -re ".*SMTP server: .*"
-send -- "$OPTS(smtp_server)\r"
-
-expect -re ".*SMTP port.*"
-send -- "\r"
-
-expect -re ".*SMTP login:.*"
-send -- "$OPTS(smtp_login)\r"
-
-expect -re ".*SMTP password:.*"
-send -- "$OPTS(smtp_password)\r"
-
-expect -re ".*'From' e-mail.*"
-send -- "\r"
-
-expect -re ".*'To' e-mail.*"
-send -- "\r"
+send -- "n\r"
 
 expect -re ".*New Vault password:.*"
 send -- "$OPTS(password)\r"

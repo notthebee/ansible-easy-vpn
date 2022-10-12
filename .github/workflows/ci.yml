@@ -68,7 +68,7 @@ jobs:
         run: ssh root@$SERVER_IPV4 git clone https://github.com/notthebee/ansible-easy-vpn -b ${{ github.head_ref || github.ref_name }} 
 
       - name: Execute the automated bootstrap script
-        run: ssh -t -t root@$SERVER_IPV4 "ansible-easy-vpn/testing/expect/nomail.exp --username $EASYVPN_USERNAME --password $EASYVPN_PASSWORD --smtp_server $SMTP_SERVER --smtp_login $SMTP_LOGIN --smtp_password $SMTP_PASSWORD --duckdns_domain $DUCKDNS_DOMAIN"
+        run: ssh -t -t root@$SERVER_IPV4 "ansible-easy-vpn/testing/expect/defaults.exp --username $EASYVPN_USERNAME --password $EASYVPN_PASSWORD --smtp_server $SMTP_SERVER --smtp_login $SMTP_LOGIN --smtp_password $SMTP_PASSWORD --duckdns_domain $DUCKDNS_DOMAIN"
         env:
           SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
           SMTP_LOGIN: ${{ secrets.SMTP_LOGIN }}
