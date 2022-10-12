@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: cicd
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
           - index: 1
