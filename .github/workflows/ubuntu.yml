@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   test:
-    uses: /notthebee/ansible-easy-vpn/.github/workflows/ci.yml@main
+    uses: ./ci.yml
     with:
       distro: "ubuntu-20.04"
     secrets: inherit
