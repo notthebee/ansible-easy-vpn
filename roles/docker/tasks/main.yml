@@ -22,7 +22,7 @@
   block:
     - name: Add Docker GPG apt Key
       ansible.builtin.apt_key:
-        url: "https://download.docker.com/linux/{{ ansible_facts['distribution'] }}/gpg"
+        url: "https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}/gpg"
         state: present
 
     - name: Add Docker Repository
