@@ -1,6 +1,11 @@
-name: CI
+name: CI Generic
 run-name: ansible-easy-vpn Testing
-on: [push]
+on: 
+  workflow_call:
+    inputs:
+      distro:
+        required: true
+        type: string
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -24,7 +29,7 @@ jobs:
         uses: TimDaub/hetzner-cloud-deploy-server-action@v2
         with:
           server-name: "ansible-easy-vpn"
-          server-image: "ubuntu-20.04"
+          server-image: ${{ inputs.distro }}
           server-type: "cx11"
           ssh-key-name: "github-actions"
           hcloud-token: ${{ secrets.HCLOUD_TOKEN }}

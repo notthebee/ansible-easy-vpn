@@ -1,0 +1,10 @@
+name: Test the playbook on Ubuntu
+
+on: [push]
+
+jobs:
+  test:
+    uses: /notthebee/ansible-easy-vpn/.github/workflows/ci.yml@main
+    with:
+      distro: "ubuntu-20.04"
+    secrets: inherit
