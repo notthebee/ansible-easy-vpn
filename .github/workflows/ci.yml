@@ -28,11 +28,14 @@ jobs:
       - name: Checkout the branch locally
         uses: actions/checkout@v3
 
+      - name: Update apt cache on the runner and install dependencies
+        run: sudo apt update && sudo apt install sshpass expect wamerican
+
       - name: Generate a random username
-        run: echo "EASYVPN_USERNAME=$(ssh root@$SERVER_IPV4 shuf -n 1 /usr/share/dict/words | tr '[:upper:]' '[:lower:]' | tr -dc '[:alnum:]' )" >> $GITHUB_ENV
+        run: echo "EASYVPN_USERNAME=$(shuf -n 1 /usr/share/dict/words | tr '[:upper:]' '[:lower:]' | tr -dc '[:alnum:]' )" >> $GITHUB_ENV
 
       - name: Generate a random password
-        run: echo "EASYVPN_PASSWORD=$(ssh root@$SERVER_IPV4 openssl rand -base64 20)" >> $GITHUB_ENV
+        run: echo "EASYVPN_PASSWORD=$(openssl rand -base64 20)" >> $GITHUB_ENV
 
       - name: Spawn a Hetzner node
         uses: TimDaub/hetzner-cloud-deploy-server-action@v2
@@ -68,9 +71,6 @@ jobs:
           SMTP_LOGIN: ${{ secrets.SMTP_LOGIN }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           DUCKDNS_DOMAIN: ${{ secrets.DUCKDNS_DOMAIN }}
-
-      - name: Update apt cache on the runner and install sshpass & expect
-        run: sudo apt update && sudo apt install sshpass expect
 
       - name: Copy the private key from the Hetzner host
         run: sshpass -p$EASYVPN_PASSWORD scp root@$SERVER_IPV4:/tmp/id_ssh_ed25519 ~/.ssh/id_vpn
