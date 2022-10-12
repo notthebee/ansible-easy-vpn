@@ -25,6 +25,9 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Checkout the branch locally
+        uses: actions/checkout@v3
+
       - name: Get current commit SHA
         id: vars
         run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
@@ -40,9 +43,6 @@ jobs:
 
       - name: Add the private key to the ssh-agent 
         run: mkdir -p ~/.ssh/ && ssh-keyscan -H $SERVER_IPV4 >> ~/.ssh/known_hosts
-
-      - name: Checkout the branch locally
-        uses: actions/checkout@v3
 
       - name: Update apt cache
         run: ssh root@$SERVER_IPV4 apt update
