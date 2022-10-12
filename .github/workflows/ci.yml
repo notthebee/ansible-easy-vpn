@@ -28,14 +28,16 @@ jobs:
       - name: Checkout the branch locally
         uses: actions/checkout@v3
 
-      - name: Get current commit SHA
-        id: vars
-        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+      - name: Generate a random username
+        run: echo "EASYVPN_USERNAME=$(ssh root@$SERVER_IPV4 shuf -n 1 /usr/share/dict/words | tr '[:upper:]' '[:lower:]' | tr -dc '[:alnum:]' )" >> $GITHUB_ENV
+
+      - name: Generate a random password
+        run: echo "EASYVPN_PASSWORD=$(ssh root@$SERVER_IPV4 openssl rand -base64 20)" >> $GITHUB_ENV
 
       - name: Spawn a Hetzner node
         uses: TimDaub/hetzner-cloud-deploy-server-action@v2
         with:
-          server-name: ansible-easy-vpn-${{ steps.vars.outputs.sha_short }}
+          server-name: ansible-easy-vpn-$EASYVPN_USERNAME
           server-image: ${{ inputs.distro }}
           server-type: "cx11"
           ssh-key-name: "github-actions"
@@ -49,12 +51,6 @@ jobs:
 
       - name: Install git and expect
         run: ssh root@$SERVER_IPV4 apt install -y git expect wamerican
-
-      - name: Generate a random username
-        run: echo "EASYVPN_USERNAME=$(ssh root@$SERVER_IPV4 shuf -n 1 /usr/share/dict/words | tr '[:upper:]' '[:lower:]' | tr -dc '[:alnum:]' )" >> $GITHUB_ENV
-
-      - name: Generate a random password
-        run: echo "EASYVPN_PASSWORD=$(ssh root@$SERVER_IPV4 openssl rand -base64 20)" >> $GITHUB_ENV
 
       - name: Make sure that the DuckDNS domain points to the server's IP
         run: echo url="https://www.duckdns.org/update?domains=$DUCKDNS_DOMAIN&token=$DUCKDNS_TOKEN&ip=$SERVER_IPV4" | curl -k -K -
