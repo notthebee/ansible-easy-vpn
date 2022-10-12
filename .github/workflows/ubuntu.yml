@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   test:
-    uses: ./.github/workflows/ci.yml@debian-support
+    uses: ./.github/workflows/ci.yml
     with:
       distro: "ubuntu-20.04"
     secrets: inherit
