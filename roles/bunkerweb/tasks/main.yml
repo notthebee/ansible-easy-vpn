@@ -1,6 +1,6 @@
 ---
 - name: Create the folders
-  file:
+  ansible.builtin.file:
     path: "{{ docker_dir }}/bunkerweb/data"
     recurse: yes
     owner: root
@@ -8,12 +8,15 @@
     mode: 0770
 
 - name: Copy the env file
-  template:
+  ansible.builtin.template:
     src: env.j2
+    owner: root
+    group: 101
+    mode: 0644
     dest: "{{ docker_dir }}/bunkerweb/.env"
 
 - name: Make sure the Bunkerweb container is created and running
-  docker_container:
+  community.general.docker_container:
     name: "bunkerweb"
     image: "bunkerity/bunkerweb:1.4.2"
     networks:

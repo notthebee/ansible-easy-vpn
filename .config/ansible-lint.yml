@@ -1,0 +1,6 @@
+---
+warn_list:
+  - package-latest
+skip_list:
+  - name[template]
+  - no-handler

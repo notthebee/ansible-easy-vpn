@@ -1,4 +1,5 @@
 # ansible-easy-vpn
+![CI](https://github.com/notthebee/ansible-easy-vpn/actions/workflows/ci.yml/badge.svg)
 
 A simple interactive script/Ansible playbook that sets up an Ubuntu-based Wireguard VPN server
 

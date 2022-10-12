@@ -2,6 +2,7 @@
 # A bash script that prepares the OS
 # before running the Ansible playbook
 
+
 # Discard stdin. Needed when running from an one-liner which includes a newline
 read -N 999999 -t 0.001
 
@@ -153,6 +154,22 @@ echo "root_host: \"${root_host}\"" >> $HOME/ansible-easy-vpn/custom.yml
 
 if [[ ! $aws =~ true ]]; then
   echo
+  read -p "Are you running this script on an AWS EC2 instance? [y/N]: " aws_ec2
+  until [[ "$aws_ec2" =~ ^[yYnN]*$ ]]; do
+          echo "$aws_ec2: invalid selection."
+          read -p "[y/N]: " aws_ec2
+  done
+  if [[ "$aws_ec2" =~ ^[yY]$ ]]; then
+    export AWS_EC2=true
+  echo
+  echo "Please use the SSH keys that you specified in the AWS Management Console to log in to the server."
+  echo "Also, make sure that your Security Group allows inbound connections on 51820/udp, 80/tcp and 443/tcp."
+  echo
+  fi
+fi
+
+if [[ ! $AWS_EC2 =~ true ]]; then
+  echo
   echo "Would you like to use an existing SSH key?"
   echo "Press 'n' if you want to generate a new SSH key pair"
   echo
@@ -169,21 +186,8 @@ if [[ ! $aws =~ true ]]; then
 
     echo "ssh_public_key: \"${ssh_key_pair}\"" >> $HOME/ansible-easy-vpn/custom.yml
   fi
-else
-  echo
-  read -p "Are you running this script on an AWS EC2 instance? [y/N]: " aws_ec2
-  until [[ "$aws_ec2" =~ ^[yYnN]*$ ]]; do
-          echo "$aws_ec2: invalid selection."
-          read -p "[y/N]: " aws_ec2
-  done
-  if [[ "$aws_ec2" =~ ^[yY]$ ]]; then
-    export AWS_EC2=true
-  echo
-  echo "Please use the SSH keys that you specified in the AWS Management Console to log in to the server."
-  echo "Also, make sure that your Security Group allows inbound connections on 51820/udp, 80/tcp and 443/tcp."
-  echo
-  fi
 fi
+
 
 echo
 echo "Would you like to set up the e-mail functionality?"

@@ -1,18 +1,19 @@
 ---
 - name: Set amd64 arch
-  set_fact:
+  ansible.builtin.set_fact:
     repo_arch: amd64
   when: ansible_architecture == "x86_64"
 
 - name: Set arm64 arch
-  set_fact:
+  ansible.builtin.set_fact:
     repo_arch: "{{ ansible_architecture }}"
   when: (ansible_architecture == "arm64") or (ansible_architecture == "aarch64")
 
 - name: Include OS-specific variables
-  include_vars: "{{ ansible_facts['distribution'] }}.yml"
+  ansible.builtin.include_vars: "{{ ansible_facts['distribution'] }}.yml"
+
 - name: Install required system packages
-  package:
+  ansible.builtin.package:
     state: present
     name: "{{ docker_deps }}"
 
@@ -20,53 +21,53 @@
   when: ansible_facts['distribution'] == 'Ubuntu'
   block:
     - name: Add Docker GPG apt Key
-      apt_key:
+      ansible.builtin.apt_key:
         url: https://download.docker.com/linux/ubuntu/gpg
         state: present
 
     - name: Add Docker Repository
-      apt_repository:
+      ansible.builtin.apt_repository:
         repo: "deb [arch={{ repo_arch }}] https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }} {{ ansible_lsb['codename'] }} stable"
         state: present
 
 - name: Update apt and install docker-ce
   block:
     - name: Attempt installation
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
         name: "{{ docker_packages }}"
         state: present
   rescue:
     - name: Fix the dumb Ubuntu Jammy error
-      replace:
+      ansible.builtin.replace:
         path: /etc/systemd/system/multi-user.target.wants/docker.service
         regexp: "fd://"
         replace: "unix://"
       when: ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('22.04', '>=')
 
 - name: Ensure group docker exists
-  group:
+  ansible.builtin.group:
     name: docker
     state: present
 
 - name: Add user "{{ username }}" to group docker
-  user:
+  ansible.builtin.user:
     name: "{{ username }}"
     groups:
       - docker
     append: yes
 
 - name: Install Docker Module for Python
-  pip:
+  ansible.builtin.pip:
     name: docker
 
 - name: Make sure Docker is running and enabled
-  systemd:
+  ansible.builtin.systemd:
     name: docker
     daemon_reload: yes
     state: started
     enabled: yes
 
 - name: Create the wg network
-  docker_network:
+  community.general.docker_network:
     name: wg_network

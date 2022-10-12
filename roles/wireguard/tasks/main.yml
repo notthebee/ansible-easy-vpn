@@ -1,6 +1,6 @@
 ---
 - name: Make sure the Wireguard container is created and running
-  docker_container:
+  community.general.docker_container:
     name: "wg-easy"
     image: "weejewel/wg-easy:7"
     pull: yes
@@ -19,7 +19,7 @@
       "WG_PORT": "{{ wireguard_port }}"
       "WG_PERSISTENT_KEEPALIVE": "25"
     ports:
-      - "{{ wireguard_port}}:51820/udp"
+      - "{{ wireguard_port }}:51820/udp"
     volumes:
       - "{{ docker_dir }}/wg-easy:/etc/wireguard"
     restart_policy: unless-stopped
