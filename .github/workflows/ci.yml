@@ -58,25 +58,40 @@ jobs:
       - name: Install git and expect
         run: ssh root@$SERVER_IPV4 apt install -y git expect wamerican
 
-      - name: Make sure that the DuckDNS domain points to the server's IP
-        run: echo url="https://www.duckdns.org/update?domains=$DUCKDNS_DOMAIN&token=$DUCKDNS_TOKEN&ip=$SERVER_IPV4" | curl -k -K -
+      - name: Create a temporary Cloudflare subdomain
+        run: >-
+          curl 
+          -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE/dns_records"
+          -H "Authorization: Bearer $CLOUDFLARE_TOKEN"
+          -H "Content-Type:application/json"
+          --data '{"type":"A","name":"$EASYVPN_USERNAME.$CLOUDFLARE_DOMAINS","content":"$SERVER_IPV4","ttl":3600,"priority":10,"proxied":false}'
         env:
-          DUCKDNS_TOKEN: ${{ secrets.DUCKDNS_TOKEN }}
-          DUCKDNS_DOMAIN: ${{ secrets[format('DUCKDNS_DOMAIN{0}', matrix.index)] }}
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+          CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE }}
+          CLOUDFLARE_DOMAIN: ${{ secrets.CLOUDFLARE_DOMAIN }}
 
       - name: Clone the branch to the Hetzner instance
         run: ssh root@$SERVER_IPV4 git clone https://github.com/notthebee/ansible-easy-vpn -b ${{ github.head_ref || github.ref_name }} 
 
       - name: Execute the automated bootstrap script
-        run: ssh -t -t root@$SERVER_IPV4 "ansible-easy-vpn/testing/expect/defaults.exp --username $EASYVPN_USERNAME --password $EASYVPN_PASSWORD --smtp_server $SMTP_SERVER --smtp_login $SMTP_LOGIN --smtp_password $SMTP_PASSWORD --duckdns_domain $DUCKDNS_DOMAIN"
+        run: >-
+          ssh -t -t root@$SERVER_IPV4 
+          "ansible-easy-vpn/testing/expect/defaults.exp 
+          --username $EASYVPN_USERNAME 
+          --password $EASYVPN_PASSWORD 
+          --smtp_server $SMTP_SERVER 
+          --smtp_login $SMTP_LOGIN 
+          --smtp_password $SMTP_PASSWORD 
+          --domain $EASYVPN_USERNAME.$CLOUDFLARE_DOMAIN"
         env:
           SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
           SMTP_LOGIN: ${{ secrets.SMTP_LOGIN }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          DUCKDNS_DOMAIN: ${{ secrets[format('DUCKDNS_DOMAIN{0}', matrix.index)] }}
+          CLOUDFLARE_DOMAIN: ${{ secrets.CLOUDFLARE_DOMAIN }}
 
       - name: Copy the private key from the Hetzner host
         run: sshpass -p$EASYVPN_PASSWORD scp root@$SERVER_IPV4:/tmp/id_ssh_ed25519 ~/.ssh/id_vpn
 
       - name: Log into the server
-        run: expect -c "spawn ssh $EASYVPN_USERNAME@$SERVER_IPV4 -i ~/.ssh/id_vpn; expect \"*Enter passphrase for key*\"; send -- \"$EASYVPN_PASSWORD\r\""
+        run: >-
+          expect -c "spawn ssh $EASYVPN_USERNAME@$SERVER_IPV4 -i ~/.ssh/id_vpn; expect \"*Enter passphrase for key*\"; send -- \"$EASYVPN_PASSWORD\r\""

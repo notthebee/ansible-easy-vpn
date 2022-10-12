@@ -11,7 +11,7 @@ proc parseargs {argc argv} {
         switch -exact -- $key {
             "--username"   { set OPTS(username)   $val }
             "--password"   { set OPTS(password)   $val }
-            "--duckdns_domain"   { set OPTS(duckdns_domain)   $val }
+            "--domain"   { set OPTS(domain)   $val }
             "--smtp_server"   { set OPTS(smtp_server)   $val }
             "--smtp_login"   { set OPTS(smtp_login)   $val }
             "--smtp_password"   { set OPTS(smtp_password)   $val }
@@ -32,7 +32,7 @@ expect -re ".*Repeat password:.*"
 send -- "$OPTS(password)\r"
 
 expect -re ".*Domain name:.*"
-send -- "$OPTS(duckdns_domain).duckdns.org\r"
+send -- "$OPTS(domain)\r"
 
 expect {
   "*Are you running this script on an AWS EC2 instance?*" {
