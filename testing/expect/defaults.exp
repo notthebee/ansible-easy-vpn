@@ -64,5 +64,5 @@ send -- "y\r"
 expect "*Vault password"
 send -- "$OPTS(password)\r"
 
-interact
-
+expect "*Almost done*"
+send \x03
