@@ -58,17 +58,14 @@ jobs:
       - name: Install git and expect
         run: ssh root@$SERVER_IPV4 apt install -y git expect wamerican
 
-      - name: Create a temporary Cloudflare subdomain
-        run: >-
-          curl 
-          -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE/dns_records"
-          -H "Authorization: Bearer $CLOUDFLARE_TOKEN"
-          -H "Content-Type: application/json"
-          --data '{"type":"A","name":$EASYVPN_USERNAME.$CLOUDFLARE_DOMAIN,"content":"$SERVER_IPV4","ttl":3600,"priority":10,"proxied":false}'
-        env:
-          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
-          CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE }}
-          CLOUDFLARE_DOMAIN: ${{ secrets.CLOUDFLARE_DOMAIN }}
+      - uses: infraway/create-dns-record@v2.0
+        with:
+          type: "A"
+          name: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          content: "${{ env.SERVER_IPV4 }}"
+          proxied: false
+          token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          zone: ${{ secrets.CLOUDFLARE_ZONE }}
 
       - name: Clone the branch to the Hetzner instance
         run: ssh root@$SERVER_IPV4 git clone https://github.com/notthebee/ansible-easy-vpn -b ${{ github.head_ref || github.ref_name }} 
@@ -82,12 +79,12 @@ jobs:
           --smtp_server $SMTP_SERVER 
           --smtp_login $SMTP_LOGIN 
           --smtp_password $SMTP_PASSWORD 
-          --domain $EASYVPN_USERNAME.$CLOUDFLARE_DOMAIN"
+          --domain $DOMAIN"
         env:
           SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
           SMTP_LOGIN: ${{ secrets.SMTP_LOGIN }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          CLOUDFLARE_DOMAIN: ${{ secrets.CLOUDFLARE_DOMAIN }}
+          DOMAIN: ${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}
 
       - name: Copy the private key from the Hetzner host
         run: sshpass -p$EASYVPN_PASSWORD scp root@$SERVER_IPV4:/tmp/id_ssh_ed25519 ~/.ssh/id_vpn
