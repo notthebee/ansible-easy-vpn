@@ -1,16 +1,17 @@
+---
 - name: Check if there's authorized_keys
-  stat:
+  ansible.builtin.stat:
     path: /home/{{ username }}/.ssh/authorized_keys
   register: authorized_keys
   changed_when: (not authorized_keys.stat.exists) or (authorized_keys.stat.size == 0)
 
 - name: Install cryptography
-  pip:
+  ansible.builtin.pip:
     name: cryptography
     state: latest
 
 - name: Create the SSH directory
-  file:
+  ansible.builtin.file:
     path: "/home/{{ username }}/.ssh"
     state: directory
     owner: "{{ username }}"
@@ -21,13 +22,13 @@
   when: (not authorized_keys.stat.exists or authorized_keys.stat.size == 0) and not (ssh_public_key is defined) and not aws
   block:
     - name: Generate an SSH key pair
-      openssh_keypair:
+      community.crypto.openssh_keypair:
         path: /tmp/id_ssh_ed25519
         type: ed25519
         passphrase: "{{ user_password }}"
 
     - name: Install the public key
-      copy:
+      ansible.builtin.copy:
         src: /tmp/id_ssh_ed25519.pub
         dest: "/home/{{ username }}/.ssh/authorized_keys"
         owner: "{{ username }}"
@@ -36,13 +37,13 @@
 
 - name: Install the existing public key
   when: ssh_public_key is defined
-  authorized_key:
+  ansible.posix.authorized_key:
     user: "{{ username }}"
     key: "{{ ssh_public_key }}"
 
 - name: Copy the existing public key to a new user (AWS)
   when: aws
-  copy:
+  ansible.builtin.copy:
     src: "/home/ubuntu/.ssh/authorized_keys"
     dest: "/home/{{ username }}/.ssh/authorized_keys"
     owner: "{{ username }}"
@@ -51,7 +52,7 @@
 
 - name: Update SSH configuration to be more secure
   register: ssh_config
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/ssh/sshd_config"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
@@ -72,4 +73,4 @@
 
 - name: Notify user about changes
   when: (ssh_config.changed or authorized_keys.changed)
-  import_tasks: notify_user.yml
+  ansible.builtin.import_tasks: notify_user.yml

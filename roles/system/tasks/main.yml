@@ -1,3 +1,6 @@
-- include_tasks: essential.yml
+---
+- name: Configure the system
+  ansible.builtin.include_tasks: essential.yml
 
-- include_tasks: user.yml
+- name: Configure the user account
+  ansible.builtin.include_tasks: user.yml

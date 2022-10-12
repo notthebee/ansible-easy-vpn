@@ -1,10 +1,11 @@
+---
 - name: Install fail2ban
-  package:
+  ansible.builtin.package:
     name: fail2ban
     state: present
 
 - name: Disable e-mail notifications on jail stop and start
-  copy:
+  ansible.builtin.copy:
     src: "files/action.d/sendmail-common.local"
     dest: "/etc/fail2ban/action.d/sendmail-common.local"
     mode: 0644
@@ -14,7 +15,7 @@
     - Restart fail2ban
 
 - name: Install the jail.local file
-  template:
+  ansible.builtin.template:
     src: "jail.local.j2"
     dest: "/etc/fail2ban/jail.local"
     mode: 0644
@@ -24,7 +25,7 @@
     - Restart fail2ban
 
 - name: Make sure the fail2ban systemd service is enabled and started
-  service:
+  ansible.builtin.service:
     name: fail2ban
     state: started
     enabled: yes

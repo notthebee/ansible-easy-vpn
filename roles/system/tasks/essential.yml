@@ -1,25 +1,22 @@
-- name: Show username
-  debug:
-    var: "{{ ansible_user_id }}"
-
+---
 - name: Generate the locale
-  locale_gen:
+  community.general.locale_gen:
     name: "{{ locale }}"
     state: present
 
 - name: Update and upgrade apt packages
-  apt:
+  ansible.builtin.apt:
     upgrade: yes
     autoremove: yes
     update_cache: yes
 
 - name: Install unattended upgrades package
-  package:
+  ansible.builtin.package:
     name: unattended-upgrades
     state: present
 
 - name: Copy unattended-upgrades configuration files in place
-  template:
+  ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: "/etc/apt/apt.conf.d/{{ item }}"
     owner: root

@@ -1,31 +1,32 @@
 ---
 - name: Create the config folder
-  file:
+  ansible.builtin.file:
     path: "{{ docker_dir }}/authelia"
     state: directory
     owner: "{{ username }}"
     group: "{{ username }}"
+    mode: 0755
 
 - name: Copy the main config
-  template:
+  ansible.builtin.template:
     src: configuration.yml.j2
     dest: "{{ docker_dir }}/authelia/configuration.yml"
     owner: "root"
     group: "root"
     mode: 0644
-  notify: restart authelia
+  notify: Restart authelia
 
 - name: Copy the users database
-  template:
+  ansible.builtin.template:
     src: users_database.yml.j2
     dest: "{{ docker_dir }}/authelia/users_database.yml"
     owner: "root"
     group: "root"
     mode: 0644
-  notify: restart authelia
+  notify: Restart authelia
 
 - name: Make sure the Redis container is created and running
-  docker_container:
+  community.general.docker_container:
     name: "redis"
     image: "redis:alpine"
     networks:
@@ -35,7 +36,7 @@
     restart_policy: unless-stopped
 
 - name: Make sure the Authelia container is created and running
-  docker_container:
+  community.general.docker_container:
     name: "authelia"
     image: "authelia/authelia:4.36"
     networks:
@@ -47,11 +48,14 @@
     restart_policy: unless-stopped
 
 - name: Add a 2FA alias to .bashrc
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "/home/{{ username }}/.bashrc"
     create: yes
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
     state: present
     block: |
       alias show_2fa="sudo cat {{ docker_dir }}/authelia/notification.txt"
   notify:
-    - source .bashrc
+    - Source .bashrc

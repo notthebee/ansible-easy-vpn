@@ -1,20 +1,22 @@
+---
 - name: Install UFW
-  package:
+  ansible.builtin.package:
     name: ufw
     state: present
 
 - name: Enable UFW logging
-  ufw:
+  community.general.ufw:
+    # yamllint disable-line
     logging: on
 
 - name: Configure UFW
   block:
     - name: Reset all rules
-      ufw:
+      community.general.ufw:
         state: reset
 
     - name: Allow the defined ports
-      ufw:
+      community.general.ufw:
         rule: allow
         proto: "{{ item.proto }}"
         port: "{{ item.port }}"
@@ -22,17 +24,17 @@
         - "{{ ufw_ports }}"
 
     - name: Deny everything else and enable UFW
-      ufw:
+      community.general.ufw:
         state: enabled
         policy: deny
   rescue:
     - name: Grant SSH access to prevent lockout
-      ufw:
+      community.general.ufw:
         rule: allow
         port: "{{ ssh_port }}"
         proto: "tcp"
 
     - name: Deny everything else and enable UFW
-      ufw:
+      community.general.ufw:
         state: enabled
         policy: deny
