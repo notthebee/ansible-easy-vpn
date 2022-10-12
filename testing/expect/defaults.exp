@@ -34,11 +34,6 @@ send -- "$OPTS(password)\r"
 expect -re ".*Domain name:.*"
 send -- "$OPTS(duckdns_domain).duckdns.org\r"
 
-expect  {
-	"*does not resolve*" { error "Domain does not resolve to the IP" }
-	"*OK*" { send -- "" }
-}
-
 expect {
   "*Are you running this script on an AWS EC2 instance?*" {
     send -- "y\r"
