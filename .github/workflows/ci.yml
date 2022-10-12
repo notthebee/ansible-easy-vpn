@@ -73,7 +73,7 @@ jobs:
           SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
           SMTP_LOGIN: ${{ secrets.SMTP_LOGIN }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          DUCKDNS_DOMAIN: ${{ secrets.DUCKDNS_DOMAIN }}
+          DUCKDNS_DOMAIN: ${{ secrets[format('DUCKDNS_DOMAIN{0}', matrix.index)] }}
 
       - name: Copy the private key from the Hetzner host
         run: sshpass -p$EASYVPN_PASSWORD scp root@$SERVER_IPV4:/tmp/id_ssh_ed25519 ~/.ssh/id_vpn
