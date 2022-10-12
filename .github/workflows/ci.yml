@@ -67,6 +67,24 @@ jobs:
           token: ${{ secrets.CLOUDFLARE_TOKEN }}
           zone: ${{ secrets.CLOUDFLARE_ZONE }}
 
+      - uses: infraway/create-dns-record@v2.0
+        with:
+          type: "CNAME"
+          name: "auth.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          content: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          proxied: false
+          token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          zone: ${{ secrets.CLOUDFLARE_ZONE }}
+
+      - uses: infraway/create-dns-record@v2.0
+        with:
+          type: "CNAME"
+          name: "wg.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          content: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          proxied: false
+          token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          zone: ${{ secrets.CLOUDFLARE_ZONE }}
+
       - name: Clone the branch to the Hetzner instance
         run: ssh root@$SERVER_IPV4 git clone https://github.com/notthebee/ansible-easy-vpn -b ${{ github.head_ref || github.ref_name }} 
 
