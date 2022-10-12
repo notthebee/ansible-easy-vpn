@@ -1,4 +1,4 @@
-name: CI Generic
+name: CI
 run-name: ansible-easy-vpn Testing
 on: [push]
 jobs:
