@@ -1,0 +1,10 @@
+name: Test the playbook on Ubuntu
+
+on: [push]
+
+jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+    with:
+      distro: "debian-11"
+    secrets: inherit

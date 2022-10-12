@@ -28,7 +28,7 @@ jobs:
       - name: Spawn a Hetzner node
         uses: TimDaub/hetzner-cloud-deploy-server-action@v2
         with:
-          server-name: "ansible-easy-vpn"
+          server-name: "ansible-easy-vpn-${GITHUB_SHA::6}"
           server-image: ${{ inputs.distro }}
           server-type: "cx11"
           ssh-key-name: "github-actions"
