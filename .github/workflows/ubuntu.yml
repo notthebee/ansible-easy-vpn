@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   test:
-    uses: ./ci.yml
+    uses: ./ci.yml@debian-support
     with:
       distro: "ubuntu-20.04"
     secrets: inherit
