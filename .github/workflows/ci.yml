@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: cicd
     strategy:
+      fail-fast: true
       matrix:
         include:
           - index: 1
@@ -61,7 +62,7 @@ jobs:
         run: echo url="https://www.duckdns.org/update?domains=$DUCKDNS_DOMAIN&token=$DUCKDNS_TOKEN&ip=$SERVER_IPV4" | curl -k -K -
         env:
           DUCKDNS_TOKEN: ${{ secrets.DUCKDNS_TOKEN }}
-          DUCKDNS_DOMAIN: ${{ secrets.DUCKDNS_DOMAIN[format('{0}', matrix.index)] }}
+          DUCKDNS_DOMAIN: ${{ secrets[format('DUCKDNS_DOMAIN{0}', matrix.index)] }}
 
       - name: Clone the branch to the Hetzner instance
         run: ssh root@$SERVER_IPV4 git clone https://github.com/notthebee/ansible-easy-vpn -b ${{ github.head_ref || github.ref_name }} 
