@@ -25,10 +25,14 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Get current commit SHA
+        id: vars
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
       - name: Spawn a Hetzner node
         uses: TimDaub/hetzner-cloud-deploy-server-action@v2
         with:
-          server-name: ansible-easy-vpn-${GITHUB_SHA::6}
+          server-name: ansible-easy-vpn-${{ steps.vars.outputs.sha_short }}
           server-image: ${{ inputs.distro }}
           server-type: "cx11"
           ssh-key-name: "github-actions"
