@@ -1,11 +1,6 @@
 name: CI Generic
 run-name: ansible-easy-vpn Testing
-on: 
-  workflow_call:
-    inputs:
-      distro:
-        required: true
-        type: string
+on: [push]
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -18,7 +13,13 @@ jobs:
    
   build:
     runs-on: ubuntu-latest
-    environment: cicd
+    strategy:
+      matrix:
+        include:
+          - index: 1
+            os: ubuntu-22.04
+          - index: 2
+            os: debian-11
     steps:
       - name: Initialize the ssh-agent
         uses: webfactory/ssh-agent@v0.4.1
@@ -41,7 +42,7 @@ jobs:
         uses: TimDaub/hetzner-cloud-deploy-server-action@v2
         with:
           server-name: ansible-easy-vpn-${{ env.EASYVPN_USERNAME }}
-          server-image: ${{ inputs.distro }}
+          server-image: ${{ matrix.os }}
           server-type: "cx11"
           ssh-key-name: "github-actions"
           hcloud-token: ${{ secrets.HCLOUD_TOKEN }}
@@ -59,7 +60,7 @@ jobs:
         run: echo url="https://www.duckdns.org/update?domains=$DUCKDNS_DOMAIN&token=$DUCKDNS_TOKEN&ip=$SERVER_IPV4" | curl -k -K -
         env:
           DUCKDNS_TOKEN: ${{ secrets.DUCKDNS_TOKEN }}
-          DUCKDNS_DOMAIN: ${{ secrets.DUCKDNS_DOMAIN }}
+          DUCKDNS_DOMAIN: ${{ secrets.DUCKDNS_DOMAIN[format('{0}', matrix.index)] }}
 
       - name: Clone the branch to the Hetzner instance
         run: ssh root@$SERVER_IPV4 git clone https://github.com/notthebee/ansible-easy-vpn -b ${{ github.head_ref || github.ref_name }} 
