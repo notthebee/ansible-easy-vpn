@@ -1,7 +1,7 @@
 # ansible-easy-vpn
 ![CI](https://github.com/notthebee/ansible-easy-vpn/actions/workflows/ci.yml/badge.svg)
 
-A simple interactive script/Ansible playbook that sets up an Ubuntu-based Wireguard VPN server
+A simple interactive script/Ansible playbook that sets up a Wireguard VPN server on your VPS of choice
 
 ## Usage
 
@@ -21,7 +21,7 @@ wget https://raw.githubusercontent.com/notthebee/ansible-easy-vpn/main/bootstrap
 
 ## Requirements
 * A KVM-based VPS (or an AWS EC2 instance) with a dedicated IPv4 address
-* Ubuntu Server 20.04 or 22.04
+* Ubuntu Server 20.04/22.04 or Debian 11
 
 ## FAQ
 ### Q: I've run the playbook succesfully, but now I want to change the domain name/username/password. How can I do that?
