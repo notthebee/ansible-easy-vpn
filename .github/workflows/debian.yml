@@ -1,4 +1,4 @@
-name: Test the playbook on Ubuntu
+name: Test the playbook on Debian
 
 on: [push]
 
