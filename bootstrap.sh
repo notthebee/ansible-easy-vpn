@@ -1,7 +1,8 @@
 #!/bin/bash -uxe
 # A bash script that prepares the OS
 # before running the Ansible playbook
-
+REQUIRED_PACKAGES=()
+REQUIRED_PACKAGES_ARM64=()
 
 # Discard stdin. Needed when running from an one-liner which includes a newline
 read -N 999999 -t 0.001
@@ -10,22 +11,54 @@ read -N 999999 -t 0.001
 set -e
 
 # Detect OS
-if grep -qs "ubuntu" /etc/os-release; then
-  os="ubuntu"
-  os_version=$(grep 'VERSION_ID' /etc/os-release | cut -d '"' -f 2 | tr -d '.')
-else
-  echo "This installer seems to be running on an unsupported distribution."
-  echo "Supported distros are Ubuntu 20.04 and 22.04"
-  exit
+if grep -Ei 'debian|ubuntu' /etc/*release; then
+  if grep -qs "ubuntu" /etc/*release; then
+    os="ubuntu"
+    os_version=$(grep 'VERSION_ID' /etc/os-release | cut -d '"' -f 2 | tr -d '.')
+    if [[ "$os_version" -lt 2004 ]]; then
+      echo "Ubuntu 20.04 or higher is required to use this installer."
+      echo "This version of Ubuntu is too old and unsupported."
+      exit
+    fi
+  elif grep -qs "debian" /etc/*release; then
+    os="debian"
+    os_version=$(grep 'VERSION_ID' /etc/os-release | cut -d '"' -f 2 | tr -d '.')
+    if [[ "$os_version" -lt 11 ]]; then
+      echo "Debian 11 or higher is required to use this installer."
+      echo "This version of Debian is too old and unsupported."
+      exit
+    fi
+  else
+    echo "This installer seems to be running on an unsupported distribution."
+    echo "Supported distros are Ubuntu 20.04/22.04 and Debian 11"
+    exit
+  fi
+  REQUIRED_PACKAGES+=(
+    software-properties-common
+    certbot
+    dnsutils
+    curl
+    git
+    python3
+    python3-setuptools
+    python3-apt
+    python3-pip
+    python3-passlib
+    python3-wheel
+    python3-bcrypt
+    aptitude
+  )
+
+  REQUIRED_PACKAGES_ARM64+=(
+    gcc
+    python3-dev
+    libffi-dev
+    libssl-dev
+    make
+  )
 fi
 
 # Check if the Ubuntu version is too old
-if [[ "$os" == "ubuntu" && "$os_version" -lt 2004 ]]; then
-  echo "Ubuntu 20.04 or higher is required to use this installer."
-  echo "This version of Ubuntu is too old and unsupported."
-  exit
-fi
-
 
 check_root() {
 # Check if the user is root or not
@@ -44,12 +77,13 @@ check_root
 # Disable interactive apt functionality
 export DEBIAN_FRONTEND=noninteractive
 
+
 # Update apt database, update all packages and install Ansible + dependencies
 $SUDO apt update -y;
 yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy dist-upgrade;
-yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy install software-properties-common certbot dnsutils curl git python3 python3-setuptools python3-apt python3-pip python3-passlib python3-wheel python3-bcrypt aptitude -y;
+yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy install "${REQUIRED_PACKAGES[@]}"
 yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove;
-[ $(uname -m) == "aarch64" ] && yes | $SUDO apt install gcc python3-dev libffi-dev libssl-dev make -y;
+[ $(uname -m) == "aarch64" ] && yes | $SUDO apt install -fuy "${REQUIRED_PACKAGES_ARM64[@]}"
 
 check_root "-H"
 

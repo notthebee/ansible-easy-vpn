@@ -17,12 +17,12 @@
     state: present
     name: "{{ docker_deps }}"
 
-- name: Install Docker (Ubuntu)
-  when: ansible_facts['distribution'] == 'Ubuntu'
+- name: Install Docker (Debian & Ubuntu)
+  when: ansible_facts['os_family'] == 'Debian'
   block:
     - name: Add Docker GPG apt Key
       ansible.builtin.apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
+        url: "https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}/gpg"
         state: present
 
     - name: Add Docker Repository

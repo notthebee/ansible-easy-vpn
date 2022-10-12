@@ -14,17 +14,37 @@ jobs:
   build:
     runs-on: ubuntu-latest
     environment: cicd
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - index: 1
+            os: ubuntu-22.04
+          - index: 2
+            os: debian-11
     steps:
       - name: Initialize the ssh-agent
         uses: webfactory/ssh-agent@v0.4.1
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Checkout the branch locally
+        uses: actions/checkout@v3
+
+      - name: Update apt cache on the runner and install dependencies
+        run: sudo apt update && sudo apt install sshpass expect wamerican
+
+      - name: Generate a random username
+        run: echo "EASYVPN_USERNAME=$(shuf -n 1 /usr/share/dict/words | tr '[:upper:]' '[:lower:]' | tr -dc '[:alnum:]' )" >> $GITHUB_ENV
+
+      - name: Generate a random password
+        run: echo "EASYVPN_PASSWORD=$(openssl rand -base64 20)" >> $GITHUB_ENV
+
       - name: Spawn a Hetzner node
         uses: TimDaub/hetzner-cloud-deploy-server-action@v2
         with:
-          server-name: "ansible-easy-vpn"
-          server-image: "ubuntu-20.04"
+          server-name: ansible-easy-vpn-${{ env.EASYVPN_USERNAME }}
+          server-image: ${{ matrix.os }}
           server-type: "cx11"
           ssh-key-name: "github-actions"
           hcloud-token: ${{ secrets.HCLOUD_TOKEN }}
@@ -32,40 +52,28 @@ jobs:
       - name: Add the private key to the ssh-agent 
         run: mkdir -p ~/.ssh/ && ssh-keyscan -H $SERVER_IPV4 >> ~/.ssh/known_hosts
 
-      - name: Checkout the branch locally
-        uses: actions/checkout@v3
-
       - name: Update apt cache
         run: ssh root@$SERVER_IPV4 apt update
 
       - name: Install git and expect
         run: ssh root@$SERVER_IPV4 apt install -y git expect wamerican
 
-      - name: Generate a random username
-        run: echo "EASYVPN_USERNAME=$(ssh root@$SERVER_IPV4 shuf -n 1 /usr/share/dict/words | tr '[:upper:]' '[:lower:]' | tr -dc '[:alnum:]' )" >> $GITHUB_ENV
-
-      - name: Generate a random password
-        run: echo "EASYVPN_PASSWORD=$(ssh root@$SERVER_IPV4 openssl rand -base64 20)" >> $GITHUB_ENV
-
       - name: Make sure that the DuckDNS domain points to the server's IP
         run: echo url="https://www.duckdns.org/update?domains=$DUCKDNS_DOMAIN&token=$DUCKDNS_TOKEN&ip=$SERVER_IPV4" | curl -k -K -
         env:
           DUCKDNS_TOKEN: ${{ secrets.DUCKDNS_TOKEN }}
-          DUCKDNS_DOMAIN: ${{ secrets.DUCKDNS_DOMAIN }}
+          DUCKDNS_DOMAIN: ${{ secrets[format('DUCKDNS_DOMAIN{0}', matrix.index)] }}
 
       - name: Clone the branch to the Hetzner instance
         run: ssh root@$SERVER_IPV4 git clone https://github.com/notthebee/ansible-easy-vpn -b ${{ github.head_ref || github.ref_name }} 
 
       - name: Execute the automated bootstrap script
-        run: ssh -t -t root@$SERVER_IPV4 "ansible-easy-vpn/testing/expect/nomail.exp --username $EASYVPN_USERNAME --password $EASYVPN_PASSWORD --smtp_server $SMTP_SERVER --smtp_login $SMTP_LOGIN --smtp_password $SMTP_PASSWORD --duckdns_domain $DUCKDNS_DOMAIN"
+        run: ssh -t -t root@$SERVER_IPV4 "ansible-easy-vpn/testing/expect/defaults.exp --username $EASYVPN_USERNAME --password $EASYVPN_PASSWORD --smtp_server $SMTP_SERVER --smtp_login $SMTP_LOGIN --smtp_password $SMTP_PASSWORD --duckdns_domain $DUCKDNS_DOMAIN"
         env:
           SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
           SMTP_LOGIN: ${{ secrets.SMTP_LOGIN }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          DUCKDNS_DOMAIN: ${{ secrets.DUCKDNS_DOMAIN }}
-
-      - name: Update apt cache on the runner and install sshpass & expect
-        run: sudo apt update && sudo apt install sshpass expect
+          DUCKDNS_DOMAIN: ${{ secrets[format('DUCKDNS_DOMAIN{0}', matrix.index)] }}
 
       - name: Copy the private key from the Hetzner host
         run: sshpass -p$EASYVPN_PASSWORD scp root@$SERVER_IPV4:/tmp/id_ssh_ed25519 ~/.ssh/id_vpn
