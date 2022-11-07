@@ -59,6 +59,21 @@ Most likely, you chose to configure the e-mail functionality, but entered wrong 
 docker logs authelia
 ```
 
+### Q: My SMTP credentials are correct, but I still get the HTTP 500 error the Authelia logs show an "i/o timeout" error
+```
+error dialing the SMTP server: dial tcp: lookup smtp.example.com: i/o timeout"
+```
+This error message indicates that your VPS provider is blocking the SMTP ports (465/25).
+
+Ask the provider to unblock the ports or disable the e-mail functionality by removing the `email_password` line from secret.yml and re-run the playbook:
+```
+cd $HOME/ansible-easy-vpn
+ansible-galaxy install -r requirements.yml
+ansible-vault edit secret.yml
+ansible-playbook run.yml
+```
+
+
 ### Q: I'd like to completely automate the process of setting up the VPN on my machines. How can I do that?
 1. Fork this repository
 2. Fill out the `custom.yml` and `secret.yml` files, either by running the `bootstrap.sh` script, or editing the files manually
