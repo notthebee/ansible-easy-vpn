@@ -1,6 +1,8 @@
 name: CI
 run-name: ansible-easy-vpn Testing
-on: [push]
+on:
+  - push
+  - workflow_dispatch
 jobs:
   lint:
     runs-on: ubuntu-latest
