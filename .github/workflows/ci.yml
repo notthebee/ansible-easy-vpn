@@ -21,6 +21,8 @@ jobs:
           - index: 1
             os: ubuntu-22.04
           - index: 2
+            os: ubuntu-20.04
+          - index: 3
             os: debian-11
     steps:
       - name: Initialize the ssh-agent
