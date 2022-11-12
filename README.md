@@ -6,7 +6,7 @@ A simple interactive script/Ansible playbook that sets up a Wireguard VPN server
 ## Usage
 
 ```
-wget https://raw.githubusercontent.com/notthebee/ansible-easy-vpn/main/bootstrap.sh -O bootstrap.sh && bash bootstrap.sh
+wget https://notthebe.ee/vpn -O bootstrap.sh && bash bootstrap.sh
 ```
 
 ## Features
