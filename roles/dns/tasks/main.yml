@@ -3,7 +3,7 @@
   community.docker.docker_image:
     name: adguard-unbound-doh
     build:
-      path: "{{ role_dir }}/files/adguard-unbound"
+      path: "{{ role_path }}/files/adguard-unbound"
     source: build
 
 - name: Create the adguard-unbound-doh config folders
