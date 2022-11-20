@@ -20,6 +20,15 @@
     - adguard-unbound-doh/adguard/work
     - adguard-unbound-doh/adguard/conf
 
+- name: Copy Adguard config
+  ansible.builtin.copy:
+    src: AdGuardHome.yaml
+    dest: "{{ docker_dir }}/adguard-unbound-doh/adguard/conf/AdGuardHome.yaml"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0644
+  notify: Restart adguard-unbound-doh
+
 - name: Template the dnscrypt-proxy config
   ansible.builtin.template:
     src: dnscrypt-proxy.toml.j2
