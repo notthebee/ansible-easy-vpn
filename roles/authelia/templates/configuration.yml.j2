@@ -30,6 +30,8 @@ access_control:
       policy: bypass
     - domain: {{ wireguard_host }}
       policy: two_factor
+    - domain: {{ adguard_host }}
+      policy: two_factor
 
 session:
   name: authelia_session

@@ -30,6 +30,8 @@ all:
 
     wireguard_host: "wg.{{ root_host }}"
 
+    adguard_host: "adguard.{{ root_host }}"
+
     wireguard_port: "51820"
 
     # Possible choices: cloudflare, quad9, google

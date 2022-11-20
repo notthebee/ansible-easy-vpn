@@ -35,6 +35,7 @@
     image: adguard-unbound-doh
     networks:
       - name: wg_network
+        ipv4_address: 10.8.2.2
     state: "started"
     restart_policy: unless-stopped
     volumes:

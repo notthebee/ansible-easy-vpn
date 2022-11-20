@@ -12,7 +12,7 @@ RUN wget https://www.internic.net/domain/named.root -qO- >> /etc/unbound/root.hi
 COPY files/ /opt/
 
 # AdGuardHome
-RUN wget https://static.adguard.com/adguardhome/release/AdGuardHome_linux_amd64.tar.gz >/dev/null 2>&1 \
+RUN wget https://github.com/AdguardTeam/AdGuardHome/releases/download/v0.107.16/AdGuardHome_linux_amd64.tar.gz >/dev/null 2>&1 \
         && mkdir -p /opt/adguardhome/conf /opt/adguardhome/work \
         && tar xf AdGuardHome_linux_amd64.tar.gz ./AdGuardHome/AdGuardHome  --strip-components=2 -C /opt/adguardhome \
         && /bin/ash /opt/adguardhome \
@@ -30,8 +30,5 @@ EXPOSE 53/tcp 53/udp 67/udp 68/udp 80/tcp 443/tcp 853/tcp 3000/tcp 5053/udp 5053
 HEALTHCHECK --interval=30s --timeout=15s --start-period=5s\
             CMD sh /opt/healthcheck.sh
 
-CMD ["rc-update add dnscrypt-proxy"]
 CMD ["/opt/entrypoint.sh"]
 
-LABEL \
-    maintainer="lolgast1987 <lolgast@live.nl>"
