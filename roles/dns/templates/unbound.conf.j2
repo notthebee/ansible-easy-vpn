@@ -1,0 +1,67 @@
+server:
+    # Updated via : unbound-anchor -v -a /etc/unbound/root.key
+    auto-trust-anchor-file: "/etc/unbound/root.key"
+    module-config: "validator iterator"
+    # Downloaded via : wget ftp://FTP.INTERNIC.NET/domain/named.cache -O /var/unbound/etc/root.hints
+    root-hints: "/etc/unbound/root.hints"
+
+    interface:  0.0.0.0
+    port:       8053      # port to answer queries from
+    do-ip4:     yes     # Enable IPv4, "yes" or "no".
+    do-ip6:     no      # Enable IPv6, "yes" or "no".
+    do-udp:     yes     # Enable UDP, "yes" or "no".
+    do-tcp:     yes
+
+    # Hide unbound information
+    hide-identity: yes
+    hide-version: yes
+    
+    # If yes, Unbound rotates RRSet order in response. This is almost
+    # same as Thijs Kinkhorst's implementation except that random number
+    # source is query-id.
+    rrset-roundrobin: yes
+    
+    # Time to live minimum for  RRsets  and  messages  in  the  cache.
+    cache-min-ttl: 60
+    
+    # If yes, Unbound doesn't insert authority/additional sections into
+    # response message when those sections are not required [1]. This is
+    # similar to BIND9's minimal-responses or Google Public DNS
+    # behavior.
+    minimal-responses: no
+    
+    # Use  0x20-encoded  random  bits  in  the  query  to  foil  spoof
+    # attempts.   This  perturbs  the lowercase and uppercase of query
+    # names sent to authority servers and checks if  the  reply  still
+    # has  the  correct casing.  Disabled by default.  This feature is
+    # an experimental implementation of draft dns-0x20.
+    use-caps-for-id: yes
+    
+    # If yes, message cache elements are prefetched before they expire
+    # to  keep  the  cache  up to date.
+    prefetch: yes
+    
+    # If  yes,  fetch  the  DNSKEYs earlier in the validation process,
+    # when a DS record is encountered.
+    prefetch-key: yes
+
+    # ACL
+    access-control: 127.0.0.0/8 allow
+    access-control: 192.168.0.0/24 allow
+    access-control: 0.0.0.0/0 refuse
+
+    # Enforce privacy 
+    private-address: 192.168.0.0/24
+
+    # You need this as no for dnscrypt-proxy to work
+    do-not-query-localhost: no
+    
+# Disable remote control
+remote-control:
+    control-enable: no
+
+# Forward all queries to specified servers
+forward-zone:
+    name: "."
+    # CryptDNS
+    # forward-addr: 127.0.0.1@9053

@@ -34,6 +34,11 @@
       tags:
         - ufw
 
+    - role: dns
+      when: enable_adguard_unbound_doh | default(False)
+      tags:
+        - dns
+
     - role: authelia
       tags:
         - authelia
