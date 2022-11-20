@@ -64,12 +64,12 @@ cache_neg_max_ttl = 600
 # ansible-easy-vpn-settings 
 #
 
-{% if 'quad9' in dns_server %}
+{% if 'quad9' in dns_nameservers %}
 server_names = ['quad9-doh-ip4-port443-nofilter-pri']
 bootstrap_resolvers = ['9.9.9.9:53', '149.112.112.112:53']
 netprobe_address = '9.9.9.9:53'
 
-{% elif 'google' in dns_server %}
+{% elif 'google' in dns_nameservers %}
 server_names = ['google']
 bootstrap_resolvers = ['8.8.8.8:53', '8.8.4.4:53']
 netprobe_address = '8.8.8.8:53'
