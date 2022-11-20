@@ -3,7 +3,7 @@
   community.docker.docker_image:
     name: adguard-unbound-doh
     build:
-      path: ./files/adguard-unbound
+      path: "{{ role_dir }}/files/adguard-unbound"
     source: build
 
 - name: Create the adguard-unbound-doh config folders
@@ -15,25 +15,15 @@
     mode: 0755
   loop:
     - adguard-unbound-doh
-    - adguard-unbound-doh/unbound
     - adguard-unbound-doh/adguard
     - adguard-unbound-doh/dnscrypt-proxy
     - adguard-unbound-doh/adguard/work
     - adguard-unbound-doh/adguard/conf
 
-- name: Template the Unbound config
-  ansible.builtin.template:
-    src: unbound.conf.j2
-    dest: "{{ docker_dir }}/adguard-unbound-doh/unbound/unbound.conf"
-    owner: "{{ username }}"
-    group: "{{ username }}"
-    mode: 0644
-  notify: Restart adguard-unbound-doh
-
 - name: Template the dnscrypt-proxy config
   ansible.builtin.template:
-    src: unbound.conf.j2
-    dest: "{{ docker_dir }}/adguard-unbound-doh/dnscrypt-proxy/unbound.conf"
+    src: dnscrypt-proxy.toml.j2
+    dest: "{{ docker_dir }}/adguard-unbound-doh/dnscrypt-proxy/dnscrypt-proxy.toml"
     owner: "{{ username }}"
     group: "{{ username }}"
     mode: 0644
@@ -48,7 +38,6 @@
     state: "started"
     restart_policy: unless-stopped
     volumes:
-      - "{{ docker_dir }}/adguard-unbound-doh/unbound/unbound.conf:/opt/unbound/unbound.conf:ro"
-      - "{{ docker_dir }}/adguard-unbound-doh/dnscrypt/dnscrypt-proxy.toml:/etc/dnscrypt-proxy/dnscrypt-proxy.toml:ro"
+      - "{{ docker_dir }}/adguard-unbound-doh/dnscrypt-proxy/dnscrypt-proxy.toml:/etc/dnscrypt-proxy/dnscrypt-proxy.toml:ro"
       - "{{ docker_dir }}/adguard-unbound-doh/adguard/work:/opt/adguardhome/work"
       - "{{ docker_dir }}/adguard-unbound-doh/adguard/conf:/opt/adguardhome/conf"

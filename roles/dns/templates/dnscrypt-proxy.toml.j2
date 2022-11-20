@@ -21,19 +21,15 @@ require_nofilter = false
 
 force_tcp = false
 
-http3 = false
-
 timeout = 5000
 
 keepalive = 30
 
 cert_refresh_delay = 240
 
-
 ignore_system_dns = true
 
 netprobe_timeout = 60
-
 
 # Maximum log files size in MB - Set to 0 for unlimited.
 log_files_max_size = 10
@@ -64,21 +60,6 @@ cache_neg_min_ttl = 60
 
 cache_neg_max_ttl = 600
 
-
-#########################
-#        Servers        #
-#########################
-[sources]
-
-  ### An example of a remote source from https://github.com/DNSCrypt/dnscrypt-resolvers
-
-  [sources.public-resolvers]
-    urls = ['https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v3/public-resolvers.md', 'https://download.dnscrypt.info/resolvers-list/v3/public-resolvers.md', 'https://ipv6.download.dnscrypt.info/resolvers-list/v3/public-resolvers.md']
-    cache_file = 'public-resolvers.md'
-    minisign_key = 'RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3'
-    refresh_delay = 72
-    prefix = ''
-
 #
 # ansible-easy-vpn-settings 
 #
@@ -99,3 +80,20 @@ bootstrap_resolvers = ['1.1.1.1:53', '1.0.0.1:53']
 netprobe_address = '1.1.1.1:53'
 
 {% endif %}
+
+
+#########################
+#        Servers        #
+#########################
+[sources]
+
+  ### An example of a remote source from https://github.com/DNSCrypt/dnscrypt-resolvers
+
+  [sources.public-resolvers]
+    urls = ['https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v3/public-resolvers.md', 'https://download.dnscrypt.info/resolvers-list/v3/public-resolvers.md', 'https://ipv6.download.dnscrypt.info/resolvers-list/v3/public-resolvers.md']
+    cache_file = 'public-resolvers.md'
+    minisign_key = 'RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3'
+    refresh_delay = 72
+    prefix = ''
+
+

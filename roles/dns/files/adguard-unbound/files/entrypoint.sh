@@ -15,7 +15,7 @@ if [ $status -ne 0 ]; then
   exit $status
 fi
 
-dnscrypt-proxy
+dnscrypt-proxy -config /etc/dnscrypt-proxy/dnscrypt-proxy.toml
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to start dnscrypt-proxy: $status"
