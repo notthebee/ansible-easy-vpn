@@ -89,6 +89,15 @@ jobs:
           token: ${{ secrets.CLOUDFLARE_TOKEN }}
           zone: ${{ secrets.CLOUDFLARE_ZONE }}
 
+      - uses: infraway/create-dns-record@v2.0
+        with:
+          type: "CNAME"
+          name: "adguard.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          content: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          proxied: false
+          token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          zone: ${{ secrets.CLOUDFLARE_ZONE }}
+
       - name: Clone the branch to the Hetzner instance
         run: ssh root@$SERVER_IPV4 git clone https://github.com/notthebee/ansible-easy-vpn -b ${{ github.head_ref || github.ref_name }} 
 
@@ -133,5 +142,12 @@ jobs:
         uses: infraway/delete-dns-record@v2.0
         with:
           name: "wg.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          zone: ${{ secrets.CLOUDFLARE_ZONE }}
+
+      - name: Delete the Cloudflare record (adguard)
+        uses: infraway/delete-dns-record@v2.0
+        with:
+          name: "adguard.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
           token: ${{ secrets.CLOUDFLARE_TOKEN }}
           zone: ${{ secrets.CLOUDFLARE_ZONE }}
