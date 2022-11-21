@@ -103,4 +103,3 @@ all:
 
     # Fail2Ban only comes with the SSH jail by default
     enable_fail2ban: true
-
