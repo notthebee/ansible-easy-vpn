@@ -185,6 +185,51 @@ echo "OK"
 
 echo "root_host: \"${root_host}\"" >> $HOME/ansible-easy-vpn/custom.yml
 
+echo "What's your preferred DNS?"
+echo
+echo "1. Cloudflare [1.1.1.1] (default)"
+echo "2. Quad9 [9.9.9.9]"
+echo "3. Google [8.8.8.8]"
+echo
+
+read -p "DNS [1]: " dns_number
+
+if [ -z ${dns_number} ] || [ ${dns_number} == "1" ]; then
+    dns_nameservers="cloudflare"
+else
+  until [[ "$dns_number" =~ ^[2-3]$ ]]; do
+    echo "Invalid DNS choice"
+    echo "Make sure that you answer with either 1, 2 or 3"
+    read -p "DNS [1]: " dns_number
+  done
+    case $dns_number in 
+      "2")
+        dns_nameservers="quad9"
+        ;;
+      "3")
+        dns_nameservers="google"
+        ;;
+        *)
+        dns_nameservers="cloudflare"
+        ;;
+    esac
+fi
+
+echo "dns_nameservers: \"${dns_nameservers}\"" >> $HOME/ansible-easy-vpn/custom.yml
+
+echo
+echo "Would you like to enable Adguard, Unbound and DNS-over-HTTP"
+echo "for secure DNS resolution with ad blocking functionality?"
+echo "This functionality is experimental and might lead to instability"
+echo
+read -p "Enable Adguard? [y/N]: " adguard_enable
+until [[ "$adguard_enable" =~ ^[yYnN]*$ ]]; do
+  echo "$adguard_enable: invalid selection."
+  read -p "[y/N]: " adguard_enable
+done
+if [[ "$adguard_enable" =~ ^[yY]$ ]]; then
+  echo "enable_adguard_unbound_doh: true" >> $HOME/ansible-easy-vpn/custom.yml
+fi
 
 if [[ ! $aws =~ true ]]; then
   echo
