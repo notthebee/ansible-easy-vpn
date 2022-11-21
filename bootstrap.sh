@@ -170,6 +170,7 @@ if [[ "$adguard_enable" =~ ^[yY]$ ]]; then
   echo "Make sure that 'wg', 'auth' and 'adguard' subdomains also point to that IP (not necessary with DuckDNS)"
 else
   echo "Make sure that 'wg' and 'auth' subdomains also point to that IP (not necessary with DuckDNS)"
+fi
 echo
 read -p "Domain name: " root_host
 until [[ "$root_host" =~ ^[a-z0-9\.\-]*$ ]]; do
@@ -196,7 +197,11 @@ done
 
 echo
 echo "Running certbot in dry-run mode to test the validity of the domain..."
-$SUDO certbot certonly --non-interactive --break-my-certs --force-renewal --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host -d adguard.$root_host || exit
+if [[ "$adguard_enable" =~ ^[yY]$ ]]; then
+  $SUDO certbot certonly --non-interactive --break-my-certs --force-renewal --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host -d adguard.$root_host || exit
+else
+  $SUDO certbot certonly --non-interactive --break-my-certs --force-renewal --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host || exit
+fi
 echo "OK"
 
 echo "root_host: \"${root_host}\"" >> $HOME/ansible-easy-vpn/custom.yml
