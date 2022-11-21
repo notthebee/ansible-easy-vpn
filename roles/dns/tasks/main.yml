@@ -1,0 +1,53 @@
+---
+- name: Build the adguard-unbound Docker image
+  community.docker.docker_image:
+    name: adguard-unbound-doh
+    build:
+      path: "{{ role_path }}/files/adguard-unbound"
+    source: build
+
+- name: Create the adguard-unbound-doh config folders
+  ansible.builtin.file:
+    path: "{{ docker_dir }}/{{ item }}"
+    state: directory
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+  loop:
+    - adguard-unbound-doh
+    - adguard-unbound-doh/adguard
+    - adguard-unbound-doh/dnscrypt-proxy
+    - adguard-unbound-doh/adguard/work
+    - adguard-unbound-doh/adguard/conf
+
+- name: Copy Adguard config
+  ansible.builtin.copy:
+    src: AdGuardHome.yaml
+    dest: "{{ docker_dir }}/adguard-unbound-doh/adguard/conf/AdGuardHome.yaml"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0644
+  notify: Restart adguard-unbound-doh
+
+- name: Template the dnscrypt-proxy config
+  ansible.builtin.template:
+    src: dnscrypt-proxy.toml.j2
+    dest: "{{ docker_dir }}/adguard-unbound-doh/dnscrypt-proxy/dnscrypt-proxy.toml"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0644
+  notify: Restart adguard-unbound-doh
+
+- name: Make sure the adguard-unbound-doh container is created and running
+  community.docker.docker_container:
+    name: adguard-unbound-doh
+    image: adguard-unbound-doh
+    networks:
+      - name: wg_network
+        ipv4_address: 10.8.2.2
+    state: "started"
+    restart_policy: unless-stopped
+    volumes:
+      - "{{ docker_dir }}/adguard-unbound-doh/dnscrypt-proxy/dnscrypt-proxy.toml:/etc/dnscrypt-proxy/dnscrypt-proxy.toml:ro"
+      - "{{ docker_dir }}/adguard-unbound-doh/adguard/work:/opt/adguardhome/work"
+      - "{{ docker_dir }}/adguard-unbound-doh/adguard/conf:/opt/adguardhome/conf"

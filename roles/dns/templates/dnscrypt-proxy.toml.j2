@@ -1,0 +1,99 @@
+
+listen_addresses = ['127.0.0.1:9053']
+
+max_clients = 10
+
+ipv4_servers = true
+
+ipv6_servers = false
+
+dnscrypt_servers = false
+
+doh_servers = true
+
+odoh_servers = false
+
+require_dnssec = true
+
+require_nolog = false
+
+require_nofilter = false
+
+force_tcp = false
+
+timeout = 5000
+
+keepalive = 30
+
+cert_refresh_delay = 240
+
+ignore_system_dns = true
+
+netprobe_timeout = 60
+
+# Maximum log files size in MB - Set to 0 for unlimited.
+log_files_max_size = 10
+
+# How long to keep backup files, in days
+log_files_max_age = 7
+
+# Maximum log files backups to keep (or 0 to keep all backups)
+log_files_max_backups = 1
+
+block_ipv6 = true
+
+block_unqualified = true
+
+block_undelegated = true
+
+reject_ttl = 10
+
+cache = true
+
+cache_size = 4096
+
+cache_min_ttl = 2400
+
+cache_max_ttl = 86400
+
+cache_neg_min_ttl = 60
+
+cache_neg_max_ttl = 600
+
+#
+# ansible-easy-vpn-settings 
+#
+
+{% if 'quad9' in dns_nameservers %}
+server_names = ['quad9-doh-ip4-port443-nofilter-pri']
+bootstrap_resolvers = ['9.9.9.9:53', '149.112.112.112:53']
+netprobe_address = '9.9.9.9:53'
+
+{% elif 'google' in dns_nameservers %}
+server_names = ['google']
+bootstrap_resolvers = ['8.8.8.8:53', '8.8.4.4:53']
+netprobe_address = '8.8.8.8:53'
+
+{% else %}
+server_names = ['cloudflare']
+bootstrap_resolvers = ['1.1.1.1:53', '1.0.0.1:53']
+netprobe_address = '1.1.1.1:53'
+
+{% endif %}
+
+
+#########################
+#        Servers        #
+#########################
+[sources]
+
+  ### An example of a remote source from https://github.com/DNSCrypt/dnscrypt-resolvers
+
+  [sources.public-resolvers]
+    urls = ['https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v3/public-resolvers.md', 'https://download.dnscrypt.info/resolvers-list/v3/public-resolvers.md', 'https://ipv6.download.dnscrypt.info/resolvers-list/v3/public-resolvers.md']
+    cache_file = 'public-resolvers.md'
+    minisign_key = 'RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3'
+    refresh_delay = 72
+    prefix = ''
+
+

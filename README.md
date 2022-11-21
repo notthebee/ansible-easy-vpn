@@ -3,6 +3,7 @@
 
 A simple interactive script/Ansible playbook that sets up a Wireguard VPN server on your VPS of choice
 
+
 ## Usage
 
 ```
@@ -18,6 +19,9 @@ wget https://notthebe.ee/vpn -O bootstrap.sh && bash bootstrap.sh
 * Wireguard WebUI (via wg-easy)
 * Two-factor authentication for the WebUI (Authelia)
 * Hardened web server (Bunkerweb)
+* **[new]** Support for Adguard, Unbound and DNS-over-HTTPS (for ad blocking functionality and secure DNS resolution)
+  * The Adguard WebUI will be accessible at **adguard.yourdomainname.com** after the installation is finished
+
 
 ## Requirements
 * A KVM-based VPS (or an AWS EC2 instance) with a dedicated IPv4 address

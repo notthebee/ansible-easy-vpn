@@ -30,11 +30,22 @@ all:
 
     wireguard_host: "wg.{{ root_host }}"
 
+    adguard_host: "adguard.{{ root_host }}"
+
     wireguard_port: "51820"
 
-    dns_nameservers:
-      - 1.1.1.1
-      - 1.0.0.1
+    # Possible choices: cloudflare, quad9, google
+    #
+    # In case you've enabled Adguard, Unbound and DoH functionality,
+    # this will also set upstream DoH resolvers for dnscrypt
+    dns_nameservers: cloudflare
+
+    # This will enable Adguard, Unbound and dnscrypt-proxy
+    # for secure DNS resolution with ad-blocking functionality
+    #
+    # The ad blocking is disabled by default, you need to navigate to
+    # adguard.your_domain.com to set it up.
+    enable_adguard_unbound_doh: false
 
     # Language and time settings
     # Check here for the list of possible locales

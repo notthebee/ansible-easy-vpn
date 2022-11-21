@@ -31,8 +31,14 @@ send -- "$OPTS(password)\r"
 expect -re ".*Repeat password:.*"
 send -- "$OPTS(password)\r"
 
+expect -re ".*Enable Adguard.*"
+send -- "y\r"
+
 expect -re ".*Domain name:.*"
 send -- "$OPTS(domain)\r"
+
+expect -re ".*DNS.*"
+send -- "\r"
 
 expect {
   "*Are you running this script on an AWS EC2 instance?*" {

@@ -148,12 +148,29 @@ until [[ "$user_password" == "$user_password2" ]]; do
   read -s -p "Repeat password: " user_password2
 done
 
+echo
+echo "Would you like to enable Adguard, Unbound and DNS-over-HTTP"
+echo "for secure DNS resolution with ad blocking functionality?"
+echo "This functionality is experimental and might lead to instability"
+echo
+read -p "Enable Adguard? [y/N]: " adguard_enable
+until [[ "$adguard_enable" =~ ^[yYnN]*$ ]]; do
+  echo "$adguard_enable: invalid selection."
+  read -p "[y/N]: " adguard_enable
+done
+if [[ "$adguard_enable" =~ ^[yY]$ ]]; then
+  echo "enable_adguard_unbound_doh: true" >> $HOME/ansible-easy-vpn/custom.yml
+fi
 
 echo
 echo
 echo "Enter your domain name"
 echo "The domain name should already resolve to the IP address of your server"
-echo "Make sure that 'wg' and 'auth' subdomains also point to that IP (not necessary with DuckDNS)"
+if [[ "$adguard_enable" =~ ^[yY]$ ]]; then
+  echo "Make sure that 'wg', 'auth' and 'adguard' subdomains also point to that IP (not necessary with DuckDNS)"
+else
+  echo "Make sure that 'wg' and 'auth' subdomains also point to that IP (not necessary with DuckDNS)"
+fi
 echo
 read -p "Domain name: " root_host
 until [[ "$root_host" =~ ^[a-z0-9\.\-]*$ ]]; do
@@ -180,27 +197,46 @@ done
 
 echo
 echo "Running certbot in dry-run mode to test the validity of the domain..."
-$SUDO certbot certonly --non-interactive --break-my-certs --force-renewal --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host || exit
+if [[ "$adguard_enable" =~ ^[yY]$ ]]; then
+  $SUDO certbot certonly --non-interactive --break-my-certs --force-renewal --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host -d adguard.$root_host || exit
+else
+  $SUDO certbot certonly --non-interactive --break-my-certs --force-renewal --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host || exit
+fi
 echo "OK"
 
 echo "root_host: \"${root_host}\"" >> $HOME/ansible-easy-vpn/custom.yml
 
+echo "What's your preferred DNS?"
+echo
+echo "1. Cloudflare [1.1.1.1] (default)"
+echo "2. Quad9 [9.9.9.9]"
+echo "3. Google [8.8.8.8]"
+echo
 
-if [[ ! $aws =~ true ]]; then
-  echo
-  read -p "Are you running this script on an AWS EC2 instance? [y/N]: " aws_ec2
-  until [[ "$aws_ec2" =~ ^[yYnN]*$ ]]; do
-          echo "$aws_ec2: invalid selection."
-          read -p "[y/N]: " aws_ec2
+read -p "DNS [1]: " dns_number
+
+if [ -z ${dns_number} ] || [ ${dns_number} == "1" ]; then
+    dns_nameservers="cloudflare"
+else
+  until [[ "$dns_number" =~ ^[2-3]$ ]]; do
+    echo "Invalid DNS choice"
+    echo "Make sure that you answer with either 1, 2 or 3"
+    read -p "DNS [1]: " dns_number
   done
-  if [[ "$aws_ec2" =~ ^[yY]$ ]]; then
-    export AWS_EC2=true
-  echo
-  echo "Please use the SSH keys that you specified in the AWS Management Console to log in to the server."
-  echo "Also, make sure that your Security Group allows inbound connections on 51820/udp, 80/tcp and 443/tcp."
-  echo
-  fi
+    case $dns_number in 
+      "2")
+        dns_nameservers="quad9"
+        ;;
+      "3")
+        dns_nameservers="google"
+        ;;
+        *)
+        dns_nameservers="cloudflare"
+        ;;
+    esac
 fi
+
+echo "dns_nameservers: \"${dns_nameservers}\"" >> $HOME/ansible-easy-vpn/custom.yml
 
 if [[ ! $AWS_EC2 =~ true ]]; then
   echo
