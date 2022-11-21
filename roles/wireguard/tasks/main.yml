@@ -3,14 +3,14 @@
   ansible.builtin.set_fact:
     wg_dns: >-
       {%- if enable_adguard_unbound_doh -%}
-        {%- set wg_dns: "10.8.2.2" -%}
+        {%- set wg_dns = "10.8.2.2" -%}
       {%- else -%}
         {%- if "cloudflare" in dns_nameservers -%}
-          {%- set wg_dns: "1.1.1.1,1.0.0.1" -%}
+          {%- set wg_dns = "1.1.1.1,1.0.0.1" -%}
         {%- elif "quad9" in dns_nameservers -%}
-          {%- set wg_dns: "9.9.9.9,149.112.112.112" -%}
+          {%- set wg_dns = "9.9.9.9,149.112.112.112" -%}
         {%- else -%}
-          {%- set wg_dns: "8.8.8.8, 8.8.4.4" -%}
+          {%- set wg_dns = "8.8.8.8, 8.8.4.4" -%}
         {%- endif -%}
       {%- endif -%}
       {{- wg_dns -}}
