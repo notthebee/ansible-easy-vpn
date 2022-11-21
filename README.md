@@ -19,8 +19,8 @@ wget https://notthebe.ee/vpn -O bootstrap.sh && bash bootstrap.sh
 * Wireguard WebUI (via wg-easy)
 * Two-factor authentication for the WebUI (Authelia)
 * Hardened web server (Bunkerweb)
-* [new] Support for Adguard, Unbound and DNS-over-HTTPS (for ad blocking functionality and secure DNS resolution)
-  * The Adguard WebUI will be accessible via adguard.yourdomainname.com after the installation
+* **[new]** Support for Adguard, Unbound and DNS-over-HTTPS (for ad blocking functionality and secure DNS resolution)
+  * The Adguard WebUI will be accessible at **adguard.yourdomainname.com** after the installation is finished
 
 
 ## Requirements
