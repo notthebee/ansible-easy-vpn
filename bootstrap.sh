@@ -148,12 +148,28 @@ until [[ "$user_password" == "$user_password2" ]]; do
   read -s -p "Repeat password: " user_password2
 done
 
+echo
+echo "Would you like to enable Adguard, Unbound and DNS-over-HTTP"
+echo "for secure DNS resolution with ad blocking functionality?"
+echo "This functionality is experimental and might lead to instability"
+echo
+read -p "Enable Adguard? [y/N]: " adguard_enable
+until [[ "$adguard_enable" =~ ^[yYnN]*$ ]]; do
+  echo "$adguard_enable: invalid selection."
+  read -p "[y/N]: " adguard_enable
+done
+if [[ "$adguard_enable" =~ ^[yY]$ ]]; then
+  echo "enable_adguard_unbound_doh: true" >> $HOME/ansible-easy-vpn/custom.yml
+fi
 
 echo
 echo
 echo "Enter your domain name"
 echo "The domain name should already resolve to the IP address of your server"
-echo "Make sure that 'wg' and 'auth' subdomains also point to that IP (not necessary with DuckDNS)"
+if [[ "$adguard_enable" =~ ^[yY]$ ]]; then
+  echo "Make sure that 'wg', 'auth' and 'adguard' subdomains also point to that IP (not necessary with DuckDNS)"
+else
+  echo "Make sure that 'wg' and 'auth' subdomains also point to that IP (not necessary with DuckDNS)"
 echo
 read -p "Domain name: " root_host
 until [[ "$root_host" =~ ^[a-z0-9\.\-]*$ ]]; do
@@ -216,36 +232,6 @@ else
 fi
 
 echo "dns_nameservers: \"${dns_nameservers}\"" >> $HOME/ansible-easy-vpn/custom.yml
-
-echo
-echo "Would you like to enable Adguard, Unbound and DNS-over-HTTP"
-echo "for secure DNS resolution with ad blocking functionality?"
-echo "This functionality is experimental and might lead to instability"
-echo
-read -p "Enable Adguard? [y/N]: " adguard_enable
-until [[ "$adguard_enable" =~ ^[yYnN]*$ ]]; do
-  echo "$adguard_enable: invalid selection."
-  read -p "[y/N]: " adguard_enable
-done
-if [[ "$adguard_enable" =~ ^[yY]$ ]]; then
-  echo "enable_adguard_unbound_doh: true" >> $HOME/ansible-easy-vpn/custom.yml
-fi
-
-if [[ ! $aws =~ true ]]; then
-  echo
-  read -p "Are you running this script on an AWS EC2 instance? [y/N]: " aws_ec2
-  until [[ "$aws_ec2" =~ ^[yYnN]*$ ]]; do
-          echo "$aws_ec2: invalid selection."
-          read -p "[y/N]: " aws_ec2
-  done
-  if [[ "$aws_ec2" =~ ^[yY]$ ]]; then
-    export AWS_EC2=true
-  echo
-  echo "Please use the SSH keys that you specified in the AWS Management Console to log in to the server."
-  echo "Also, make sure that your Security Group allows inbound connections on 51820/udp, 80/tcp and 443/tcp."
-  echo
-  fi
-fi
 
 if [[ ! $AWS_EC2 =~ true ]]; then
   echo
