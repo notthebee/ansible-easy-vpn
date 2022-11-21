@@ -10,7 +10,7 @@
         {%- elif "quad9" in dns_nameservers -%}
           {%- set wg_dns = "9.9.9.9,149.112.112.112" -%}
         {%- else -%}
-          {%- set wg_dns: "8.8.8.8,8.8.4.4" -%}
+          {%- set wg_dns = "8.8.8.8,8.8.4.4" -%}
         {%- endif -%}
       {%- endif -%}
       {{- wg_dns -}}
