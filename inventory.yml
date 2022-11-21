@@ -45,7 +45,7 @@ all:
     #
     # The ad blocking is disabled by default, you need to navigate to
     # adguard.your_domain.com to set it up.
-    enable_adguard_unbound_doh: true
+    enable_adguard_unbound_doh: false
 
     # Language and time settings
     # Check here for the list of possible locales
