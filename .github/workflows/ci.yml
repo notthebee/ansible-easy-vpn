@@ -26,10 +26,10 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v2      
+      - name: Checkout the code
+        uses: actions/checkout@v2      
+
       - id: set-matrix
-        with:
-          MANUAL_INPUT: ${{ inputs.manual }}
         run: |
           if [[ ${MANUAL_INPUT} == 'true' ]]; then 
             matrix=$(jq 'map(. | select((.os=="ubuntu-22.04")) )' matrix_includes.json)
@@ -37,6 +37,8 @@ jobs:
             matrix=$(jq 'map(.)' matrix_includes.json)
           fi
           echo "matrix={\"include\":$(echo $matrix)}" >> $GITHUB_OUTPUT
+        env:
+          MANUAL_INPUT: ${{ inputs.manual }}
 
   build:
     runs-on: ubuntu-latest
