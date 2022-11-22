@@ -32,9 +32,9 @@ jobs:
       - id: set-matrix
         run: |
           if [[ ${MANUAL_INPUT} == 'true' ]]; then 
-            matrix=$(jq 'map(. | select((.os=="ubuntu-22.04")) )' matrix_includes.json)
+            matrix=$(jq 'map(. | select((.os=="ubuntu-22.04")) )' .github/workflows/matrix_includes.json)
           else
-            matrix=$(jq 'map(.)' matrix_includes.json)
+            matrix=$(jq 'map(.)' .github/workflows/matrix_includes.json)
           fi
           echo "matrix={\"include\":$(echo $matrix)}" >> $GITHUB_OUTPUT
         env:
