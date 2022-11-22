@@ -42,7 +42,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: matrix-prep
+    needs: matrix_prep
     environment: cicd
     strategy:
       fail-fast: false
