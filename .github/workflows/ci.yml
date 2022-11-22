@@ -1,8 +1,16 @@
 name: CI
 run-name: ansible-easy-vpn Testing
 on:
-  - push
-  - workflow_dispatch
+  push:
+
+  workflow_dispatch:
+    inputs:
+      manual:
+        description: 'Wait for user input before destroying the server'
+        required: false
+        type: boolean
+        default: false
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -123,6 +131,11 @@ jobs:
       - name: Log into the server
         run: >-
           expect -c "spawn ssh $EASYVPN_USERNAME@$SERVER_IPV4 -i ~/.ssh/id_vpn; expect \"*Enter passphrase for key*\"; send -- \"$EASYVPN_PASSWORD\r\""
+
+      - name: Wait indefinitely before destroying the server
+        if: ${{ inputs.manual == true }}
+        run: >-
+          sleep infinity
 
       - name: Delete the Cloudflare record
         uses: infraway/delete-dns-record@v2.0
