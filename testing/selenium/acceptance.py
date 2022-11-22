@@ -5,18 +5,31 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.action_chains import ActionChains
 from time import sleep
 import pyotp
+from pexpect import pxssh
 import re
+import pexpect
 import logging
 import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--username', type=str, metavar="username")
+parser.add_argument('--password', type=str, metavar="password")
+parser.add_argument('--base_url', type=str, metavar="base_url")
+
+args = parser.parse_args()
+
 opts = Options()
 opts.add_argument("--headless")
+opts.add_argument('ignore-certificate-errors')
 opts.add_experimental_option("prefs", {
     "profile.default_content_settings.popups": 0,
-    "download.default_directory": "/home/petals",
+    "download.default_directory": "/home/",
     "download.prompt_for_download": False,
     "download.directory_upgrade": True,
     })
+
+opts.binary_location = "/Applications/Chromium.app/Contents/MacOS/Chromium"
+
 driver = webdriver.Chrome(options=opts)
 
 logger = logging.getLogger('ansible-easy-vpn')
@@ -24,33 +37,39 @@ logging.basicConfig()
 logger.setLevel(logging.DEBUG)
 
 
-def register_2fa(driver, base_url):
-    username = "petals"
-    password = "z3Z4CIjOiO8aPnsMauDRvYxBG74="
+def register_2fa(driver, base_url, username, password):
     logger.debug("Fetching {}".format(base_url))
     driver.get("https://wg.{}".format(base_url))
     sleep(0.5)
     logger.debug("Filling out the username field with {}".format(username))
     username_field = driver.find_element("id", "username-textfield")
-    username_field.send_keys("petals")
+    username_field.send_keys(username)
     sleep(0.5)
     logger.debug("Filling out the password field with {}".format(password))
     password_field = driver.find_element("id", "password-textfield")
-    password_field.send_keys("z3Z4CIjOiO8aPnsMauDRvYxBG74=")
+    password_field.send_keys(password)
     sleep(0.5)
     logger.debug("Signing in...")
     submit_button = driver.find_element("id", "sign-in-button")
     submit_button.click()
     sleep(5)
 
-    # logger.debug("Clicking on 'Register device'")
-    #register_device = driver.find_element("id", "register-link")
-    #register_device.click()
+    logger.debug("Clicking on 'Register device'")
+    register_device = driver.find_element("id", "register-link")
+    register_device.click()
 
-    logger.debug("Getting the OTP token from notifications.txt")
-    with open("/opt/docker/authelia/notification.txt", 'r') as notification:
-        token = re.search('token=(.*)', notification.read()).group(1)
+    logger.debug("Getting the notifications.txt from the server")
 
+    s = pxssh.pxssh()
+    s.login(base_url, username, password)
+    s.sendline('sudo cat /opt/docker/authelia/notification.txt')
+    s.prompt()
+    
+    # Convert output to utf-8 due to pexpect weirdness
+    notification = '\r\n'.join(s.before.decode('utf-8').splitlines()[1:])
+    print(notification)
+
+    token = re.search('token=(.*)', notification).group(1)
     driver.get("https://auth.{}/one-time-password/register?token={}".format(base_url, token))
     sleep(2)
     secret_field = driver.find_element("id", "secret-url")
@@ -76,9 +95,7 @@ def register_2fa(driver, base_url):
     sleep(1)
     return
 
-def download_wg_config(driver, base_url):
-    client = "petals"
-
+def download_wg_config(driver, base_url, client):
     logger.debug("Opening wg.{} in the browser".format(base_url))
     driver.get("https://wg.{}".format(base_url))
     sleep(0.5)
@@ -100,6 +117,5 @@ def download_wg_config(driver, base_url):
 
     return
 
-url = "petals.rarepepes.faith"
-register_2fa(driver, url)
-download_wg_config(driver, url)
+register_2fa(driver, args.base_url, args.username, args.password)
+download_wg_config(driver, args.base_url, args.username)
