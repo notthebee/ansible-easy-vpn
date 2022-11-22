@@ -38,7 +38,7 @@ jobs:
     steps:
       - name: Stop all jobs apart from Ubuntu in the manual input mode
         run: exit 0
-        if: ${{ inputs.manual == true && matrix.os != ubuntu-22.04 }}
+        if: ${{ inputs.manual == true && matrix.os != 'ubuntu-22.04' }}
 
       - name: Initialize the ssh-agent
         uses: webfactory/ssh-agent@v0.4.1
