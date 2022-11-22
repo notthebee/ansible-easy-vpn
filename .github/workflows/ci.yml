@@ -129,7 +129,8 @@ jobs:
       - name: Execute the automated bootstrap script
         run: >-
           ssh -t -t root@$SERVER_IPV4 
-          "ansible-easy-vpn/testing/expect/defaults.exp 
+          "export LETSENCRYPT_STAGING=$LETSENCRYPT_STAGING &&
+          ansible-easy-vpn/testing/expect/defaults.exp 
           --username $EASYVPN_USERNAME 
           --password $EASYVPN_PASSWORD 
           --smtp_server $SMTP_SERVER 
