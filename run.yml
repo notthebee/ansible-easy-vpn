@@ -14,6 +14,7 @@
   pre_tasks:
     - set_fact:
         aws: "{{ lookup('ansible.builtin.env', 'AWS_EC2') == 'true' }}"
+        letsencrypt_staging: "{{ [lookup('ansible.builtin.env', 'LETSENCRYPT_STAGING') | lower | default('no')] }}"
 
   roles:
     - role: system

@@ -5,6 +5,12 @@ on:
 
   workflow_dispatch:
     inputs:
+      only_ubuntu_22:
+        description: 'Only run on Ubuntu 22.04'
+        required: false
+        type: boolean
+        default: false
+
       manual:
         description: 'Wait for user input before destroying the server'
         required: false
@@ -25,20 +31,25 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      letsencrypt_staging: ${{ steps.set-matrix.outputs.letsencrypt_staging }}
     steps:
       - name: Checkout the code
         uses: actions/checkout@v2      
 
       - id: set-matrix
         run: |
-          if [[ ${MANUAL_INPUT} == 'true' ]]; then 
+          if [[ ${MANUAL_INPUT} == 'true' || ${ONLY_UBUNTU_22} == 'true' ]]; then 
+            # Only deploy on Ubuntu 22.04, don't use Letsencrypt Staging 
             matrix=$(jq 'map(. | select((.os=="ubuntu-22.04")) )' .github/workflows/matrix_includes.json)
           else
+            # Deploy on all supported OSes, use Letsencrypt Staging to avoid rate-limiting
             matrix=$(jq 'map(.)' .github/workflows/matrix_includes.json)
           fi
           echo "matrix={\"include\":$(echo $matrix)}" >> $GITHUB_OUTPUT
+          echo "letsencrypt_staging='yes'" >> $GITHUB_OUTPUT
         env:
           MANUAL_INPUT: ${{ inputs.manual }}
+          ONLY_UBUNTU_22: ${{ inputs.only_ubuntu_22 }}
 
   build:
     runs-on: ubuntu-latest
@@ -73,6 +84,7 @@ jobs:
           server-type: "cx11"
           ssh-key-name: "github-actions"
           hcloud-token: ${{ secrets.HCLOUD_TOKEN }}
+          delete-server: false
 
       - name: Add the private key to the ssh-agent 
         run: mkdir -p ~/.ssh/ && ssh-keyscan -H $SERVER_IPV4 >> ~/.ssh/known_hosts
@@ -125,7 +137,8 @@ jobs:
       - name: Execute the automated bootstrap script
         run: >-
           ssh -t -t root@$SERVER_IPV4 
-          "ansible-easy-vpn/testing/expect/defaults.exp 
+          "export LETSENCRYPT_STAGING=$LETSENCRYPT_STAGING &&
+          ansible-easy-vpn/testing/expect/defaults.exp 
           --username $EASYVPN_USERNAME 
           --password $EASYVPN_PASSWORD 
           --smtp_server $SMTP_SERVER 
@@ -133,6 +146,7 @@ jobs:
           --smtp_password $SMTP_PASSWORD 
           --domain $DOMAIN"
         env:
+          LETSENCRYPT_STAGING: ${{ needs.matrix_prep.outputs.letsencrypt_staging }}
           SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
           SMTP_LOGIN: ${{ secrets.SMTP_LOGIN }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
@@ -149,31 +163,76 @@ jobs:
         if: ${{ inputs.manual == true }}
         run: >-
           sleep infinity
+    outputs:
+      EASYVPN_PASSWORD: "${{ env.EASYVPN_PASSWORD }}"
+      EASYVPN_USERNAME: "${{ env.EASYVPN_USERNAME }}"
 
-      - name: Delete the Cloudflare record
-        uses: infraway/delete-dns-record@v2.0
-        with:
-          name: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE }}
+  test:
+    runs-on: ubuntu-latest
+    environment: cicd
+    needs:
+      - matrix_prep
+      - build
+    steps:
+      - name: Check out this repo
+        uses: actions/checkout@v2
 
-      - name: Delete the Cloudflare record (auth)
-        uses: infraway/delete-dns-record@v2.0
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
-          name: "auth.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE }}
+          python-version: '3.10'
 
-      - name: Delete the Cloudflare record (wg)
-        uses: infraway/delete-dns-record@v2.0
-        with:
-          name: "wg.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE }}
+      - name: Remove Chrome
+        run: sudo apt purge google-chrome-stable
 
-      - name: Delete the Cloudflare record (adguard)
-        uses: infraway/delete-dns-record@v2.0
-        with:
-          name: "adguard.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE }}
+      - name: Remove default Chromium
+        run: sudo apt purge chromium-browser
+
+      - name: Install a new Chromium
+        run: sudo apt install -y chromium-browser
+
+      - name: Install all necessary packages
+        run: pip install webdriver-manager selenium pyotp pexpect
+
+      - name: Run the testing script
+        run: python testing/selenium/acceptance.py --username $EASYVPN_USERNAME --password $EASYVPN_PASSWORD --base_url $DOMAIN
+        env:
+          EASYVPN_USERNAME: "${{ needs.build.outputs.EASYVPN_USERNAME }}"
+          EASYVPN_PASSWORD: "${{ needs.build.outputs.EASYVPN_PASSWORD }}"
+          DOMAIN: "${{ needs.build.outputs.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+
+  destroy:
+    runs-on: ubuntu-latest
+    environment: cicd
+    if: always()
+    needs:
+      - matrix_prep
+      - build
+      - test
+    steps:
+      - name: Destroy the Hetzner instances
+        run: >-
+           export SERVER_ID=$(curl -H 
+           "Authorization: Bearer $API_TOKEN" https://api.hetzner.cloud/v1/servers | 
+           jq '.servers[] | select(.name=="$SERVER_NAME") | .id') &&
+           curl -X DELETE -H "Authorization: Bearer $API_TOKEN" 
+           https://api.hetzner.cloud/v1/servers/$SERVER_ID
+        env:
+          HCLOUD_TOKEN: "${{ secrets.HCLOUD_TOKEN }}"
+          EASYVPN_USERNAME: "${{ needs.build.outputs.EASYVPN_USERNAME }}"
+          SERVER_NAME: ansible-easy-vpn-${{ env.EASYVPN_USERNAME }}
+
+      - name: Delete all Cloudflare domains
+        run: >-
+          curl -s -X GET https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?per_page=500
+          -H "Authorization: Bearer $CLOUDFLARE_TOKEN"
+          -H "Content-Type: application/json" |
+          jq .result[].id |
+          tr -d '"' |
+          ( while read id; do curl -s -X DELETE
+          https://api.cloudflare.com/client/v4/zones/5420f91fefac252d89d9495a8d35ae73/dns_records/${id}
+          -H "Authorization: Bearer $CLOUDFLARE_TOKEN"
+          -H "Content-Type: application/json";   done;   )
+        env:
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+          ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE }}
