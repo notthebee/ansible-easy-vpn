@@ -32,11 +32,14 @@ jobs:
       - id: set-matrix
         run: |
           if [[ ${MANUAL_INPUT} == 'true' ]]; then 
+            # Only deploy on Ubuntu 22.04, don't use Letsencrypt Staging 
             matrix=$(jq 'map(. | select((.os=="ubuntu-22.04")) )' .github/workflows/matrix_includes.json)
           else
+            # Deploy on all supported OSes, use Letsencrypt Staging to avoid rate-limiting
             matrix=$(jq 'map(.)' .github/workflows/matrix_includes.json)
           fi
           echo "matrix={\"include\":$(echo $matrix)}" >> $GITHUB_OUTPUT
+          echo "letsencrypt_staging=1" >> $GITHUB_OUTPUT
         env:
           MANUAL_INPUT: ${{ inputs.manual }}
 
@@ -133,6 +136,7 @@ jobs:
           --smtp_password $SMTP_PASSWORD 
           --domain $DOMAIN"
         env:
+          LETSENCRYPT_STAGING: ${{ needs.matrix_prep.outputs.letsencrypt_staging }}
           SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
           SMTP_LOGIN: ${{ secrets.SMTP_LOGIN }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
