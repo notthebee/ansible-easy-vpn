@@ -84,6 +84,7 @@ jobs:
           server-type: "cx11"
           ssh-key-name: "github-actions"
           hcloud-token: ${{ secrets.HCLOUD_TOKEN }}
+          delete-server: false
 
       - name: Add the private key to the ssh-agent 
         run: mkdir -p ~/.ssh/ && ssh-keyscan -H $SERVER_IPV4 >> ~/.ssh/known_hosts
