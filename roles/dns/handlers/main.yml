@@ -2,4 +2,5 @@
 - name: Restart adguard-unbound-doh
   community.docker.docker_container:
     name: adguard-unbound-doh
-    state: restarted
+    state: started
+    restart: yes
