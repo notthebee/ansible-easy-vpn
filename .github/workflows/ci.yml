@@ -5,6 +5,12 @@ on:
 
   workflow_dispatch:
     inputs:
+      only_ubuntu_22:
+        description: 'Only run on Ubuntu 22.04'
+        required: false
+        type: boolean
+        default: false
+
       manual:
         description: 'Wait for user input before destroying the server'
         required: false
@@ -32,7 +38,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          if [[ ${MANUAL_INPUT} == 'true' ]]; then 
+          if [[ ${MANUAL_INPUT} == 'true' || ${ONLY_UBUNTU_22} == 'true' ]]; then 
             # Only deploy on Ubuntu 22.04, don't use Letsencrypt Staging 
             matrix=$(jq 'map(. | select((.os=="ubuntu-22.04")) )' .github/workflows/matrix_includes.json)
           else
@@ -43,6 +49,7 @@ jobs:
           echo "letsencrypt_staging='yes'" >> $GITHUB_OUTPUT
         env:
           MANUAL_INPUT: ${{ inputs.manual }}
+          ONLY_UBUNTU_22: ${{ inputs.only_ubuntu_22 }}
 
   build:
     runs-on: ubuntu-latest
@@ -155,7 +162,54 @@ jobs:
         if: ${{ inputs.manual == true }}
         run: >-
           sleep infinity
+    outputs:
+      EASYVPN_PASSWORD: "${{ env.EASYVPN_PASSWORD }}"
+      EASYVPN_USERNAME: "${{ env.EASYVPN_USERNAME }}"
+      DOMAIN: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
 
+  test:
+    runs-on: ubuntu-latest
+    environment: cicd
+    needs:
+      - matrix_prep
+      - build
+    steps:
+      - name: Check out this repo
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
+      - name: Remove Chrome
+        run: sudo apt purge google-chrome-stable
+
+      - name: Remove default Chromium
+        run: sudo apt purge chromium-browser
+
+      - name: Install a new Chromium
+        run: sudo apt install -y chromium-browser
+
+      - name: Install all necessary packages
+        run: pip install webdriver-manager selenium pyotp pexpect
+
+      - name: Run the testing script
+        run: python testing/selenium/acceptance.py --username $EASYVPN_USERNAME --password $EASYVPN_PASSWORD --base_url $DOMAIN
+        env:
+          EASYVPN_USERNAME: "${{ needs.build.outputs.EASYVPN_USERNAME }}"
+          EASYVPN_PASSWORD: "${{ needs.build.outputs.EASYVPN_PASSWORD }}"
+          DOMAIN: "${{ needs.build.outputs.DOMAIN }}"
+
+     
+  destroy:
+    runs-on: ubuntu-latest
+    environment: cicd
+    needs:
+      - matrix_prep
+      - build
+      - test
+    steps:
       - name: Delete the Cloudflare record
         uses: infraway/delete-dns-record@v2.0
         with:

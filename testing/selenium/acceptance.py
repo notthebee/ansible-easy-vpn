@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.core.utils import ChromeType
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.chrome.service import Service
 from time import sleep
 import pyotp
 from pexpect import pxssh
@@ -19,18 +21,21 @@ parser.add_argument('--base_url', type=str, metavar="base_url")
 args = parser.parse_args()
 
 opts = Options()
-opts.add_argument("--headless")
-opts.add_argument('ignore-certificate-errors')
-opts.add_experimental_option("prefs", {
-    "profile.default_content_settings.popups": 0,
-    "download.default_directory": "/home/",
-    "download.prompt_for_download": False,
-    "download.directory_upgrade": True,
-    })
+chrome_service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
+chrome_options = Options()
+options = [
+    "--headless",
+    "--disable-gpu",
+    "--window-size=1920,1200",
+    "--ignore-certificate-errors",
+    "--disable-extensions",
+    "--no-sandbox",
+    "--disable-dev-shm-usage"
+]
+for option in options:
+    chrome_options.add_argument(option)
 
-opts.binary_location = "/Applications/Chromium.app/Contents/MacOS/Chromium"
-
-driver = webdriver.Chrome(options=opts)
+driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
 
 logger = logging.getLogger('ansible-easy-vpn')
 logging.basicConfig()
