@@ -201,7 +201,6 @@ jobs:
           EASYVPN_PASSWORD: "${{ needs.build.outputs.EASYVPN_PASSWORD }}"
           DOMAIN: "${{ needs.build.outputs.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
 
-     
   destroy:
     runs-on: ubuntu-latest
     environment: cicd
@@ -211,30 +210,29 @@ jobs:
       - build
       - test
     steps:
-      - name: Delete the Cloudflare record
-        uses: infraway/delete-dns-record@v2.0
-        with:
-          name: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE }}
+      - name: Destroy the Hetzner instances
+        run: >-
+           export SERVER_ID=$(curl -H 
+           "Authorization: Bearer $API_TOKEN" https://api.hetzner.cloud/v1/servers | 
+           jq '.servers[] | select(.name=="ubuntu-2gb-hel1-1") | .id') &&
+           curl -X DELETE -H "Authorization: Bearer $API_TOKEN" 
+           https://api.hetzner.cloud/v1/servers/$SERVER_ID
+        env:
+          HCLOUD_TOKEN: "${{ secrets.HCLOUD_TOKEN }}"
+          EASYVPN_USERNAME: "${{ needs.build.outputs.EASYVPN_USERNAME }}"
+          SERVER_NAME: ansible-easy-vpn-${{ env.EASYVPN_USERNAME }}
 
-      - name: Delete the Cloudflare record (auth)
-        uses: infraway/delete-dns-record@v2.0
-        with:
-          name: "auth.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE }}
-
-      - name: Delete the Cloudflare record (wg)
-        uses: infraway/delete-dns-record@v2.0
-        with:
-          name: "wg.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE }}
-
-      - name: Delete the Cloudflare record (adguard)
-        uses: infraway/delete-dns-record@v2.0
-        with:
-          name: "adguard.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE }}
+      - name: Delete all Cloudflare domains
+        run: >-
+          curl -s -X GET https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?per_page=500
+          -H "Authorization: Bearer $CLOUDFLARE_TOKEN"
+          -H "Content-Type: application/json" |
+          jq .result[].id |
+          tr -d '"' |
+          ( while read id; do curl -s -X DELETE
+          https://api.cloudflare.com/client/v4/zones/5420f91fefac252d89d9495a8d35ae73/dns_records/${id}
+          -H "Authorization: Bearer $CLOUDFLARE_TOKEN"
+          -H "Content-Type: application/json";   done;   )
+        env:
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+          ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE }}
