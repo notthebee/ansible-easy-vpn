@@ -166,7 +166,6 @@ jobs:
     outputs:
       EASYVPN_PASSWORD: "${{ env.EASYVPN_PASSWORD }}"
       EASYVPN_USERNAME: "${{ env.EASYVPN_USERNAME }}"
-      DOMAIN: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
 
   test:
     runs-on: ubuntu-latest
@@ -200,12 +199,13 @@ jobs:
         env:
           EASYVPN_USERNAME: "${{ needs.build.outputs.EASYVPN_USERNAME }}"
           EASYVPN_PASSWORD: "${{ needs.build.outputs.EASYVPN_PASSWORD }}"
-          DOMAIN: "${{ needs.build.outputs.DOMAIN }}"
+          DOMAIN: "${{ needs.build.outputs.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
 
      
   destroy:
     runs-on: ubuntu-latest
     environment: cicd
+    if: always()
     needs:
       - matrix_prep
       - build
