@@ -20,7 +20,7 @@ jobs:
 
       - name: Ansible-lint
         uses: ansible-community/ansible-lint-action@main
-   
+
   build:
     runs-on: ubuntu-latest
     environment: cicd
@@ -34,7 +34,12 @@ jobs:
             os: ubuntu-20.04
           - index: 3
             os: debian-11
+
     steps:
+      - name: Stop all jobs apart from Ubuntu in the manual input mode
+        run: exit 0
+        if: ${{ inputs.manual == true && matrix.os != ubuntu-22.04 }}
+
       - name: Initialize the ssh-agent
         uses: webfactory/ssh-agent@v0.4.1
         with:
@@ -53,21 +58,10 @@ jobs:
         run: echo "EASYVPN_PASSWORD=$(openssl rand -base64 20)" >> $GITHUB_ENV
 
       - name: Spawn a Hetzner node
-        if: ${{ inputs.manual != true }}
         uses: TimDaub/hetzner-cloud-deploy-server-action@v2
         with:
           server-name: ansible-easy-vpn-${{ env.EASYVPN_USERNAME }}
           server-image: ${{ matrix.os }}
-          server-type: "cx11"
-          ssh-key-name: "github-actions"
-          hcloud-token: ${{ secrets.HCLOUD_TOKEN }}
-
-      - name: Spawn a Hetzner node
-        if: ${{ inputs.manual == true }}
-        uses: TimDaub/hetzner-cloud-deploy-server-action@v2
-        with:
-          server-name: ansible-easy-vpn-${{ env.EASYVPN_USERNAME }}
-          server-image: ubuntu-22.04
           server-type: "cx11"
           ssh-key-name: "github-actions"
           hcloud-token: ${{ secrets.HCLOUD_TOKEN }}
