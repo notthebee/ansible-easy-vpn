@@ -25,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      letsencrypt_staging: ${{ steps.set-matrix.outputs.letsencrypt_staging }}
     steps:
       - name: Checkout the code
         uses: actions/checkout@v2      
@@ -39,7 +40,7 @@ jobs:
             matrix=$(jq 'map(.)' .github/workflows/matrix_includes.json)
           fi
           echo "matrix={\"include\":$(echo $matrix)}" >> $GITHUB_OUTPUT
-          echo "letsencrypt_staging=1" >> $GITHUB_OUTPUT
+          echo "letsencrypt_staging='yes'" >> $GITHUB_OUTPUT
         env:
           MANUAL_INPUT: ${{ inputs.manual }}
 
