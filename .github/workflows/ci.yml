@@ -53,10 +53,21 @@ jobs:
         run: echo "EASYVPN_PASSWORD=$(openssl rand -base64 20)" >> $GITHUB_ENV
 
       - name: Spawn a Hetzner node
+        if: ${{ inputs.manual != true }}
         uses: TimDaub/hetzner-cloud-deploy-server-action@v2
         with:
           server-name: ansible-easy-vpn-${{ env.EASYVPN_USERNAME }}
           server-image: ${{ matrix.os }}
+          server-type: "cx11"
+          ssh-key-name: "github-actions"
+          hcloud-token: ${{ secrets.HCLOUD_TOKEN }}
+
+      - name: Spawn a Hetzner node
+        if: ${{ inputs.manual == true }}
+        uses: TimDaub/hetzner-cloud-deploy-server-action@v2
+        with:
+          server-name: ansible-easy-vpn-${{ env.EASYVPN_USERNAME }}
+          server-image: ubuntu-22.04
           server-type: "cx11"
           ssh-key-name: "github-actions"
           hcloud-token: ${{ secrets.HCLOUD_TOKEN }}
