@@ -86,6 +86,7 @@ jobs:
             "2")
             echo "EASYVPN_USERNAME_2=$EASYVPN_USERNAME" >> $GITHUB_OUTPUT
             echo "EASYVPN_PASSWORD_2=$EASYVPN_PASSWORD" >> $GITHUB_OUTPUT
+            ;;
             "3")
             echo "EASYVPN_USERNAME_3=$EASYVPN_USERNAME" >> $GITHUB_OUTPUT
             echo "EASYVPN_PASSWORD_3=$EASYVPN_PASSWORD" >> $GITHUB_OUTPUT
