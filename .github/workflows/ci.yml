@@ -246,7 +246,7 @@ jobs:
         run: >-
            export SERVER_ID=$(curl -H 
            "Authorization: Bearer $HCLOUD_TOKEN" https://api.hetzner.cloud/v1/servers | 
-           jq '.servers[] | select(.name=="$SERVER_NAME") | .id') &&
+           jq --arg SERVER_NAME "$SERVER_NAME" '.servers[] | select(.name==$SERVER_NAME) | .id') &&
            curl -X DELETE -H "Authorization: Bearer $HCLOUD_TOKEN" 
            https://api.hetzner.cloud/v1/servers/$SERVER_ID
         env:
