@@ -70,11 +70,33 @@ jobs:
       - name: Update apt cache on the runner and install dependencies
         run: sudo apt update && sudo apt install sshpass expect wamerican
 
-      - name: Generate a random username
-        run: echo "EASYVPN_USERNAME=$(shuf -n 1 /usr/share/dict/words | tr '[:upper:]' '[:lower:]' | tr -dc '[:alnum:]' )" >> $GITHUB_ENV
+      - name: Generate a random username and password
+        run: |
+          echo "EASYVPN_USERNAME=$(shuf -n 1 /usr/share/dict/words | tr '[:upper:]' '[:lower:]' | tr -dc '[:alnum:]' )" >> $GITHUB_ENV &&
+          echo "EASYVPN_PASSWORD=$(openssl rand -base64 20)" >> $GITHUB_ENV
 
-      - name: Generate a random password
-        run: echo "EASYVPN_PASSWORD=$(openssl rand -base64 20)" >> $GITHUB_ENV
+      - name: Set the username and password outputs
+        id: random_username
+        run: |
+          case $INDEX in
+            "1")
+            echo "EASYVPN_USERNAME_1=$EASYVPN_USERNAME" >> $GITHUB_OUTPUT
+            echo "EASYVPN_PASSWORD_1=$EASYVPN_PASSWORD" >> $GITHUB_OUTPUT
+            ;;
+            "2")
+            echo "EASYVPN_USERNAME_2=$EASYVPN_USERNAME" >> $GITHUB_OUTPUT
+            echo "EASYVPN_PASSWORD_2=$EASYVPN_PASSWORD" >> $GITHUB_OUTPUT
+            ;;
+            "3")
+            echo "EASYVPN_USERNAME_3=$EASYVPN_USERNAME" >> $GITHUB_OUTPUT
+            echo "EASYVPN_PASSWORD_3=$EASYVPN_PASSWORD" >> $GITHUB_OUTPUT
+            ;;
+            *)
+            exit 1
+            ;;
+          esac
+        env:
+          INDEX: ${{ matrix.index }}
 
       - name: Spawn a Hetzner node
         uses: TimDaub/hetzner-cloud-deploy-server-action@v2
@@ -164,12 +186,19 @@ jobs:
         run: >-
           sleep infinity
     outputs:
-      EASYVPN_PASSWORD: "${{ env.EASYVPN_PASSWORD }}"
-      EASYVPN_USERNAME: "${{ env.EASYVPN_USERNAME }}"
+      EASYVPN_USERNAME_1: "${{ steps.random_username.outputs.EASYVPN_USERNAME_1 }}"
+      EASYVPN_USERNAME_2: "${{ steps.random_username.outputs.EASYVPN_USERNAME_2 }}"
+      EASYVPN_USERNAME_3: "${{ steps.random_username.outputs.EASYVPN_USERNAME_3 }}"
+      EASYVPN_PASSWORD_1: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_1 }}"
+      EASYVPN_PASSWORD_2: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_2 }}"
+      EASYVPN_PASSWORD_3: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_3 }}"
 
   test:
     runs-on: ubuntu-latest
     environment: cicd
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.matrix_prep.outputs.matrix)}}
     needs:
       - matrix_prep
       - build
@@ -197,13 +226,16 @@ jobs:
       - name: Run the testing script
         run: python testing/selenium/acceptance.py --username $EASYVPN_USERNAME --password $EASYVPN_PASSWORD --base_url $DOMAIN
         env:
-          EASYVPN_USERNAME: "${{ needs.build.outputs.EASYVPN_USERNAME }}"
-          EASYVPN_PASSWORD: "${{ needs.build.outputs.EASYVPN_PASSWORD }}"
-          DOMAIN: "${{ needs.build.outputs.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          EASYVPN_USERNAME: "${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}"
+          EASYVPN_PASSWORD: "${{ needs.build.outputs[format('EASYVPN_PASSWORD_{0}', matrix.index)] }}"
+          DOMAIN: "${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
 
   destroy:
     runs-on: ubuntu-latest
     environment: cicd
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.matrix_prep.outputs.matrix)}}
     if: always()
     needs:
       - matrix_prep
@@ -213,14 +245,13 @@ jobs:
       - name: Destroy the Hetzner instances
         run: >-
            export SERVER_ID=$(curl -H 
-           "Authorization: Bearer $API_TOKEN" https://api.hetzner.cloud/v1/servers | 
-           jq '.servers[] | select(.name=="$SERVER_NAME") | .id') &&
-           curl -X DELETE -H "Authorization: Bearer $API_TOKEN" 
+           "Authorization: Bearer $HCLOUD_TOKEN" https://api.hetzner.cloud/v1/servers | 
+           jq --arg SERVER_NAME "$SERVER_NAME" '.servers[] | select(.name==$SERVER_NAME) | .id') &&
+           curl -X DELETE -H "Authorization: Bearer $HCLOUD_TOKEN" 
            https://api.hetzner.cloud/v1/servers/$SERVER_ID
         env:
-          HCLOUD_TOKEN: "${{ secrets.HCLOUD_TOKEN }}"
-          EASYVPN_USERNAME: "${{ needs.build.outputs.EASYVPN_USERNAME }}"
-          SERVER_NAME: ansible-easy-vpn-${{ env.EASYVPN_USERNAME }}
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+          SERVER_NAME: ansible-easy-vpn-${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}
 
       - name: Delete all Cloudflare domains
         run: >-
