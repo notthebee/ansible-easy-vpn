@@ -71,24 +71,28 @@ jobs:
         run: sudo apt update && sudo apt install sshpass expect wamerican
 
       - name: Generate a random username and password
-        id: random_username
         run: |
           echo "EASYVPN_USERNAME=$(shuf -n 1 /usr/share/dict/words | tr '[:upper:]' '[:lower:]' | tr -dc '[:alnum:]' )" >> $GITHUB_ENV &&
           echo "EASYVPN_PASSWORD=$(openssl rand -base64 20)" >> $GITHUB_ENV
+
+      - name: Set the username and password outputs
+        id: random_username
+        run: |
           case $INDEX in
             "1")
-            echo "EASYVPN_USERNAME_1=${{ env.EASYVPN_USERNAME }}" >> $GITHUB_OUTPUT
-            echo "EASYVPN_PASSWORD_1=${{ env.EASYVPN_PASSWORD }}" >> $GITHUB_OUTPUT
+            echo "EASYVPN_USERNAME_1=$EASYVPN_USERNAME" >> $GITHUB_OUTPUT
+            echo "EASYVPN_PASSWORD_1=$EASYVPN_PASSWORD" >> $GITHUB_OUTPUT
             ;;
             "2")
-            echo "EASYVPN_USERNAME_2=${{ env.EASYVPN_USERNAME }}" >> $GITHUB_OUTPUT
-            echo "EASYVPN_PASSWORD_2=${{ env.EASYVPN_PASSWORD }}" >> $GITHUB_OUTPUT
+            echo "EASYVPN_USERNAME_2=$EASYVPN_USERNAME" >> $GITHUB_OUTPUT
+            echo "EASYVPN_PASSWORD_2=$EASYVPN_PASSWORD" >> $GITHUB_OUTPUT
             "3")
-            echo "EASYVPN_USERNAME_3=${{ env.EASYVPN_USERNAME }}" >> $GITHUB_OUTPUT
-            echo "EASYVPN_PASSWORD_3=${{ env.EASYVPN_PASSWORD }}" >> $GITHUB_OUTPUT
+            echo "EASYVPN_USERNAME_3=$EASYVPN_USERNAME" >> $GITHUB_OUTPUT
+            echo "EASYVPN_PASSWORD_3=$EASYVPN_PASSWORD" >> $GITHUB_OUTPUT
             ;;
             *)
             exit 1
+            ;;
           esac
         env:
           INDEX: ${{ matrix.index }}
