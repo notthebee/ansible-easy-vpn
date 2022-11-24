@@ -38,6 +38,12 @@
     mode: 0644
   notify: Restart adguard-unbound-doh
 
+- name: Disable DNSStubListener
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/resolved.conf
+    line: "DNSStubListener=no"
+    regexp: "^#?DNSStubListener=(yes|no)$"
+
 - name: Make sure the adguard-unbound-doh container is created and running
   community.docker.docker_container:
     name: adguard-unbound-doh
