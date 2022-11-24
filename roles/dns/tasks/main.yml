@@ -51,3 +51,9 @@
       - "{{ docker_dir }}/adguard-unbound-doh/dnscrypt-proxy/dnscrypt-proxy.toml:/etc/dnscrypt-proxy/dnscrypt-proxy.toml:ro"
       - "{{ docker_dir }}/adguard-unbound-doh/adguard/work:/opt/adguardhome/work"
       - "{{ docker_dir }}/adguard-unbound-doh/adguard/conf:/opt/adguardhome/conf"
+    ports:
+      - 53:53/udp
+      - 53:53/tcp
+      - 67:67/udp
+      - 68:68/tcp
+      - 68:68/udp

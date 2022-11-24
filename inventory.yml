@@ -100,6 +100,22 @@ all:
         proto: "tcp"
       - port: "{{ ssh_port }}"
         proto: "tcp"
+        # Uncomment the following lines if your server is behind NAT
+        # and you would like to use Adguard for other devices in your
+        # home network
+        #
+        #- port: 53
+        #  proto: "any"
+        #- port: 68
+        #  proto: "any"
+        #- port: 67
+        #  proto: "any"
+        #
+        # !!! DO NOT TOUCH UNLESS YOU 100% KNOW WHAT YOU ARE DOING
+        # !!! ENABLING THIS ON A PUBLICLY ACCESSIBLE SERVER (e.g. a VPS)
+        # !!! IS AN ENORMOUS SECURITY RISK AND WILL HAVE GRAVE CONSEQUENCES
+        #
+        # !!! YOU'VE BEEN WARNED
 
     # Fail2Ban only comes with the SSH jail by default
     enable_fail2ban: true
