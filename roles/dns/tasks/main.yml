@@ -46,7 +46,7 @@
 
 - name: Restart systemd-resolved
   ansible.builtin.systemd:
-    name: resolved
+    name: systemd-resolved
     state: restarted
 
 - name: Make sure the adguard-unbound-doh container is created and running
