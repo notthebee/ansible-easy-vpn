@@ -106,8 +106,6 @@ all:
         #
         #- port: 53
         #  proto: "any"
-        #- port: 68
-        #  proto: "any"
         #- port: 67
         #  proto: "any"
         #
