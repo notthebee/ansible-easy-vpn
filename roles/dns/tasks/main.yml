@@ -39,15 +39,11 @@
   notify: Restart adguard-unbound-doh
 
 - name: Disable DNSStubListener
+  notify: Restart systemd-resolved
   ansible.builtin.lineinfile:
     path: /etc/systemd/resolved.conf
     line: "DNSStubListener=no"
     regexp: "^#?DNSStubListener=(yes|no)$"
-
-- name: Restart systemd-resolved
-  ansible.builtin.systemd:
-    name: systemd-resolved
-    state: restarted
 
 - name: Make sure the adguard-unbound-doh container is created and running
   community.docker.docker_container:
