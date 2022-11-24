@@ -44,6 +44,11 @@
     line: "DNSStubListener=no"
     regexp: "^#?DNSStubListener=(yes|no)$"
 
+- name: Restart systemd-resolved
+  ansible.builtin.systemd:
+    name: resolved
+    state: restarted
+
 - name: Make sure the adguard-unbound-doh container is created and running
   community.docker.docker_container:
     name: adguard-unbound-doh
