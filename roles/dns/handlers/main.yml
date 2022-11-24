@@ -4,3 +4,8 @@
     name: adguard-unbound-doh
     state: started
     restart: yes
+
+- name: Restart systemd-resolved
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    state: restarted

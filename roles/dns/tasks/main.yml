@@ -38,6 +38,13 @@
     mode: 0644
   notify: Restart adguard-unbound-doh
 
+- name: Disable DNSStubListener
+  notify: Restart systemd-resolved
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/resolved.conf
+    line: "DNSStubListener=no"
+    regexp: "^#?DNSStubListener=(yes|no)$"
+
 - name: Make sure the adguard-unbound-doh container is created and running
   community.docker.docker_container:
     name: adguard-unbound-doh
@@ -51,3 +58,7 @@
       - "{{ docker_dir }}/adguard-unbound-doh/dnscrypt-proxy/dnscrypt-proxy.toml:/etc/dnscrypt-proxy/dnscrypt-proxy.toml:ro"
       - "{{ docker_dir }}/adguard-unbound-doh/adguard/work:/opt/adguardhome/work"
       - "{{ docker_dir }}/adguard-unbound-doh/adguard/conf:/opt/adguardhome/conf"
+    ports:
+      - 53:53/udp
+      - 53:53/tcp
+      - 67:67/udp
