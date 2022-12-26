@@ -21,8 +21,6 @@ parser.add_argument('--base_url', type=str, metavar="base_url")
 
 args = parser.parse_args()
 
-opts = Options()
-chrome_service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
 chrome_options = Options()
 options = [
     "--headless",
@@ -36,7 +34,7 @@ options = [
 for option in options:
     chrome_options.add_argument(option)
 
-driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
+driver = webdriver.Chrome('/snap/bin/chromium.chromedriver', options=chrome_options)
 
 logger = logging.getLogger('ansible-easy-vpn')
 logging.basicConfig()

@@ -217,14 +217,14 @@ jobs:
       - name: Remove default Chromium
         run: sudo apt purge chromium-browser
 
-      - name: Install Chromium 107
-        run: sudo apt install -y chromium-browser=107.0.5288.0
+      - name: Install snapd
+        run: sudo apt install snapd
+
+      - name: Install chromium
+        run: sudo snap install chromium
 
       - name: Install all necessary packages
         run: pip install webdriver-manager selenium pyotp pexpect
-
-      - name: Install ChromeDriver 107
-        run: webdriver-manager update --versions.chrome 107.0.5288.0
 
       - name: Run the testing script
         run: python testing/selenium/acceptance.py --username $EASYVPN_USERNAME --password $EASYVPN_PASSWORD --base_url $DOMAIN
