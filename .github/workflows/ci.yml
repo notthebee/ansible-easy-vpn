@@ -217,8 +217,11 @@ jobs:
       - name: Remove default Chromium
         run: sudo apt purge chromium-browser
 
-      - name: Install a new Chromium
-        run: sudo apt install -y chromium-browser
+      - name: Install snapd
+        run: sudo apt install snapd
+
+      - name: Install chromium
+        run: sudo snap install chromium
 
       - name: Install all necessary packages
         run: pip install webdriver-manager selenium pyotp pexpect
