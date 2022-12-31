@@ -7,6 +7,7 @@
 * [I'd like to completely automate the process of setting up the VPN on my machines. How can I do that?](#q-id-like-to-completely-automate-the-process-of-setting-up-the-vpn-on-my-machines-how-can-i-do-that)
 * [When I try to copy the SSH key to my Windows machine, I get an error](#q-when-i-try-to-copy-the-ssh-key-to-my-windows-machine-i-get-an-error)
 * [I've lost my second factor device. How do I reset the 2FA?](#q-ive-lost-my-second-factor-device-how-do-i-reset-the-2fa)
+* [I can't access the Internet after connecting to the Wireguard server](#i-cant-access-the-internet-after-connecting-to-the-wireguard-server)
 
 ### Q: I've run the playbook succesfully, but now I want to change the domain name/username/password. How can I do that?
 
@@ -97,7 +98,7 @@ ansible-galaxy install -r requirements.yml
 ansible-playbook run.yml --tags authelia
 ```
 
-### I can't access the Internet after connecting to the Wireguard server
+### Q: I can't access the Internet after connecting to the Wireguard server
 
 A: Most likely, your VPS features a firewall that is enabled by default and blocks access on non-standard ports. 
 
