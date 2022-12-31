@@ -96,3 +96,9 @@ cd $HOME/ansible-easy-vpn
 ansible-galaxy install -r requirements.yml
 ansible-playbook run.yml --tags authelia
 ```
+
+### I can't access the Internet after connecting to the Wireguard server
+
+A: Most likely, your VPS features a firewall that is enabled by default and blocks access on non-standard ports. 
+
+You will need to go to the control panel/WebUI of your VPS and add a new firewall rule to open the Wireguard port (51820/udp by default).
