@@ -195,7 +195,7 @@ jobs:
           expect -c "spawn ssh $EASYVPN_USERNAME@$SERVER_IPV4 -i ~/.ssh/id_vpn; expect \"*Enter passphrase for key*\"; send -- \"$EASYVPN_PASSWORD\r\""
 
       - name: Wait indefinitely before destroying the server
-        if: ${{ inputs.only_ubuntu_20 == true }} || ${{ inputs.only_ubuntu_22 == true }} || ${{ inputs.only_debian_11 == true }} 
+        if: ${{ inputs.only_ubuntu_20 == true || inputs.only_ubuntu_22 == true || inputs.only_debian_11 == true }} 
         run: >-
           sleep infinity
     outputs:
