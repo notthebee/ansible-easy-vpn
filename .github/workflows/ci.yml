@@ -11,6 +11,17 @@ on:
         type: boolean
         default: false
 
+      only_ubuntu_20:
+        description: 'Only run on Ubuntu 20.04'
+        required: false
+        type: boolean
+        default: false
+
+      only_debian_11:
+        description: 'Only run on Debian 11'
+        required: false
+        type: boolean
+        default: false
       manual:
         description: 'Wait for user input before destroying the server'
         required: false
@@ -41,6 +52,12 @@ jobs:
           if [[ ${MANUAL_INPUT} == 'true' || ${ONLY_UBUNTU_22} == 'true' ]]; then 
             # Only deploy on Ubuntu 22.04, don't use Letsencrypt Staging 
             matrix=$(jq 'map(. | select((.os=="ubuntu-22.04")) )' .github/workflows/matrix_includes.json)
+          elif [[ ${MANUAL_INPUT} == 'true' || ${ONLY_UBUNTU_20} == 'true' ]]; then 
+            # Only deploy on Ubuntu 22.04, don't use Letsencrypt Staging 
+            matrix=$(jq 'map(. | select((.os=="ubuntu-20.04")) )' .github/workflows/matrix_includes.json)
+          elif [[ ${MANUAL_INPUT} == 'true' || ${ONLY_DEBIAN_11} == 'true' ]]; then 
+            # Only deploy on Ubuntu 22.04, don't use Letsencrypt Staging 
+            matrix=$(jq 'map(. | select((.os=="debian-11")) )' .github/workflows/matrix_includes.json)
           else
             # Deploy on all supported OSes, use Letsencrypt Staging to avoid rate-limiting
             matrix=$(jq 'map(.)' .github/workflows/matrix_includes.json)
@@ -50,6 +67,8 @@ jobs:
         env:
           MANUAL_INPUT: ${{ inputs.manual }}
           ONLY_UBUNTU_22: ${{ inputs.only_ubuntu_22 }}
+          ONLY_UBUNTU_20: ${{ inputs.only_ubuntu_20 }}
+          ONLY_DEBIAN_11: ${{ inputs.only_debian_11 }}
 
   build:
     runs-on: ubuntu-latest
