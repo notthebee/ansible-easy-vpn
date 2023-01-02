@@ -87,6 +87,7 @@ yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove;
 
 check_root "-H"
 
+$SUDO pip3 install "cryptography<=36.0.2" "pyOpenSSL<=20.0.1"
 $SUDO pip3 install ansible~=7.1 || $SUDO pip3 install ansible
 export DEBIAN_FRONTEND=
 
