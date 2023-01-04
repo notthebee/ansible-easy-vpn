@@ -1,6 +1,6 @@
 ---
 roles:
-  - name: https://github.com/chriswayg/ansible-msmtp-mailer
+  - name: https://github.com/chriswayg/ansible-msmtp-mailer/archive/refs/tags/v0.6.1.tar.gz
     type: git
 
 collections:
