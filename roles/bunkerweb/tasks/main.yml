@@ -16,6 +16,9 @@
     dest: "{{ docker_dir }}/bunkerweb/.env"
 
 - name: Make sure the Bunkerweb container is created and running
+  register: bunkerweb_result
+  retries: 5
+  until: bunkerweb_result is succeeded
   community.general.docker_container:
     name: "bunkerweb"
     image: "bunkerity/bunkerweb:1.4.2"
