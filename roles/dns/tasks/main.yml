@@ -9,6 +9,7 @@
   loop:
     - adguard-unbound-doh
     - adguard-unbound-doh/adguard
+    - adguard-unbound-doh/build
     - adguard-unbound-doh/dnscrypt-proxy
     - adguard-unbound-doh/adguard/work
     - adguard-unbound-doh/adguard/conf
@@ -16,8 +17,8 @@
 - name: Copy the docker folder to {{ docker_dir }}
   ansible.builtin.copy:
     remote_src: yes
-    src: "{{ role_path }}/files/adguard-unbound"
-    dest: "{{ docker_dir }}/adguard-unbound-doh/build"
+    src: "{{ role_path }}/files/adguard-unbound/"
+    dest: "{{ docker_dir }}/adguard-unbound-doh/build/"
     owner: root
     group: root
     mode: 0755
@@ -34,7 +35,7 @@
   community.docker.docker_image:
     name: adguard-unbound-doh
     build:
-      path: "{{ docker_dir }}/adguard-unbound-doh/build"
+      path: "{{ docker_dir }}/adguard-unbound-doh/build/"
     source: build
 
 - name: Copy Adguard config
