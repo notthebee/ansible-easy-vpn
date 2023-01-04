@@ -32,4 +32,7 @@ Normally, the script should work on any KVM-based VPS.
 
 However, some VPS providers use non-standard versions of Ubuntu/Debian OS images, which might lead to issues with the script.
 
+Additionally, some providers require additional firewall configuration in the server control panel to unblock the Wireguard port.
+
 * **AlexHost** – runs `apt-get dist-upgrade` after the VPS is provisioned, which results in a dpkg lock
+* **IONOS** – includes a firewall with default rules, which blocks Wireguard traffic. User needs to open the Wireguard port (51820/udp) in the control panel to make the VPN work.
