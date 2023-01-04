@@ -22,6 +22,7 @@
     pull: yes
     networks:
       - name: wg_network
+        ipv4_address: 10.8.2.3
     sysctls:
       "net.ipv4.conf.all.src_valid_mark": "1"
       "net.ipv4.ip_forward": "1"

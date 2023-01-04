@@ -41,6 +41,7 @@
     image: "authelia/authelia:4.36"
     networks:
       - name: wg_network
+        ipv4_address: 10.8.2.4
     pull: yes
     state: "started"
     volumes:
