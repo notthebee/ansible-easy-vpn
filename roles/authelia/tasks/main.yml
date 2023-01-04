@@ -31,6 +31,7 @@
     image: "redis:alpine"
     networks:
       - name: wg_network
+        ipv4_address: 10.8.2.3
     pull: yes
     state: "started"
     restart_policy: unless-stopped
