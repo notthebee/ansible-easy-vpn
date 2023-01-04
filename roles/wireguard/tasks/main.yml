@@ -16,6 +16,9 @@
       {{- wg_dns -}}
 
 - name: Make sure the Wireguard container is created and running
+  register: wireguard_result
+  retries: 5
+  until: wireguard_result is succeeded
   community.general.docker_container:
     name: "wg-easy"
     image: "weejewel/wg-easy:7"

@@ -26,6 +26,9 @@
   notify: Restart authelia
 
 - name: Make sure the Redis container is created and running
+  register: redis_result
+  retries: 5
+  until: redis_result is succeeded
   community.general.docker_container:
     name: "redis"
     image: "redis:alpine"
@@ -37,6 +40,9 @@
     restart_policy: unless-stopped
 
 - name: Make sure the Authelia container is created and running
+  register: authelia_result
+  retries: 5
+  until: authelia_result is succeeded
   community.general.docker_container:
     name: "authelia"
     image: "authelia/authelia:4.36"
