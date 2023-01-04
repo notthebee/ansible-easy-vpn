@@ -1,11 +1,4 @@
 ---
-- name: Build the adguard-unbound Docker image
-  community.docker.docker_image:
-    name: adguard-unbound-doh
-    build:
-      path: "{{ role_path }}/files/adguard-unbound"
-    source: build
-
 - name: Create the adguard-unbound-doh config folders
   ansible.builtin.file:
     path: "{{ docker_dir }}/{{ item }}"
@@ -19,6 +12,30 @@
     - adguard-unbound-doh/dnscrypt-proxy
     - adguard-unbound-doh/adguard/work
     - adguard-unbound-doh/adguard/conf
+
+- name: Copy the docker folder to {{ docker_dir }}
+  ansible.builtin.copy:
+    remote_src: yes
+    src: "{{ role_path }}/files/adguard-unbound"
+    dest: "{{ docker_dir }}/adguard-unbound-doh/build"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Template the adguard-unbound Dockerfile
+  ansible.builtin.template:
+    src: "Dockerfile"
+    dest: "{{ docker_dir }}/adguard-unbound-doh/build/Dockerfile"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0644
+
+- name: Build the adguard-unbound Docker image
+  community.docker.docker_image:
+    name: adguard-unbound-doh
+    build:
+      path: "{{ docker_dir }}/adguard-unbound-doh/build"
+    source: build
 
 - name: Copy Adguard config
   ansible.builtin.copy:
