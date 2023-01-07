@@ -112,6 +112,7 @@ set -e
 if test -f $HOME/ansible-easy-vpn/custom.yml; then
   custom=$(ansible-vault view $HOME/ansible-easy-vpn/custom.yml)
   if grep -qs "username\|adguard_unbound_doh\|root_host\|dns_nameservers" custom; then
+    clear
     cd $HOME/ansible-easy-vpn && ansible-playbook run.yml
     exit 0
   fi
