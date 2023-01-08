@@ -3,8 +3,8 @@
   ansible.builtin.file:
     path: "{{ docker_dir }}/{{ item }}"
     state: directory
-    owner: "{{ username }}"
-    group: "{{ username }}"
+    owner: "root"
+    group: "root"
     mode: 0755
   loop:
     - adguard-unbound-doh
@@ -15,13 +15,12 @@
     - adguard-unbound-doh/adguard/conf
 
 - name: Copy the docker folder to {{ docker_dir }}
-  ansible.builtin.copy:
-    remote_src: yes
+  ansible.posix.synchronize:
     src: "{{ role_path }}/files/adguard-unbound/"
     dest: "{{ docker_dir }}/adguard-unbound-doh/build/"
-    owner: root
-    group: root
-    mode: 0755
+    recursive: yes
+    rsync_opts:
+      - "--ignore-existing"
 
 - name: Template the adguard-unbound Dockerfile
   ansible.builtin.template:
@@ -39,12 +38,11 @@
     source: build
 
 - name: Copy Adguard config
-  ansible.builtin.copy:
+  ansible.posix.synchronize:
     src: AdGuardHome.yaml
     dest: "{{ docker_dir }}/adguard-unbound-doh/adguard/conf/AdGuardHome.yaml"
-    owner: "{{ username }}"
-    group: "{{ username }}"
-    mode: 0644
+    rsync_opts:
+      - "--ignore-existing"
   notify: Restart adguard-unbound-doh
 
 - name: Template the dnscrypt-proxy config
