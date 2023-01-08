@@ -108,7 +108,7 @@ else
 fi
 set -e
 
-custom_filled=$(awk -v RS="" '/username/&&/dns_nameservers/&&/root_host/{print FILENAME}' $HOME/ansible-easy-vpn/custom.yml)
+custom_filled=$(awk -v RS="" '/username/&&/dns_nameservers/&&/root_host/{print FILENAME}' $HOME/ansible-easy-vpn/custom.yml || "")
 
 if [[ "$custom_filled" =~ "custom.yml" ]]; then
   clear
