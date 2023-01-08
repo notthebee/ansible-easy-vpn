@@ -34,6 +34,7 @@ if grep -Ei 'debian|ubuntu' /etc/*release; then
     exit
   fi
   REQUIRED_PACKAGES+=(
+    sudo
     software-properties-common
     certbot
     dnsutils

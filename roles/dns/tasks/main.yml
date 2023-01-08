@@ -22,20 +22,13 @@
     rsync_opts:
       - "--ignore-existing"
 
-- name: Template the adguard-unbound Dockerfile
-  ansible.builtin.template:
-    src: "Dockerfile"
-    dest: "{{ docker_dir }}/adguard-unbound-doh/build/Dockerfile"
-    owner: "{{ username }}"
-    group: "{{ username }}"
-    mode: 0644
-
 - name: Build the adguard-unbound Docker image
   community.docker.docker_image:
     name: adguard-unbound-doh
     build:
       path: "{{ docker_dir }}/adguard-unbound-doh/build/"
     source: build
+  notify: Restart adguard-unbound-doh
 
 - name: Copy Adguard config
   ansible.posix.synchronize:
