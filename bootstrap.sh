@@ -108,7 +108,9 @@ else
 fi
 set -e
 
-custom_filled=$(awk -v RS="" '/username/&&/dns_nameservers/&&/root_host/{print FILENAME}' $HOME/ansible-easy-vpn/custom.yml || "")
+touch $HOME/ansible-easy-vpn/custom.yml
+
+custom_filled=$(awk -v RS="" '/username/&&/dns_nameservers/&&/root_host/{print FILENAME}' $HOME/ansible-easy-vpn/custom.yml)
 
 if [[ "$custom_filled" =~ "custom.yml" ]]; then
   clear
@@ -120,9 +122,6 @@ if [[ "$custom_filled" =~ "custom.yml" ]]; then
   cd $HOME/ansible-easy-vpn && ansible-playbook run.yml
   exit 0
 fi
-
-set -e
-touch $HOME/ansible-easy-vpn/custom.yml
 
 clear
 echo "Welcome to ansible-easy-vpn!"
