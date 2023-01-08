@@ -3,8 +3,8 @@
   ansible.builtin.file:
     path: "{{ docker_dir }}/{{ item }}"
     state: directory
-    owner: "root"
-    group: "root"
+    owner: "{{ username }}"
+    group: "{{ username }}"
     mode: 0755
   loop:
     - adguard-unbound-doh
