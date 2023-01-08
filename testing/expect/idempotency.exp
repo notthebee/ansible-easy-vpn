@@ -17,3 +17,4 @@ parseargs $argc $argv
 
 expect -re ".*Vault password.*"
 send -- "$OPTS(password)\r"
+expect eof
