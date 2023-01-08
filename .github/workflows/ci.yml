@@ -1,7 +1,9 @@
 name: CI
 run-name: ansible-easy-vpn Testing
 on:
-  push: workflow_dispatch:
+  push: 
+
+  workflow_dispatch:
     inputs:
       only_ubuntu_22:
         description: 'Only run on Ubuntu 22.04 and wait for manual input'
