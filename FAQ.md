@@ -11,14 +11,13 @@
 
 ### Q: I've run the playbook succesfully, but now I want to change the domain name/username/password. How can I do that?
 
-A: Edit the variable files, install dependencies for the new user and re-run the playbook:
+A: Edit the variable files, and then re-run the script
 
 ```
 cd $HOME/ansible-easy-vpn
-ansible-galaxy install -r requirements.yml
-nano custom.yml
+nano custom.yml 
 ansible-vault edit secret.yml
-ansible-playbook run.yml
+bash bootstrap.sh
 ```
 
 ### Q: I get a "Secure connection failed" error when trying to access the Wireguard WebUI in the browser
@@ -47,9 +46,8 @@ docker logs authelia
 You can either disable e-mail functionality entirely, by removing the `email_password` variable from `secret.yml`, or enter the correct SMTP credentials. In both cases, you'll need to re-run the playbook after the changes have been made:
 ```
 cd $HOME/ansible-easy-vpn
-ansible-galaxy install -r requirements.yml
 ansible-vault edit secret.yml
-ansible-playbook run.yml
+bash bootstrap.sh
 ```
 
 ### Q: My SMTP credentials are correct, but I still get the HTTP 500 error, and the Authelia logs show an "i/o timeout" error
@@ -63,9 +61,8 @@ error dialing the SMTP server: dial tcp: lookup smtp.example.com: i/o timeout"
 Ask the provider to unblock the ports or disable the e-mail functionality by removing the `email_password` line from secret.yml and re-run the playbook:
 ```
 cd $HOME/ansible-easy-vpn
-ansible-galaxy install -r requirements.yml
 ansible-vault edit secret.yml
-ansible-playbook run.yml
+bash bootstrap.sh
 ```
 
 ### Q: I'd like to completely automate the process of setting up the VPN on my machines. How can I do that?
@@ -89,13 +86,12 @@ ssh -p 22 username@65.109.141.154 -i .ssh/id_vpn_username
 
 ### Q: I've lost my second factor device. How do I reset the 2FA?
 
-A: Log in to the server and execute the following commands:
+A: Log in to the server via SSH and execute the following commands:
 ```
 docker stop authelia && docker rm authelia
 sudo rm -rf /opt/docker/authelia
 cd $HOME/ansible-easy-vpn
-ansible-galaxy install -r requirements.yml
-ansible-playbook run.yml --tags authelia
+bash bootstrap.sh
 ```
 
 ### Q: I can't access the Internet after connecting to the Wireguard server
