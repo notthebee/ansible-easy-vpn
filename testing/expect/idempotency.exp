@@ -1,0 +1,20 @@
+#!/usr/bin/expect -f
+set timeout -1
+set env(TERM) vt100
+spawn bash $::env(HOME)/ansible-easy-vpn/bootstrap.sh
+
+
+#process to parse command line arguments into OPTS array
+proc parseargs {argc argv} {
+    global OPTS
+    foreach {key val} $argv {
+        switch -exact -- $key {
+            "--password"   { set OPTS(password)   $val }
+        }
+    }
+}
+parseargs $argc $argv
+
+expect -re ".*Vault password.*"
+send -- "$OPTS(password)\r"
+expect eof

@@ -1,11 +1,14 @@
 ---
 - name: Create the folders
   ansible.builtin.file:
-    path: "{{ docker_dir }}/bunkerweb/data"
-    recurse: yes
+    path: "{{ docker_dir }}/{{ item }}"
+    state: directory
     owner: root
     group: 101
     mode: 0770
+  loop:
+    - bunkerweb/
+    - bunkerweb/data
 
 - name: Copy the env file
   ansible.builtin.template:

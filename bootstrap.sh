@@ -108,9 +108,21 @@ else
   aws=false
 fi
 set -e
+
 touch $HOME/ansible-easy-vpn/custom.yml
 
+custom_filled=$(awk -v RS="" '/username/&&/dns_nameservers/&&/root_host/{print FILENAME}' $HOME/ansible-easy-vpn/custom.yml)
 
+if [[ "$custom_filled" =~ "custom.yml" ]]; then
+  clear
+  echo "custom.yml already exists. Running the playbook..."
+  echo
+  echo "If you want to change something (e.g. username, domain name, etc.)"
+  echo "Please edit custom.yml or secret.yml manually, and then re-run this script"
+  echo
+  cd $HOME/ansible-easy-vpn && ansible-playbook run.yml
+  exit 0
+fi
 
 clear
 echo "Welcome to ansible-easy-vpn!"
