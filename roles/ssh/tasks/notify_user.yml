@@ -92,5 +92,6 @@
 
     - name: Reboot the system if updates are pending
       when: reboot_required.stat.exists
+      changed_when: true
       ansible.builtin.command:
         cmd: reboot
