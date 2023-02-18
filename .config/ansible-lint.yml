@@ -2,6 +2,7 @@
 warn_list:
   - package-latest
   - yaml
+  - fqcn
 skip_list:
   - experimental
   - name[template]
