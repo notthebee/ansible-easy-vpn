@@ -41,6 +41,7 @@ if grep -Ei 'debian|ubuntu' /etc/*release; then
     curl
     git
     rsync
+    apparmor
     python3
     python3-setuptools
     python3-apt
