@@ -38,6 +38,9 @@ jobs:
       - name: Install ansible-lint
         run: pip install ansible ansible-lint
 
+      - name: Comment out the ask_vault_password bit
+        run: "sed -i'.bak' -e 's/ask_vault_pass/#ask_vault_pass/' ansible.cfg"
+          
       - name: Ansible-lint
         run: ansible-lint
 
