@@ -42,7 +42,7 @@ jobs:
         run: "sed -i'.bak' -e 's/ask_vault_pass/#ask_vault_pass/' ansible.cfg"
           
       - name: Ansible-lint
-        run: ansible-lint
+        run: ansible-lint --exclude=requirements.yml
 
   matrix_prep:
     runs-on: ubuntu-latest
