@@ -1,24 +1,25 @@
+---
 name: CI
 run-name: ansible-easy-vpn Testing
 on:
-  push: 
+  push:
 
   workflow_dispatch:
     inputs:
       only_ubuntu_22:
-        description: 'Only run on Ubuntu 22.04 and wait for manual input'
+        description: "Only run on Ubuntu 22.04 and wait for manual input"
         required: false
         type: boolean
         default: false
 
       only_ubuntu_20:
-        description: 'Only run on Ubuntu 20.04 and wait for manual input'
+        description: "Only run on Ubuntu 20.04 and wait for manual input"
         required: false
         type: boolean
         default: false
 
       only_debian_11:
-        description: 'Only run on Debian 11 and wait for manual input'
+        description: "Only run on Debian 11 and wait for manual input"
         required: false
         type: boolean
         default: false
@@ -33,16 +34,16 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
       - name: Install ansible-lint
         run: pip install ansible ansible-lint
 
       - name: Comment out the ask_vault_password bit
         run: "sed -i'.bak' -e 's/ask_vault_pass/#ask_vault_pass/' ansible.cfg"
-          
+
       - name: Ansible-lint
-        run: ansible-lint --exclude=requirements.yml --exclude=.github
+        run: ansible-lint
 
   matrix_prep:
     runs-on: ubuntu-latest
@@ -51,18 +52,18 @@ jobs:
       letsencrypt_staging: ${{ steps.set-matrix.outputs.letsencrypt_staging }}
     steps:
       - name: Checkout the code
-        uses: actions/checkout@v2      
+        uses: actions/checkout@v2
 
       - id: set-matrix
         run: |
-          if [[ ${ONLY_UBUNTU_22} == 'true' ]]; then 
-            # Only deploy on Ubuntu 22.04, don't use Letsencrypt Staging 
+          if [[ ${ONLY_UBUNTU_22} == 'true' ]]; then
+            # Only deploy on Ubuntu 22.04, don't use Letsencrypt Staging
             matrix=$(jq 'map(. | select((.os=="ubuntu-22.04")) )' .github/workflows/matrix_includes.json)
-          elif [[ ${ONLY_UBUNTU_20} == 'true' ]]; then 
-            # Only deploy on Ubuntu 22.04, don't use Letsencrypt Staging 
+          elif [[ ${ONLY_UBUNTU_20} == 'true' ]]; then
+            # Only deploy on Ubuntu 22.04, don't use Letsencrypt Staging
             matrix=$(jq 'map(. | select((.os=="ubuntu-20.04")) )' .github/workflows/matrix_includes.json)
-          elif [[ ${ONLY_DEBIAN_11} == 'true' ]]; then 
-            # Only deploy on Ubuntu 22.04, don't use Letsencrypt Staging 
+          elif [[ ${ONLY_DEBIAN_11} == 'true' ]]; then
+            # Only deploy on Ubuntu 22.04, don't use Letsencrypt Staging
             matrix=$(jq 'map(. | select((.os=="debian-11")) )' .github/workflows/matrix_includes.json)
           else
             # Deploy on all supported OSes, use Letsencrypt Staging to avoid rate-limiting
@@ -132,7 +133,7 @@ jobs:
           hcloud-token: ${{ secrets.HCLOUD_TOKEN }}
           delete-server: false
 
-      - name: Add the private key to the ssh-agent 
+      - name: Add the private key to the ssh-agent
         run: mkdir -p ~/.ssh/ && ssh-keyscan -H $SERVER_IPV4 >> ~/.ssh/known_hosts
 
       - name: Update apt cache
@@ -178,18 +179,18 @@ jobs:
           zone: ${{ secrets.CLOUDFLARE_ZONE }}
 
       - name: Clone the branch to the Hetzner instance
-        run: ssh root@$SERVER_IPV4 git clone https://github.com/notthebee/ansible-easy-vpn -b ${{ github.head_ref || github.ref_name }} 
+        run: ssh root@$SERVER_IPV4 git clone https://github.com/notthebee/ansible-easy-vpn -b ${{ github.head_ref || github.ref_name }}
 
       - name: Execute the automated bootstrap script
         run: >-
-          ssh -t -t root@$SERVER_IPV4 
+          ssh -t -t root@$SERVER_IPV4
           "export LETSENCRYPT_STAGING=$LETSENCRYPT_STAGING &&
-          ansible-easy-vpn/testing/expect/defaults.exp 
-          --username $EASYVPN_USERNAME 
-          --password $EASYVPN_PASSWORD 
-          --smtp_server $SMTP_SERVER 
-          --smtp_login $SMTP_LOGIN 
-          --smtp_password $SMTP_PASSWORD 
+          ansible-easy-vpn/testing/expect/defaults.exp
+          --username $EASYVPN_USERNAME
+          --password $EASYVPN_PASSWORD
+          --smtp_server $SMTP_SERVER
+          --smtp_login $SMTP_LOGIN
+          --smtp_password $SMTP_PASSWORD
           --domain $DOMAIN"
         env:
           LETSENCRYPT_STAGING: ${{ needs.matrix_prep.outputs.letsencrypt_staging }}
@@ -215,7 +216,7 @@ jobs:
           LETSENCRYPT_STAGING: ${{ needs.matrix_prep.outputs.letsencrypt_staging }}
 
       - name: Wait indefinitely before destroying the server
-        if: ${{ inputs.only_ubuntu_20 == true || inputs.only_ubuntu_22 == true || inputs.only_debian_11 == true }} 
+        if: ${{ inputs.only_ubuntu_20 == true || inputs.only_ubuntu_22 == true || inputs.only_debian_11 == true }}
         run: >-
           sleep infinity
     outputs:
@@ -242,7 +243,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
       - name: Remove Chrome
         run: sudo apt purge google-chrome-stable
@@ -280,11 +281,11 @@ jobs:
     steps:
       - name: Destroy the Hetzner instances
         run: >-
-           export SERVER_ID=$(curl -H 
-           "Authorization: Bearer $HCLOUD_TOKEN" https://api.hetzner.cloud/v1/servers | 
-           jq --arg SERVER_NAME "$SERVER_NAME" '.servers[] | select(.name==$SERVER_NAME) | .id') &&
-           curl -X DELETE -H "Authorization: Bearer $HCLOUD_TOKEN" 
-           https://api.hetzner.cloud/v1/servers/$SERVER_ID
+          export SERVER_ID=$(curl -H
+          "Authorization: Bearer $HCLOUD_TOKEN" https://api.hetzner.cloud/v1/servers |
+          jq --arg SERVER_NAME "$SERVER_NAME" '.servers[] | select(.name==$SERVER_NAME) | .id') &&
+          curl -X DELETE -H "Authorization: Bearer $HCLOUD_TOKEN"
+          https://api.hetzner.cloud/v1/servers/$SERVER_ID
         env:
           HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
           SERVER_NAME: ansible-easy-vpn-${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}
