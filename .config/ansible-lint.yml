@@ -1,4 +1,7 @@
 ---
+exclude_paths:
+  - .git/
+  - .github/
 warn_list:
   - package-latest
   - yaml
