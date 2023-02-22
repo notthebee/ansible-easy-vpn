@@ -4,6 +4,11 @@
     name: "{{ locale }}"
     state: present
 
+- name: "Set timezone to {{ timezone }}"
+  community.general.timezone:
+    name: "{{ timezone }}"
+  notify: Restart crond
+
 - name: Update and upgrade apt packages
   ansible.builtin.apt:
     upgrade: yes
