@@ -24,7 +24,7 @@
   until: bunkerweb_result is succeeded
   community.general.docker_container:
     name: "bunkerweb"
-    image: "bunkerity/bunkerweb:1.4.2"
+    image: "bunkerity/bunkerweb:{{ bunkerweb_version }}"
     networks:
       - name: wg_network
         ipv4_address: 10.8.2.5
