@@ -2,8 +2,8 @@
 name: CI
 run-name: ansible-easy-vpn Testing
 on:
-  push:
-
+  push: 
+  pull_request_review:
   workflow_dispatch:
     inputs:
       only_ubuntu_22:
