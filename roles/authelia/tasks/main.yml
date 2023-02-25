@@ -46,7 +46,7 @@
   until: authelia_result is succeeded
   community.general.docker_container:
     name: "authelia"
-    image: "authelia/authelia:4.36"
+    image: "authelia/authelia:{{ authelia_version }}"
     networks:
       - name: wg_network
         ipv4_address: 10.8.2.4
