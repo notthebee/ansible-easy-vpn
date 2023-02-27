@@ -1,11 +1,17 @@
 ---
-- name: Update and upgrade apt packages
+- name: Update and upgrade yum packages
+  when: ansible_distribution_major_version | int <= 7
+  ansible.builtin.yum:
+    name: "*"
+    state: latest
+    update_cache: yes
+
+- name: Update and upgrade dnf packages
+  when: ansible_distribution_major_version | int >= 8
   ansible.builtin.dnf:
     name: "*"
     state: latest
     update_cache: yes
-    update_only: yes
-    autoremove: yes
 
 - name: Set correct automatic update utility vars (RHEL 8)
   set_fact:
