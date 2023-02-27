@@ -56,15 +56,13 @@
       - "{{ docker_dir }}/authelia:/config"
     restart_policy: unless-stopped
 
-- name: Add a 2FA alias to .bashrc
+- name: Add a 2FA alias shortcut command
   ansible.builtin.blockinfile:
-    path: "/home/{{ username }}/.bashrc"
+    path: "/usr/bin/show_2fa"
     create: yes
-    owner: "{{ username }}"
-    group: "{{ username }}"
+    owner: root
     mode: 0755
     state: present
     block: |
-      alias show_2fa="sudo cat {{ docker_dir }}/authelia/notification.txt"
-  notify:
-    - Source .bashrc
+      #! /usr/bin/env bash
+      sudo cat {{ docker_dir }}/authelia/notification.txt

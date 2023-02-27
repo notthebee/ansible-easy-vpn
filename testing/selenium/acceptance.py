@@ -66,7 +66,7 @@ def register_2fa(driver, base_url, username, password):
 
     s = pxssh.pxssh()
     s.login(base_url, username, password)
-    s.sendline('sudo cat /opt/docker/authelia/notification.txt')
+    s.sendline('sudo show_2fa')
     s.prompt()
     
     # Convert output to utf-8 due to pexpect weirdness
