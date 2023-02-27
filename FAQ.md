@@ -1,5 +1,6 @@
 # Frequently Asked Questions
 
+* [I can connect to the VPN, but can't access the Internet](#q-i-can-connect-to-the-vpn-but-cant-access-the-internet)
 * [I've run the playbook succesfully, but now I want to change the domain name/username/password. How can I do that?](#q-ive-run-the-playbook-succesfully-but-now-i-want-to-change-the-domain-nameusernamepassword-how-can-i-do-that)
 * [I get a "Secure connection failed" error when trying to access the Wireguard WebUI in the browser](#q-i-get-a-secure-connection-failed-error-when-trying-to-access-the-wireguard-webui-in-the-browser)
 * [I get "500 Internal Server Error" when trying to access the Wireguard WebUI in the browser](#q-i-get-500-internal-server-error-when-trying-to-access-the-wireguard-webui-in-the-browser)
@@ -8,6 +9,21 @@
 * [When I try to copy the SSH key to my Windows machine, I get an error](#q-when-i-try-to-copy-the-ssh-key-to-my-windows-machine-i-get-an-error)
 * [I've lost my second factor device. How do I reset the 2FA?](#q-ive-lost-my-second-factor-device-how-do-i-reset-the-2fa)
 * [I can't access the Internet after connecting to the Wireguard server](#q-i-cant-access-the-internet-after-connecting-to-the-wireguard-server)
+
+### Q: I can connect to the VPN, but can't access the Internet
+
+Unfortunately, most Wireguard clients are a bit misleading in that regard. If you can connect to the VPN, but see very little data in the 'Received' column and can't access the Internet, this most likely means that **you actually can't connect to the VPN server**.
+
+The most common reason for that is a firewall blocking the Wireguard port – either on the VPS side, or on the client side. Your VPS provider may apply some default firewall rules to your server, which you can edit in the web control panel of your VPS provider.
+
+Alternatively, your ISP may be blocking the default Wireguard port (51820/udp). This can be fixed by changing the port to something else (for examlpe, 12345), and re-running the playbook:
+
+```
+cd $HOME/ansible-easy-vpn
+echo 'wireguard_port: 12345` >> custom.yml
+bash bootstrap.sh
+```
+
 
 ### Q: I've run the playbook succesfully, but now I want to change the domain name/username/password. How can I do that?
 
