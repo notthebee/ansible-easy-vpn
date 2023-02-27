@@ -15,13 +15,11 @@ wget https://raw.githubusercontent.com/notthebee/ansible-easy-vpn/main/bootstrap
 * Wireguard WebUI (via wg-easy)
 * Two-factor authentication for the WebUI (Authelia)
 * Hardened web server (Bunkerweb)
-* ✨ **new!** Optional DNS-over-HTTPS and hosts-based ad-blocking (Adguard, Unbound and DNSCrypt-Proxy)
+* Encrypted DNS resolution with optional ad-blocking functionality (Adguard Home, DNSCrypt and Unbound)
 * UFW and Fail2Ban
 * Automated and unattended upgrades
-* SSH hardening
-* SSH public key pair generation (optional, you can also use your own keys)
-* E-mail notifications (using an external SMTP server e.g. GMail)
-
+* SSH hardening and public key pair generation (optional, you can also use your own keys)
+* E-mail notifications (using an external SMTP server, e.g. GMail)
 
 ## Requirements
 * A KVM-based VPS (or an AWS EC2 instance) with a dedicated IPv4 address
