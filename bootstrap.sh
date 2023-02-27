@@ -94,7 +94,7 @@ install_dependencies_centos() {
   REQUIRED_PACKAGES=(
     sudo
     certbot
-    bind-tutils
+    bind-utils
     curl
     git
     rsync
@@ -104,17 +104,19 @@ install_dependencies_centos() {
     python3-passlib
     python3-wheel
     python3-bcrypt
+    glibc-langpack-en
   )
 
   if [[ "$os_version" -ge 8 ]]; then
     $SUDO dnf update -y
     $SUDO dnf install -y epel-release
-    $SUDO dnf install "${REQUIRED_PACKAGES[@]}"
+    $SUDO dnf install -y "${REQUIRED_PACKAGES[@]}"
   elif [[ "$os_version" -eq 7 ]]; then
     $SUDO yum update -y
     $SUDO yum install -y epel-release
-    $SUDO yum install "${REQUIRED_PACKAGES[@]}"
+    $SUDO yum install -y "${REQUIRED_PACKAGES[@]}"
   fi
+}
 
 
 if [[ "$os" == "debian" || "$os" == "ubuntu" ]]; then
