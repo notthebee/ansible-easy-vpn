@@ -11,29 +11,47 @@ read -N 999999 -t 0.001
 set -e
 
 # Detect OS
-if grep -Ei 'debian|ubuntu' /etc/*release; then
-  if grep -qs "ubuntu" /etc/*release; then
-    os="ubuntu"
-    os_version=$(grep 'VERSION_ID' /etc/os-release | cut -d '"' -f 2 | tr -d '.')
-    if [[ "$os_version" -lt 2004 ]]; then
+if grep -qs "ubuntu" /etc/os-release; then
+	os="ubuntu"
+	os_version=$(grep 'VERSION_ID' /etc/os-release | cut -d '"' -f 2 | tr -d '.')
+  if [[ "$os_version" -lt 2004 ]]; then
       echo "Ubuntu 20.04 or higher is required to use this installer."
       echo "This version of Ubuntu is too old and unsupported."
       exit
     fi
-  elif grep -qs "debian" /etc/*release; then
-    os="debian"
-    os_version=$(grep 'VERSION_ID' /etc/os-release | cut -d '"' -f 2 | tr -d '.')
-    if [[ "$os_version" -lt 11 ]]; then
+elif [[ -e /etc/debian_version ]]; then
+	os="debian"
+	os_version=$(grep -oE '[0-9]+' /etc/debian_version | head -1)
+  if [[ "$os_version" -lt 11 ]]; then
       echo "Debian 11 or higher is required to use this installer."
       echo "This version of Debian is too old and unsupported."
       exit
-    fi
-  else
-    echo "This installer seems to be running on an unsupported distribution."
-    echo "Supported distros are Ubuntu 20.04/22.04 and Debian 11"
-    exit
   fi
-  REQUIRED_PACKAGES+=(
+elif [[ -e /etc/almalinux-release || -e /etc/rocky-release || -e /etc/centos-release ]]; then
+	os="centos"
+	os_version=$(grep -shoE '[0-9]+' /etc/almalinux-release /etc/rocky-release /etc/centos-release | head -1)
+  if [[ "$os_version" -lt 7 ]]; then
+      echo "CentOS 7 or higher is required to use this installer."
+      echo "This version of CentOS is too old and unsupported."
+      exit
+  fi
+fi
+
+check_root() {
+# Check if the user is root or not
+if [[ $EUID -ne 0 ]]; then
+  if [[ ! -z "$1" ]]; then
+    SUDO='sudo -E -H'
+  else
+    SUDO='sudo -E'
+  fi
+else
+  SUDO=''
+fi
+}
+
+install_dependencies_debian() {
+  REQUIRED_PACKAGES=(
     sudo
     software-properties-common
     certbot
@@ -52,47 +70,62 @@ if grep -Ei 'debian|ubuntu' /etc/*release; then
     aptitude
   )
 
-  REQUIRED_PACKAGES_ARM64+=(
+  REQUIRED_PACKAGES_ARM64=(
     gcc
     python3-dev
     libffi-dev
     libssl-dev
     make
   )
-fi
 
-# Check if the Ubuntu version is too old
-
-check_root() {
-# Check if the user is root or not
-if [[ $EUID -ne 0 ]]; then
-  if [[ ! -z "$1" ]]; then
-    SUDO='sudo -E -H'
-  else
-    SUDO='sudo -E'
-  fi
-else
-  SUDO=''
-fi
+  check_root
+  # Disable interactive apt functionality
+  export DEBIAN_FRONTEND=noninteractive
+  # Update apt database, update all packages and install Ansible + dependencies
+  $SUDO apt update -y;
+  yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy dist-upgrade;
+  yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy install "${REQUIRED_PACKAGES[@]}"
+  yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove;
+  [ $(uname -m) == "aarch64" ] && yes | $SUDO apt install -fuy "${REQUIRED_PACKAGES_ARM64[@]}"
+  export DEBIAN_FRONTEND=
 }
 
-check_root
-# Disable interactive apt functionality
-export DEBIAN_FRONTEND=noninteractive
+install_dependencies_centos() {
+  REQUIRED_PACKAGES=(
+    sudo
+    certbot
+    bind-tutils
+    curl
+    git
+    rsync
+    python3
+    python3-setuptools
+    python3-pip
+    python3-passlib
+    python3-wheel
+    python3-bcrypt
+  )
+
+  if [[ "$os_version" -ge 8 ]]; then
+    $SUDO dnf update -y
+    $SUDO dnf install -y epel-release
+    $SUDO dnf install "${REQUIRED_PACKAGES[@]}"
+  elif [[ "$os_version" -eq 7 ]]; then
+    $SUDO yum update -y
+    $SUDO yum install -y epel-release
+    $SUDO yum install "${REQUIRED_PACKAGES[@]}"
+  fi
 
 
-# Update apt database, update all packages and install Ansible + dependencies
-$SUDO apt update -y;
-yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy dist-upgrade;
-yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy install "${REQUIRED_PACKAGES[@]}"
-yes | $SUDO apt-get -o Dpkg::Options::="--force-confold" -fuy autoremove;
-[ $(uname -m) == "aarch64" ] && yes | $SUDO apt install -fuy "${REQUIRED_PACKAGES_ARM64[@]}"
+if [[ "$os" == "debian" || "$os" == "ubuntu" ]]; then
+  install_dependencies_debian
+elif [[ "$os" == "centos" ]]; then
+  install_dependencies_centos
+fi
 
 check_root "-H"
-
 $SUDO pip3 install "cryptography<=36.0.2" "pyOpenSSL<=20.0.1"
 $SUDO pip3 install ansible~=7.1 || $SUDO pip3 install ansible
-export DEBIAN_FRONTEND=
 
 check_root
 # Clone the Ansible playbook
