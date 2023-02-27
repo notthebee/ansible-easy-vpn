@@ -1,6 +1,0 @@
----
-- name: Source .bashrc
-  ansible.builtin.shell:
-    executable: /bin/bash
-    cmd: source $HOME/.bashrc
-  failed_when: false
