@@ -1,14 +1,14 @@
 ---
 - name: Check if locale {{ locale }} exists
   ansible.builtin.shell:
-    command: "locale -a | grep -i {{ locale | regex_replace('-', '') | quote }}"
+    cmd: "locale -a | grep -i {{ locale | regex_replace('-', '') | quote }}"
   register: found_locale
   changed_when: no
   failed_when: no
 
 - name: Create locale {{ locale }}
   ansible.builtin.command:
-    command: >-
+    cmd: >-
       localedef -i {{ locale | regex_replace('(.*)\\..*', '\\1') | quote }}
       -f {{ system_settings_locale | regex_replace('.*\\.(.*)', '\\1') | quote }}
       {{ system_settings_locale | quote }}
