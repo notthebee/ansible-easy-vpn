@@ -1,7 +1,7 @@
 ---
-- name: Ensure group sudo exists
+- name: Ensure the root group exists
   ansible.builtin.group:
-    name: sudo
+    name: "{{ root_group }}"
     state: present
 
 - name: Allow sudo group to have passwordless sudo
