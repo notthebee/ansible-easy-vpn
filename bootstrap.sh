@@ -1,8 +1,6 @@
 #!/bin/bash -uxe
 # A bash script that prepares the OS
 # before running the Ansible playbook
-REQUIRED_PACKAGES=()
-REQUIRED_PACKAGES_ARM64=()
 
 # Discard stdin. Needed when running from an one-liner which includes a newline
 read -N 999999 -t 0.001
@@ -58,6 +56,7 @@ install_dependencies_debian() {
     dnsutils
     curl
     git
+    locales
     rsync
     apparmor
     python3
@@ -104,7 +103,6 @@ install_dependencies_centos() {
     python3-passlib
     python3-wheel
     python3-bcrypt
-    glibc-langpack-en
   )
 
   if [[ "$os_version" -ge 8 ]]; then
