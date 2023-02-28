@@ -151,18 +151,67 @@ jobs:
 
       - name: Update apt cache
         run: ssh root@$SERVER_IPV4 apt update
-        if: matrix.os == "debian-11" || matrix.os  == "ubuntu-22.04" || matrix.os == "ubuntu-20.04"
+        if: |
+          matrix.os == "debian-11" ||
+          matrix.os  == "ubuntu-22.04" ||
+          matrix.os == "ubuntu-20.04"
 
       - name: Install git and expect
         run: ssh root@$SERVER_IPV4 apt install -y git expect wamerican
-        if: matrix.os == "debian-11" || matrix.os  == "ubuntu-22.04" || matrix.os == "ubuntu-20.04"
+        if: |
+          matrix.os == "debian-11" ||
+          matrix.os  == "ubuntu-22.04" ||
+          matrix.os == "ubuntu-20.04"
 
       - name: Update dnf cache
         run: ssh root@$SERVER_IPV4 dnf update -y
-        if: matrix.os == "rocky-8" || matrix.os == "centos-7" || matrix.os == "rocky-9"
+        if: |
+          matrix.os == "rocky-8" ||
+          matrix.os == "centos-7" ||
+          matrix.os == "rocky-9"
 
       - name: Install git and expect
         run: ssh root@$SERVER_IPV4 dnf install -y git expect words
+        if: |
+          matrix.os == "rocky-8" ||
+          matrix.os == "centos-7" ||
+          matrix.os == "rocky-9"
+
+      - uses: infraway/create-dns-record@v2.0
+        with:
+          type: "A"
+          name: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          content: "${{ env.SERVER_IPV4 }}"
+          proxied: false
+          token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          zone: ${{ secrets.CLOUDFLARE_ZONE }}
+
+      - uses: infraway/create-dns-record@v2.0
+        with:
+          type: "CNAME"
+          name: "auth.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          content: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          proxied: false
+          token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          zone: ${{ secrets.CLOUDFLARE_ZONE }}
+
+      - uses: infraway/create-dns-record@v2.0
+        with:
+          type: "CNAME"
+          name: "wg.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          content: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          proxied: false
+          token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          zone: ${{ secrets.CLOUDFLARE_ZONE }}
+
+      - uses: infraway/create-dns-record@v2.0
+        with:
+          type: "CNAME"
+          name: "adguard.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          content: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+          proxied: false
+          token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          zone: ${{ secrets.CLOUDFLARE_ZONE }}
         if: matrix.os == "rocky-8" || matrix.os == "centos-7" || matrix.os == "rocky-9"
 
       - uses: infraway/create-dns-record@v2.0
