@@ -10,5 +10,9 @@
     {
         "os":"debian-11",        
         "index":3
+    },
+    {
+        "os":"rocky-8",        
+        "index":4
     }
 ]

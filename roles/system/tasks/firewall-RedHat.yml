@@ -20,6 +20,9 @@
       ansible.posix.firewalld:
         permanent: true
         port: "{{ ssh_port }}/tcp"
+  vars:
+    # CentOS doesn't package python3-firewall for Python 3.9
+    ansible_python_interpreter: /usr/bin/python3.6
 
 - name: Enable and start firewalld
   ansible.builtin.systemd:

@@ -24,7 +24,12 @@
       tags:
         - system
 
+    
     - role: geerlingguy.docker
+      tags:
+        - docker
+
+    - role: docker_network
       tags:
         - docker
 

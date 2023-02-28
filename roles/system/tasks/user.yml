@@ -41,13 +41,9 @@
   when: not playbook_copied.stat.exists
   block:
     - name: Copy the Ansible playbook to the new user
-      ansible.builtin.copy:
+      ansible.posix.synchronize:
         src: "/{{ lookup('env', 'HOME') }}/ansible-easy-vpn"
         dest: "/home/{{ username }}"
-        owner: "{{ username }}"
-        decrypt: no
-        group: "{{ username }}"
-        mode: 0750
 
     - name: Chmod the user home directory
       ansible.builtin.file:

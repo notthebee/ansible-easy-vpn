@@ -63,9 +63,7 @@ install_dependencies_debian() {
     python3-setuptools
     python3-apt
     python3-pip
-    python3-passlib
     python3-wheel
-    python3-bcrypt
     aptitude
   )
 
@@ -97,21 +95,30 @@ install_dependencies_centos() {
     curl
     git
     rsync
-    python3
-    python3-setuptools
-    python3-pip
-    python3-passlib
-    python3-wheel
-    python3-bcrypt
+    python3-firewall
   )
 
   if [[ "$os_version" -ge 8 ]]; then
+    REQUIRED_PACKAGES+=(
+      python39
+      python39-requests
+      python39-setuptools
+      python39-pip
+      python39-wheel
+    )
     $SUDO dnf update -y
     $SUDO dnf install -y epel-release
     $SUDO dnf install -y "${REQUIRED_PACKAGES[@]}"
+    alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 20
+    alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 60
+    alternatives --install /usr/bin/pip3 pip3 /usr/bin/pip3.9 60
+    alternatives --auto python3
+    alternatives --auto pip3
   elif [[ "$os_version" -eq 7 ]]; then
     $SUDO yum update -y
     $SUDO yum install -y epel-release
+    $SUDO yum groupinstall "Development Tools" -y
+    $SUDO yum install gcc open-ssl-devel bzip2-devel libffi-devel -y
     $SUDO yum install -y "${REQUIRED_PACKAGES[@]}"
   fi
 }
@@ -124,7 +131,8 @@ elif [[ "$os" == "centos" ]]; then
 fi
 
 check_root "-H"
-$SUDO pip3 install "cryptography<=36.0.2" "pyOpenSSL<=20.0.1"
+$SUDO pip3 install --upgrade pip
+$SUDO pip3 install "cryptography<=36.0.2" "pyOpenSSL<=20.0.1" passlib bcrypt 
 $SUDO pip3 install ansible~=7.1 || $SUDO pip3 install ansible
 
 check_root
