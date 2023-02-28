@@ -238,9 +238,6 @@ jobs:
         env:
           LETSENCRYPT_STAGING: ${{ needs.matrix_prep.outputs.letsencrypt_staging }}
 
-      - name: Wait indefinitely before destroying the server
-        hen
-
       - name: Install git and expect
         run: ssh root@$SERVER_IPV4 apt install -y git expect wamerican
 
