@@ -1,5 +1,5 @@
 ---
-- name: Set the DNS facts
+- name: Switch between encrypted and unencrypted DNS depending on the user choice
   ansible.builtin.set_fact:
     wg_dns: >-
       {%- if enable_adguard_unbound_doh -%}

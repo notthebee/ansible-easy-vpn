@@ -1,0 +1,22 @@
+---
+- name: Update and upgrade apt packages
+  ansible.builtin.apt:
+    upgrade: yes
+    autoremove: yes
+    update_cache: yes
+
+- name: Install unattended upgrades package
+  ansible.builtin.package:
+    name: unattended-upgrades
+    state: present
+
+- name: Copy unattended-upgrades configuration files in place
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/apt/apt.conf.d/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - 10periodic
+    - 50unattended-upgrades
