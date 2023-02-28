@@ -109,11 +109,11 @@ install_dependencies_centos() {
     $SUDO dnf update -y
     $SUDO dnf install -y epel-release
     $SUDO dnf install -y "${REQUIRED_PACKAGES[@]}"
-    alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 20
-    alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 60
-    alternatives --install /usr/bin/pip3 pip3 /usr/bin/pip3.9 60
-    alternatives --auto python3
-    alternatives --auto pip3
+    $SUDO alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 20
+    $SUDO alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 60
+    $SUDO alternatives --install /usr/bin/pip3 pip3 /usr/bin/pip3.9 60
+    $SUDO alternatives --auto python3
+    $SUDO alternatives --auto pip3
   elif [[ "$os_version" -eq 7 ]]; then
     $SUDO yum update -y
     $SUDO yum install -y epel-release
