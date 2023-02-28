@@ -1,0 +1,28 @@
+---
+- name: Install firewalld and dependencies
+  ansible.builtin.package:
+    name:
+      - firewalld
+      - python3-firewall
+    state: present
+
+- name: Configure firewalld
+  block:
+    - name: Allow the defined ports
+      ansible.posix.firewalld:
+        permanent: true
+        port: "{{ item.port }}/{{ item.proto }}"
+        state: enabled
+      with_items:
+        - "{{ firewall_ports }}"
+  rescue:
+    - name: Grant SSH access to prevent lockout
+      ansible.posix.firewalld:
+        permanent: true
+        port: "{{ ssh_port }}/tcp"
+
+- name: Enable and start firewalld
+  ansible.builtin.systemd:
+    name: firewalld
+    state: started
+    enabled: yes

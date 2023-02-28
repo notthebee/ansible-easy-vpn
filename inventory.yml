@@ -88,10 +88,8 @@ all:
 
     msmtp_alias_default: "{{ email }}"
 
-    # By default, only access via the SSH port and 51820/udp is allowed
-    # The rest of the ports are closed
-    enable_ufw: true
-    ufw_ports:
+    enable_firewall: true
+    firewall_ports:
       - port: "{{ wireguard_port }}"
         proto: "udp"
       - port: "80"
@@ -103,3 +101,9 @@ all:
 
     # Fail2Ban only comes with the SSH jail by default
     enable_fail2ban: true
+
+    pip_install_packages:
+      - name: docker
+
+    docker_users:
+      - "{{ username }}"
