@@ -213,7 +213,6 @@ jobs:
           proxied: false
           token: ${{ secrets.CLOUDFLARE_TOKEN }}
           zone: ${{ secrets.CLOUDFLARE_ZONE }}
-        if: matrix.os == "rocky-8" || matrix.os == "centos-7" || matrix.os == "rocky-9"
 
       - uses: infraway/create-dns-record@v2.0
         with:
