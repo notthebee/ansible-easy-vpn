@@ -106,6 +106,7 @@ install_dependencies_centos() {
       python39-pip
       python39-wheel
     )
+    check_root
     $SUDO dnf update -y
     $SUDO dnf install -y epel-release
     $SUDO dnf install -y "${REQUIRED_PACKAGES[@]}"
