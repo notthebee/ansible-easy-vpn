@@ -52,7 +52,6 @@ install_dependencies_debian() {
   REQUIRED_PACKAGES=(
     sudo
     software-properties-common
-    certbot
     dnsutils
     curl
     git
@@ -63,8 +62,8 @@ install_dependencies_debian() {
     python3-setuptools
     python3-apt
     python3-pip
-    python3-wheel
     aptitude
+    direnv
   )
 
   REQUIRED_PACKAGES_ARM64=(
@@ -90,31 +89,32 @@ install_dependencies_debian() {
 install_dependencies_centos() {
   REQUIRED_PACKAGES=(
     sudo
-    certbot
     bind-utils
     curl
     git
     rsync
     python3-firewall
+    https://kojipkgs.fedoraproject.org//vol/fedora_koji_archive02/packages/direnv/2.12.2/1.fc28/x86_64/direnv-2.12.2-1.fc28.x86_64.rpm
   )
 
   if [[ "$os_version" -ge 8 ]]; then
-    REQUIRED_PACKAGES+=(
-      python39
-      python39-requests
-      python39-setuptools
-      python39-pip
-      python39-wheel
-    )
+    if [[ "$os_version" -eq 8 ]]; then
+      REQUIRED_PACKAGES+=(
+        python39
+        python39-setuptools
+        python39-pip
+      )
+    else
+      REQUIRED_PACKAGES+=(
+        python3
+        python3-setuptools
+        python3-pip
+      )
+    fi
     check_root
     $SUDO dnf update -y
     $SUDO dnf install -y epel-release
     $SUDO dnf install -y "${REQUIRED_PACKAGES[@]}"
-    $SUDO alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 20
-    $SUDO alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 60
-    $SUDO alternatives --install /usr/bin/pip3 pip3 /usr/bin/pip3.9 60
-    $SUDO alternatives --auto python3
-    $SUDO alternatives --auto pip3
   elif [[ "$os_version" -eq 7 ]]; then
     $SUDO yum update -y
     $SUDO yum install -y epel-release
@@ -122,6 +122,15 @@ install_dependencies_centos() {
     $SUDO yum install gcc open-ssl-devel bzip2-devel libffi-devel -y
     $SUDO yum install -y "${REQUIRED_PACKAGES[@]}"
   fi
+  if [[ "$os_version" -le 8 ]]; then
+    $SUDO alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 20
+    $SUDO alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 60
+    $SUDO alternatives --install /usr/bin/pip3 pip3 /usr/bin/pip3.9 60
+    $SUDO alternatives --auto python3
+    $SUDO alternatives --auto pip3
+  fi
+
+
 }
 
 
@@ -131,14 +140,24 @@ elif [[ "$os" == "centos" ]]; then
   install_dependencies_centos
 fi
 
-check_root "-H"
-$SUDO pip3 install --upgrade pip
-$SUDO pip3 install "cryptography<=36.0.2" "pyOpenSSL<=20.0.1" passlib bcrypt 
-$SUDO pip3 install ansible~=7.1 || $SUDO pip3 install ansible
 
-check_root
+grep 'direnv hook bash' $HOME/.bashrc || echo 'eval "$(direnv hook bash)"' >> $HOME/.bashrc
+cd $HOME/ansible-easy-vpn
+python3 -m venv .venv
+eval $(direnv hook bash)
+direnv allow
+source .venv/bin/activate
+pip3 install --upgrade pip
+pip3 install -r requirements.txt
+
 # Clone the Ansible playbook
-[ -d "$HOME/ansible-easy-vpn" ] || git clone https://github.com/notthebee/ansible-easy-vpn $HOME/ansible-easy-vpn
+if [ -d "$HOME/ansible-easy-vpn" ]; then
+  pushd $HOME/ansible-easy-vpn
+  git pull
+  popd
+else
+  git clone https://github.com/notthebee/ansible-easy-vpn $HOME/ansible-easy-vpn
+fi
 
 cd $HOME/ansible-easy-vpn && ansible-galaxy install -r requirements.yml
 

@@ -37,6 +37,13 @@
     path: "/home/{{ username }}/ansible-easy-vpn"
   register: playbook_copied
 
+- name: Add the direnv hook to {{ username }}`s bashrc
+  ansible.builtin.blockinfile:
+    path: /home/{{ username }}/.bashrc
+    block: |
+      eval "$(direnv hook bash)"
+      direnv allow $HOME/ansible-easy-vpn
+
 - name: Handle user directory and playbook folder
   when: not playbook_copied.stat.exists
   block:
