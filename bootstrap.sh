@@ -122,13 +122,6 @@ install_dependencies_centos() {
     $SUDO yum install gcc open-ssl-devel bzip2-devel libffi-devel -y
     $SUDO yum install -y "${REQUIRED_PACKAGES[@]}"
   fi
-  if [[ "$os_version" -le 8 ]]; then
-    $SUDO alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 20
-    $SUDO alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 60
-    $SUDO alternatives --install /usr/bin/pip3 pip3 /usr/bin/pip3.9 60
-    $SUDO alternatives --auto python3
-    $SUDO alternatives --auto pip3
-  fi
 
 
 }
@@ -143,7 +136,7 @@ fi
 
 grep 'direnv hook bash' $HOME/.bashrc || echo 'eval "$(direnv hook bash)"' >> $HOME/.bashrc
 cd $HOME/ansible-easy-vpn
-python3 -m venv .venv
+python3.9 -m venv .venv
 eval $(direnv hook bash)
 direnv allow
 source .venv/bin/activate
