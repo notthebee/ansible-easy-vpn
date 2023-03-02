@@ -5,4 +5,4 @@ requests
 passlib 
 bcrypt 
 wheel
-ansible~=7.1
+ansible>=5.1
