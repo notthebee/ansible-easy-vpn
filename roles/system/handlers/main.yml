@@ -1,6 +1,6 @@
 ---
-- name: Restart crond
+- name: Restart cron
   ansible.builtin.service:
-    name: crond
+    name: "{{ cron_service }}"
     state: restarted
 
