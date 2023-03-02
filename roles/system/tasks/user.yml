@@ -55,7 +55,7 @@
     - name: Fix the user's venv copy
       changed_when: true
       ansible.builtin.shell:
-        cmd: 'cd /home/{{ username }}/.venv && sed -i "s|/root/ansible-easy-vpn|/home/{{ username }}/ansible-easy-vpn|g" *'
+        cmd: 'cd /home/{{ username }}/ansible-easy-vpn/.venv/bin && sed -i "s|/root/ansible-easy-vpn|/home/{{ username }}/ansible-easy-vpn|g" *'
 
     - name: Chmod the ansible-easy-vpn directory
       ansible.builtin.file:
