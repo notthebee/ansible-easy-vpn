@@ -152,7 +152,7 @@ else
   git clone https://github.com/notthebee/ansible-easy-vpn $HOME/ansible-easy-vpn
 fi
 
-cd $HOME/ansible-easy-vpn && ansible-galaxy install -r requirements.yml
+cd $HOME/ansible-easy-vpn && ansible-galaxy install --force -r requirements.yml
 
 # Check if we're running on an AWS EC2 instance
 set +e
