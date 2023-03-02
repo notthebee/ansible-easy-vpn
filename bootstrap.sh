@@ -136,7 +136,7 @@ fi
 
 grep 'direnv hook bash' $HOME/.bashrc || echo 'eval "$(direnv hook bash)"' >> $HOME/.bashrc
 cd $HOME/ansible-easy-vpn
-python3.9 -m venv .venv
+[ -d $HOME/ansible-easy-vpn/.venv ] || python3.9 -m venv .venv
 eval $(direnv hook bash)
 direnv allow
 source .venv/bin/activate
