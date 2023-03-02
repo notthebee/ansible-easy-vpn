@@ -1,2 +1,3 @@
 ---
 sudo_group: wheel
+cron_service: crond
