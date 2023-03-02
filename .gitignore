@@ -2,3 +2,4 @@
 secret.yml
 .vscode
 .venv
+.ansible
