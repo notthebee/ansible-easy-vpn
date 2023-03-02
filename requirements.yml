@@ -1,11 +1,19 @@
 ---
 roles:
   - name: chriswayg.msmtp-mailer
+    src: https://github.com/chriswayg/ansible-msmtp-mailer
   - name: geerlingguy.docker
+    src: https://github.com/geerlingguy/ansible-role-docker
   - name: geerlingguy.pip
+    src: https://github.com/geerlingguy/ansible-role-pip
+
 
 collections:
-  - name: community.docker
-  - name: community.general
-  - name: community.crypto
-  - name: ansible.posix
+  - name: https://github.com/ansible-collections/community.docker
+    type: git
+  - name: https://github.com/ansible-collections/community.general
+    type: git
+  - name: https://github.com/ansible-collections/community.crypto
+    type: git
+  - name: https://github.com/ansible-collections/ansible.posix
+    type: git
