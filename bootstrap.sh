@@ -135,12 +135,10 @@ elif [[ "$os" == "centos" ]]; then
 fi
 
 
-grep 'direnv hook bash' $HOME/.bashrc || echo 'eval "$(direnv hook bash)"' >> $HOME/.bashrc
 cd $HOME/ansible-easy-vpn
 [ -d $HOME/ansible-easy-vpn/.venv ] || python3.9 -m venv .venv
-eval $(direnv hook bash)
-direnv allow
-source .venv/bin/activate
+export VIRTUAL_ENV="$HOME/ansible-easy-vpn/.venv"
+export PATH="$HOME/ansible-easy-vpn/.venv/bin:$PATH"
 .venv/bin/python3 -m pip install --upgrade pip
 .venv/bin/python3 -m pip install -r requirements.txt
 
