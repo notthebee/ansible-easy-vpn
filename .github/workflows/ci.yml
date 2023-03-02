@@ -206,118 +206,6 @@ jobs:
           token: ${{ secrets.CLOUDFLARE_TOKEN }}
           zone: ${{ secrets.CLOUDFLARE_ZONE }}
 
-      - uses: infraway/create-dns-record@v2.0
-        with:
-          type: "A"
-          name: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          content: "${{ env.SERVER_IPV4 }}"
-          proxied: false
-          token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE }}
-
-      - uses: infraway/create-dns-record@v2.0
-        with:
-          type: "CNAME"
-          name: "auth.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          content: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          proxied: false
-          token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE }}
-
-      - uses: infraway/create-dns-record@v2.0
-        with:
-          type: "CNAME"
-          name: "wg.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          content: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          proxied: false
-          token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE }}
-
-      - uses: infraway/create-dns-record@v2.0
-        with:
-          type: "CNAME"
-          name: "adguard.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          content: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          proxied: false
-          token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE }}
-
-      - name: Clone the branch to the Hetzner instance
-        run: ssh root@$SERVER_IPV4 git clone https://github.com/notthebee/ansible-easy-vpn -b ${{ github.head_ref || github.ref_name }}
-
-      - name: Execute the automated bootstrap script
-        run: >-
-          ssh -t -t root@$SERVER_IPV4
-          "export LETSENCRYPT_STAGING=$LETSENCRYPT_STAGING &&
-          ansible-easy-vpn/testing/expect/defaults.exp
-          --username $EASYVPN_USERNAME
-          --password $EASYVPN_PASSWORD
-          --smtp_server $SMTP_SERVER
-          --smtp_login $SMTP_LOGIN
-          --smtp_password $SMTP_PASSWORD
-          --domain $DOMAIN"
-        env:
-          LETSENCRYPT_STAGING: ${{ needs.matrix_prep.outputs.letsencrypt_staging }}
-          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
-          SMTP_LOGIN: ${{ secrets.SMTP_LOGIN }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          DOMAIN: ${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}
-
-      - name: Copy the private key from the Hetzner host
-        run: sshpass -p$EASYVPN_PASSWORD scp root@$SERVER_IPV4:/tmp/id_ssh_ed25519 ~/.ssh/id_vpn
-
-      - name: Log into the server
-        run: >-
-          expect -c "spawn ssh $EASYVPN_USERNAME@$SERVER_IPV4 -i ~/.ssh/id_vpn; expect \"*Enter passphrase for key*\"; send -- \"$EASYVPN_PASSWORD\r\""
-
-      - name: Execute the script again to check idempotency
-        run: >-
-          sshpass -p$EASYVPN_PASSWORD ssh -t -t $EASYVPN_USERNAME@$SERVER_IPV4
-          "export LETSENCRYPT_STAGING=$LETSENCRYPT_STAGING &&
-          ansible-easy-vpn/testing/expect/idempotency.exp
-          --password $EASYVPN_PASSWORD"
-        env:
-          LETSENCRYPT_STAGING: ${{ needs.matrix_prep.outputs.letsencrypt_staging }}
-
-      - name: Install git and expect
-        run: ssh root@$SERVER_IPV4 apt install -y git expect wamerican
-
-      - uses: infraway/create-dns-record@v2.0
-        with:
-          type: "A"
-          name: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          content: "${{ env.SERVER_IPV4 }}"
-          proxied: false
-          token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE }}
-
-      - uses: infraway/create-dns-record@v2.0
-        with:
-          type: "CNAME"
-          name: "auth.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          content: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          proxied: false
-          token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE }}
-
-      - uses: infraway/create-dns-record@v2.0
-        with:
-          type: "CNAME"
-          name: "wg.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          content: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          proxied: false
-          token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE }}
-
-      - uses: infraway/create-dns-record@v2.0
-        with:
-          type: "CNAME"
-          name: "adguard.${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          content: "${{ env.EASYVPN_USERNAME }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
-          proxied: false
-          token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE }}
-
       - name: Clone the branch to the Hetzner instance
         run: ssh root@$SERVER_IPV4 git clone https://github.com/notthebee/ansible-easy-vpn -b ${{ github.head_ref || github.ref_name }}
 
@@ -356,7 +244,7 @@ jobs:
           LETSENCRYPT_STAGING: ${{ needs.matrix_prep.outputs.letsencrypt_staging }}
 
       - name: Wait indefinitely before destroying the server
-        if: ${{ inputs.only_ubuntu_20 == true || inputs.only_ubuntu_22 == true || inputs.only_debian_11 == true || inputs.only_rocky_8 }}
+        #if: ${{ inputs.only_ubuntu_20 == true || inputs.only_ubuntu_22 == true || inputs.only_debian_11 == true || inputs.only_rocky_8 }}
         run: >-
           sleep infinity
     outputs:
