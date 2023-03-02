@@ -5,13 +5,6 @@
   register: authorized_keys
   changed_when: (not authorized_keys.stat.exists) or (authorized_keys.stat.size == 0)
 
-- name: Install cryptography and PyOpenSSL
-  ansible.builtin.pip:
-    name:
-      - cryptography==36.0.2
-      - pyOpenSSL==20.0.1
-    state: present
-
 - name: Create the SSH directory
   ansible.builtin.file:
     path: "/home/{{ username }}/.ssh"
