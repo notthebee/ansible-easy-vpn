@@ -65,7 +65,7 @@
     - name: Install python3 venv dependencies
       changed_when: true
       ansible.builtin.command:
-        cmd: "/home/{{ username }}/.venv/bin/pip3 install -r /home/{{ username }}/ansible-easy-vpn/requirements.txt"
+        cmd: "/home/{{ username }}/ansible-easy-vpn/.venv/bin/pip3 install -r /home/{{ username }}/ansible-easy-vpn/requirements.txt"
 
     - name: Install ansible-galaxy dependencies
       changed_when: true
