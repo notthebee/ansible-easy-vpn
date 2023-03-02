@@ -61,6 +61,7 @@ install_dependencies_debian() {
     python3
     python3-setuptools
     python3-apt
+    python3-venv
     python3-pip
     aptitude
     direnv
