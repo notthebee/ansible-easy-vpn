@@ -59,18 +59,18 @@
 
     - name: Re-create the venv
       ansible.builtin.command:
-        cmd: "python3.9 -m venv /home/{{ username }}/.venv"
-        creates: "/home/{{ username }}/.venv"
+        cmd: "python3.9 -m venv /home/{{ username }}/ansible-easy-vpn/.venv"
+        creates: "/home/{{ username }}/ansible-easy-vpn/.venv"
 
     - name: Install python3 venv dependencies
       changed_when: true
       ansible.builtin.command:
-        cmd: "/home/{{ username }}/.venv/bin/pip3 install -r /home/{{ username }}/requirements.txt"
+        cmd: "/home/{{ username }}/.venv/bin/pip3 install -r /home/{{ username }}/ansible-easy-vpn/requirements.txt"
 
     - name: Install ansible-galaxy dependencies
       changed_when: true
       ansible.builtin.command:
-        cmd: "/home/{{ username }}/.venv/bin/ansible-galaxy install --force -r /home/{{ username }}/requirements.yml"
+        cmd: "/home/{{ username }}/ansible-easy-vpn/.venv/bin/ansible-galaxy install --force -r /home/{{ username }}/ansible-easy-vpn/requirements.yml"
 
     - name: Chmod the ansible-easy-vpn directory
       ansible.builtin.file:
