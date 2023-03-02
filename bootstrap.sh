@@ -140,8 +140,8 @@ python3.9 -m venv .venv
 eval $(direnv hook bash)
 direnv allow
 source .venv/bin/activate
-pip3 install --upgrade pip
-pip3 install -r requirements.txt
+.venv/bin/python3 -m pip3 install --upgrade pip
+.venv/bin/python3 -m pip3 install -r requirements.txt
 
 # Clone the Ansible playbook
 if [ -d "$HOME/ansible-easy-vpn" ]; then
