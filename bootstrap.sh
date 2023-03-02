@@ -135,8 +135,16 @@ elif [[ "$os" == "centos" ]]; then
 fi
 
 
+set +e
+if which python3.9; then
+  PYTHON=$(which python3.9)
+else
+  PYTHON=$(which python3)
+fi
+set -e
+
 cd $HOME/ansible-easy-vpn
-[ -d $HOME/ansible-easy-vpn/.venv ] || python3.9 -m venv .venv
+[ -d $HOME/ansible-easy-vpn/.venv ] || $PYTHON -m venv .venv
 export VIRTUAL_ENV="$HOME/ansible-easy-vpn/.venv"
 export PATH="$HOME/ansible-easy-vpn/.venv/bin:$PATH"
 .venv/bin/python3 -m pip install --upgrade pip
