@@ -52,6 +52,35 @@
         src: "/{{ lookup('env', 'HOME') }}/ansible-easy-vpn"
         dest: "/home/{{ username }}"
 
+    - name: Remove the old root .venv from the user's copy of the playbook
+      ansible.builtin.file:
+        path: "/home/{{ username }}/.venv"
+        state: absent
+
+    - name: Re-create the venv
+      ansible.builtin.command:
+        cmd: "python3.9 -m venv /home/{{ username }}/.venv"
+        creates: "/home/{{ username }}/.venv"
+
+    - name: Install python3 venv dependencies
+      changed_when: true
+      ansible.builtin.command:
+        cmd: "/home/{{ username }}/.venv/bin/pip3 install -r /home/{{ username }}/requirements.txt"
+
+    - name: Install ansible-galaxy dependencies
+      changed_when: true
+      ansible.builtin.command:
+        cmd: "/home/{{ username }}/.venv/bin/ansible-galaxy install --force -r /home/{{ username }}/requirements.yml"
+
+    - name: Chmod the ansible-easy-vpn directory
+      ansible.builtin.file:
+        path: "/home/{{ username }}/ansible-easy-vpn"
+        state: directory
+        mode: 0755
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        recurse: yes
+
     - name: Chmod the user home directory
       ansible.builtin.file:
         path: "/home/{{ username }}"
@@ -61,31 +90,3 @@
         group: "{{ username }}"
         recurse: yes
       when: enable_username_creation | default(False)
-
-    - name: Remove the old root .venv from the user's copy of the playbook
-      become_user: "{[ username ]}"
-      ansible.builtin.file:
-        path: "/home/{{ username }}/.venv"
-        state: absent
-
-    - name: Re-create the venv
-      become_user: "{[ username ]}"
-      ansible.builtin.command:
-        cmd: "python3.9 -m venv /home/{{ username }}/.venv"
-        creates: "/home/{{ username }}/.venv"
-
-    - name: Install python3 venv dependencies
-      changed_when: true
-      become_user: "{{ username }}"
-      ansible.builtin.command:
-        cmd: "/home/{{ username }}/.venv/bin/pip3 install -r /home/{{ username }}/requirements.txt"
-
-    - name: Install ansible-galaxy dependencies
-      changed_when: true
-      become_user: "{{ username }}"
-      ansible.builtin.command:
-        cmd: "/home/{{ username }}/.venv/bin/ansible-galaxy install --force -r /home/{{ username }}/requirements.yml"
-
-
-
-
