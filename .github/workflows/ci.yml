@@ -7,25 +7,31 @@ on:
   workflow_dispatch:
     inputs:
       only_ubuntu_22:
-        description: "Only run on Ubuntu 22.04 and wait for manual input"
+        description: "Only run on Ubuntu 22.04"
         required: false
         type: boolean
         default: false
 
       only_ubuntu_20:
-        description: "Only run on Ubuntu 20.04 and wait for manual input"
+        description: "Only run on Ubuntu 20.04"
         required: false
         type: boolean
         default: false
 
       only_debian_11:
-        description: "Only run on Debian 11 and wait for manual input"
+        description: "Only run on Debian 11"
         required: false
         type: boolean
         default: false
 
       only_rocky_8:
-        description: "Only run on Rocky 8 and wait for manual input"
+        description: "Only run on Rocky 8"
+        required: false
+        type: boolean
+        default: false
+
+      manual_mode:
+        description: "Don't destroy the server after the setup is complete"
         required: false
         type: boolean
         default: false
@@ -242,6 +248,11 @@ jobs:
           --password $EASYVPN_PASSWORD"
         env:
           LETSENCRYPT_STAGING: ${{ needs.matrix_prep.outputs.letsencrypt_staging }}
+
+      - name: Sleep forever
+        run: sleep infinity
+        if: inputs.manual_mode
+
 
     outputs:
       EASYVPN_USERNAME_1: "${{ steps.random_username.outputs.EASYVPN_USERNAME_1 }}"
