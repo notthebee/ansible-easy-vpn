@@ -1,17 +1,17 @@
 ---
-- name: Check if locale {{ locale }} exists
+- name: "Check if locale {{ locale }} exists"
   ansible.builtin.shell:
     cmd: "locale -a | grep -i {{ locale | regex_replace('-', '') | quote }}"
   register: found_locale
   changed_when: no
   failed_when: no
 
-- name: Create locale {{ locale }}
+- name: "Create locale {{ locale }}"
   ansible.builtin.command:
     cmd: >-
       localedef -i {{ locale | regex_replace('(.*)\\..*', '\\1') | quote }}
-      -f {{ system_settings_locale | regex_replace('.*\\.(.*)', '\\1') | quote }}
-      {{ system_settings_locale | quote }}
+      -f {{ locale | regex_replace('.*\\.(.*)', '\\1') | quote }}
+      {{ locale | quote }}
   when: found_locale.rc != 0
   changed_when: found_locale.rc != 0
 
@@ -19,4 +19,3 @@
   community.general.timezone:
     name: "{{ timezone }}"
   notify: Restart cron
-
