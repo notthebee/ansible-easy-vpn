@@ -88,6 +88,7 @@ install_dependencies_debian() {
 }
 
 install_dependencies_centos() {
+  check_root
   REQUIRED_PACKAGES=(
     sudo
     bind-utils
