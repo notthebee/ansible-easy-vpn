@@ -95,8 +95,8 @@ install_dependencies_centos() {
     git
     rsync
     python3-firewall
-    kmod-wireguard
     https://kojipkgs.fedoraproject.org//vol/fedora_koji_archive02/packages/direnv/2.12.2/1.fc28/x86_64/direnv-2.12.2-1.fc28.x86_64.rpm
+
   )
 
   if [[ "$os_version" -ge 8 ]]; then
@@ -105,6 +105,7 @@ install_dependencies_centos() {
         python39
         python39-setuptools
         python39-pip
+        https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el8/x86_64/RPMS/elrepo-release-8.3-1.el8.elrepo.noarch.rpm
       )
     else
       REQUIRED_PACKAGES+=(
@@ -114,12 +115,13 @@ install_dependencies_centos() {
       )
     fi
     check_root
+    $SUDO dnf config-manager --add-repo 
     $SUDO dnf update -y
-    $SUDO dnf install -y epel-release elrepo-release
+    $SUDO dnf install -y epel-release
     $SUDO dnf install -y "${REQUIRED_PACKAGES[@]}"
   elif [[ "$os_version" -eq 7 ]]; then
     $SUDO yum update -y
-    $SUDO yum install -y epel-release elrepo-release
+    $SUDO yum install -y epel-release https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el7/x86_64/RPMS/elrepo-release-7.0-6.el7.elrepo.noarch.rpm
     $SUDO yum groupinstall "Development Tools" -y
     $SUDO yum install gcc open-ssl-devel bzip2-devel libffi-devel -y
     $SUDO yum install -y "${REQUIRED_PACKAGES[@]}"
