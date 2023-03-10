@@ -111,7 +111,7 @@ install_dependencies_centos() {
       python39-pip
       kmod-wireguard
     )
-    $SUDO dnf config-manager --add-repo https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el8/x86_64
+    $SUDO dnf config-manager --add-repo https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el8/x86_64 --nogpgcheck
   else
     REQUIRED_PACKAGES+=(
       python3
@@ -119,14 +119,13 @@ install_dependencies_centos() {
       python3-pip
       kmod-wireguard
     )
-    $SUDO dnf config-manager --add-repo https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el7/x86_64
+    $SUDO yum-config-manager --add-repo https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el7/x86_64 --nogpgcheck
   fi
   if [[ "$os_version" -ge 8 ]]; then
     $SUDO dnf update -y
     $SUDO dnf install -y epel-release
     $SUDO dnf install -y "${REQUIRED_PACKAGES[@]}"
   else 
-    $SUDO yum-config-manager --add-repo https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el7/x86_64
     $SUDO yum update -y
     $SUDO yum install -y epel-release
     $SUDO yum groupinstall "Development Tools" -y
