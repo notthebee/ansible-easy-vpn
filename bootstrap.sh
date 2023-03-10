@@ -100,13 +100,14 @@ install_dependencies_centos() {
   )
 
   if [[ "$os_version" -ge 8 ]]; then
+    check_root
     if [[ "$os_version" -eq 8 ]]; then
       REQUIRED_PACKAGES+=(
         python39
         python39-setuptools
         python39-pip
-        https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el8/x86_64/RPMS/elrepo-release-8.3-1.el8.elrepo.noarch.rpm
       )
+      $SUDO dnf config-manager --add-repo https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el8/x86_64
     else
       REQUIRED_PACKAGES+=(
         python3
@@ -114,13 +115,13 @@ install_dependencies_centos() {
         python3-pip
       )
     fi
-    check_root
     $SUDO dnf update -y
     $SUDO dnf install -y epel-release
     $SUDO dnf install -y "${REQUIRED_PACKAGES[@]}"
   elif [[ "$os_version" -eq 7 ]]; then
+    $SUDO yum-config-manager --add-repo https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el7/x86_64
     $SUDO yum update -y
-    $SUDO yum install -y epel-release https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el7/x86_64/RPMS/elrepo-release-7.0-6.el7.elrepo.noarch.rpm
+    $SUDO yum install -y epel-release
     $SUDO yum groupinstall "Development Tools" -y
     $SUDO yum install gcc open-ssl-devel bzip2-devel libffi-devel -y
     $SUDO yum install -y "${REQUIRED_PACKAGES[@]}"
