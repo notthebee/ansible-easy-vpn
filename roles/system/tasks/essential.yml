@@ -1,7 +1,9 @@
 ---
 - name: Check if locale exists
   ansible.builtin.shell:
-    cmd: "locale -a | grep -i {{ locale | regex_replace('-', '') | quote }}"
+    cmd: >-
+      set -o pipefail &&
+      locale -a | grep -i {{ locale | regex_replace('-', '') | quote }}
   register: found_locale
   changed_when: no
   failed_when: no
@@ -14,7 +16,9 @@
 
 - name: Check if language exists
   ansible.builtin.shell:
-    cmd: "locale -a | grep -i {{ locale | regex_replace('-', '') | quote }}"
+    cmd: >-
+      set -o pipefail &&
+      locale -a | grep -i {{ locale | regex_replace('-', '') | quote }}
   register: found_language
   changed_when: no
   failed_when: no
