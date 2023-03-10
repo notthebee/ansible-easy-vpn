@@ -50,7 +50,7 @@ all:
     # Language and time settings
     # Check here for the list of possible locales
     # https://docs.oracle.com/cd/E23824_01/html/E26033/glset.html
-    locale: en_US.UTF-8
+    locale: en_GB.UTF-8
 
     timezone: Europe/Berlin
 
