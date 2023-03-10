@@ -98,27 +98,34 @@ install_dependencies_centos() {
     https://kojipkgs.fedoraproject.org//vol/fedora_koji_archive02/packages/direnv/2.12.2/1.fc28/x86_64/direnv-2.12.2-1.fc28.x86_64.rpm
 
   )
-
+  if [[ "$os_version" -eq 9 ]]; then
+    REQUIRED_PACKAGES+=(
+      python3
+      python3-setuptools
+      python3-pip
+    )
+  elif [[ "$os_version" -eq 8 ]]; then
+    REQUIRED_PACKAGES+=(
+      python39
+      python39-setuptools
+      python39-pip
+      kmod-wireguard
+    )
+    $SUDO dnf config-manager --add-repo https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el8/x86_64
+  else
+    REQUIRED_PACKAGES+=(
+      python3
+      python3-setuptools
+      python3-pip
+      kmod-wireguard
+    )
+    $SUDO dnf config-manager --add-repo https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el7/x86_64
+  fi
   if [[ "$os_version" -ge 8 ]]; then
-    check_root
-    if [[ "$os_version" -eq 8 ]]; then
-      REQUIRED_PACKAGES+=(
-        python39
-        python39-setuptools
-        python39-pip
-      )
-      $SUDO dnf config-manager --add-repo https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el8/x86_64
-    else
-      REQUIRED_PACKAGES+=(
-        python3
-        python3-setuptools
-        python3-pip
-      )
-    fi
     $SUDO dnf update -y
     $SUDO dnf install -y epel-release
     $SUDO dnf install -y "${REQUIRED_PACKAGES[@]}"
-  elif [[ "$os_version" -eq 7 ]]; then
+  else 
     $SUDO yum-config-manager --add-repo https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el7/x86_64
     $SUDO yum update -y
     $SUDO yum install -y epel-release
