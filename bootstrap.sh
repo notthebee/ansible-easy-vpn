@@ -96,7 +96,6 @@ install_dependencies_centos() {
     rsync
     python3-firewall
     https://kojipkgs.fedoraproject.org//vol/fedora_koji_archive02/packages/direnv/2.12.2/1.fc28/x86_64/direnv-2.12.2-1.fc28.x86_64.rpm
-
   )
   if [[ "$os_version" -eq 9 ]]; then
     REQUIRED_PACKAGES+=(
@@ -110,16 +109,16 @@ install_dependencies_centos() {
       python39-setuptools
       python39-pip
       kmod-wireguard
+      https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el8/x86_64/RPMS/kmod-wireguard-1.0.20220627-4.el8_7.elrepo.x86_64.rpm
     )
-    $SUDO dnf config-manager --add-repo https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el8/x86_64 --nogpgcheck
   else
     REQUIRED_PACKAGES+=(
       python3
       python3-setuptools
       python3-pip
       kmod-wireguard
+      https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el7/x86_64/RPMS/kmod-wireguard-1.0.20220627-1.el7_9.elrepo.x86_64.rpm
     )
-    $SUDO yum-config-manager --add-repo https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el7/x86_64 --nogpgcheck
   fi
   if [[ "$os_version" -ge 8 ]]; then
     $SUDO dnf update -y
