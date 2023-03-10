@@ -95,6 +95,7 @@ install_dependencies_centos() {
     git
     rsync
     python3-firewall
+    kmod-wireguard
     https://kojipkgs.fedoraproject.org//vol/fedora_koji_archive02/packages/direnv/2.12.2/1.fc28/x86_64/direnv-2.12.2-1.fc28.x86_64.rpm
   )
 
@@ -114,11 +115,11 @@ install_dependencies_centos() {
     fi
     check_root
     $SUDO dnf update -y
-    $SUDO dnf install -y epel-release
+    $SUDO dnf install -y epel-release elrepo-release
     $SUDO dnf install -y "${REQUIRED_PACKAGES[@]}"
   elif [[ "$os_version" -eq 7 ]]; then
     $SUDO yum update -y
-    $SUDO yum install -y epel-release
+    $SUDO yum install -y epel-release elrepo-release
     $SUDO yum groupinstall "Development Tools" -y
     $SUDO yum install gcc open-ssl-devel bzip2-devel libffi-devel -y
     $SUDO yum install -y "${REQUIRED_PACKAGES[@]}"
