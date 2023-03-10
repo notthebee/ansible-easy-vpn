@@ -115,7 +115,6 @@ install_dependencies_centos() {
       )
     fi
     check_root
-    $SUDO dnf config-manager --add-repo 
     $SUDO dnf update -y
     $SUDO dnf install -y epel-release
     $SUDO dnf install -y "${REQUIRED_PACKAGES[@]}"
