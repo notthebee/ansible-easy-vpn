@@ -115,9 +115,6 @@ install_dependencies_centos() {
     )
   else
     REQUIRED_PACKAGES+=(
-      python3
-      python3-setuptools
-      python3-pip
       python-firewall
       kmod-wireguard
       https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el7/x86_64/RPMS/kmod-wireguard-1.0.20220627-1.el7_9.elrepo.x86_64.rpm
@@ -132,6 +129,13 @@ install_dependencies_centos() {
     $SUDO yum install -y epel-release
     $SUDO yum groupinstall "Development Tools" -y
     $SUDO yum install gcc open-ssl-devel bzip2-devel libffi-devel -y
+    cd /tmp
+    $SUDO wget https://www.python.org/ftp/python/3.9.7/Python-3.9.7.tgz
+    $SUDO tar zxvf Python-3.9.7.tgz
+    cd Python-3.9.7/
+    $SUDO ./configure
+    $SUDO make 
+    $SUDO make altinstall
     $SUDO yum install -y "${REQUIRED_PACKAGES[@]}"
   fi
 
