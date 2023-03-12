@@ -11,11 +11,6 @@
   set_fact:
     ansible_python_interpreter: "/usr/bin/python3.6"
 
-- name: Configure the firewall with python2 if on CentOS 7
-  when: ansible_distribution_major_version | int == 7
-  set_fact:
-    ansible_python_interpreter: "/usr/bin/python"
-
 - name: Configure firewalld
   block:
     - name: Allow the defined ports
