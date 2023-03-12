@@ -24,12 +24,6 @@ on:
         type: boolean
         default: false
 
-      only_centos_7:
-        description: "Only run on CentOS 7"
-        required: false
-        type: boolean
-        default: false
-
       only_rocky_8:
         description: "Only run on Rocky 8"
         required: false
@@ -88,9 +82,6 @@ jobs:
           elif [[ ${ONLY_DEBIAN_11} == 'true' ]]; then
             # Only deploy on Ubuntu 11, don't use Letsencrypt Staging
             matrix=$(jq 'map(. | select((.os=="debian-11")) )' .github/workflows/matrix_includes.json)
-          elif [[ ${ONLY_CENTOS_7} == 'true' ]]; then
-            # Only deploy on Rocky 8, don't use Letsencrypt Staging
-            matrix=$(jq 'map(. | select((.os=="centos-7")) )' .github/workflows/matrix_includes.json)
           elif [[ ${ONLY_ROCKY_8} == 'true' ]]; then
             # Only deploy on Rocky 8, don't use Letsencrypt Staging
             matrix=$(jq 'map(. | select((.os=="rocky-8")) )' .github/workflows/matrix_includes.json)
@@ -107,7 +98,6 @@ jobs:
           ONLY_UBUNTU_22: ${{ inputs.only_ubuntu_22 }}
           ONLY_UBUNTU_20: ${{ inputs.only_ubuntu_20 }}
           ONLY_DEBIAN_11: ${{ inputs.only_debian_11 }}
-          ONLY_CENTOS_7: ${{ inputs.only_centos_7 }}
           ONLY_ROCKY_8: ${{ inputs.only_rocky_8 }}
           ONLY_ROCKY_9: ${{ inputs.only_rocky_9 }}
 
@@ -159,10 +149,6 @@ jobs:
             echo "EASYVPN_USERNAME_5=$EASYVPN_USERNAME" >> $GITHUB_OUTPUT
             echo "EASYVPN_PASSWORD_5=$EASYVPN_PASSWORD" >> $GITHUB_OUTPUT
             ;;
-            "6")
-            echo "EASYVPN_USERNAME_6=$EASYVPN_USERNAME" >> $GITHUB_OUTPUT
-            echo "EASYVPN_PASSWORD_6=$EASYVPN_PASSWORD" >> $GITHUB_OUTPUT
-            ;;
             *)
             exit 1
             ;;
@@ -202,12 +188,6 @@ jobs:
         if: |
           matrix.os == 'rocky-8' ||
           matrix.os == 'rocky-9'
-
-      - name: Install git and expect (Centos 7)
-        run: ssh root@$SERVER_IPV4 yum install -y git expect words
-        if: |
-          matrix.os  == 'centos-7'
-
 
       - uses: infraway/create-dns-record@v2.0
         with:
@@ -293,13 +273,11 @@ jobs:
       EASYVPN_USERNAME_3: "${{ steps.random_username.outputs.EASYVPN_USERNAME_3 }}"
       EASYVPN_USERNAME_4: "${{ steps.random_username.outputs.EASYVPN_USERNAME_4 }}"
       EASYVPN_USERNAME_5: "${{ steps.random_username.outputs.EASYVPN_USERNAME_5 }}"
-      EASYVPN_USERNAME_6: "${{ steps.random_username.outputs.EASYVPN_USERNAME_6 }}"
       EASYVPN_PASSWORD_1: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_1 }}"
       EASYVPN_PASSWORD_2: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_2 }}"
       EASYVPN_PASSWORD_3: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_3 }}"
       EASYVPN_PASSWORD_4: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_4 }}"
       EASYVPN_PASSWORD_5: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_5 }}"
-      EASYVPN_PASSWORD_6: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_6 }}"
 
   test:
     runs-on: ubuntu-latest

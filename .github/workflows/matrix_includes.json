@@ -18,9 +18,5 @@
     {
         "os":"rocky-9",        
         "index":5
-    },
-    {
-        "os":"centos-7",        
-        "index":6
     }
 ]

@@ -28,9 +28,9 @@ elif [[ -e /etc/debian_version ]]; then
 elif [[ -e /etc/almalinux-release || -e /etc/rocky-release || -e /etc/centos-release ]]; then
 	os="centos"
 	os_version=$(grep -shoE '[0-9]+' /etc/almalinux-release /etc/rocky-release /etc/centos-release | head -1)
-  if [[ "$os_version" -lt 7 ]]; then
-      echo "CentOS 7 or higher is required to use this installer."
-      echo "This version of CentOS is too old and unsupported."
+  if [[ "$os_version" -lt 8 ]]; then
+      echo "Rocky Linux 8 or higher is required to use this installer."
+      echo "This version of Rocky/CentOS is too old and unsupported."
       exit
   fi
 fi
@@ -104,7 +104,7 @@ install_dependencies_centos() {
       python3-pip
       python3-firewall
     )
-  elif [[ "$os_version" -eq 8 ]]; then
+  else 
     REQUIRED_PACKAGES+=(
       python39
       python39-setuptools
@@ -113,33 +113,10 @@ install_dependencies_centos() {
       kmod-wireguard
       https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el8/x86_64/RPMS/kmod-wireguard-1.0.20220627-4.el8_7.elrepo.x86_64.rpm
     )
-  else
-    REQUIRED_PACKAGES+=(
-      python-firewall
-      kmod-wireguard
-      https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el7/x86_64/RPMS/kmod-wireguard-1.0.20220627-1.el7_9.elrepo.x86_64.rpm
-    )
   fi
-  if [[ "$os_version" -ge 8 ]]; then
-    $SUDO dnf update -y
-    $SUDO dnf install -y epel-release
-    $SUDO dnf install -y "${REQUIRED_PACKAGES[@]}"
-  else 
-    $SUDO yum update -y
-    $SUDO yum install -y epel-release
-    $SUDO yum groupinstall "Development Tools" -y
-    $SUDO yum install gcc open-ssl-devel bzip2-devel libffi-devel -y
-    cd /tmp
-    $SUDO wget https://www.python.org/ftp/python/3.9.7/Python-3.9.7.tgz
-    $SUDO tar zxvf Python-3.9.7.tgz
-    cd Python-3.9.7/
-    $SUDO ./configure
-    $SUDO make 
-    $SUDO make altinstall
-    $SUDO yum install -y "${REQUIRED_PACKAGES[@]}"
-  fi
-
-
+  $SUDO dnf update -y
+  $SUDO dnf install -y epel-release
+  $SUDO dnf install -y "${REQUIRED_PACKAGES[@]}"
 }
 
 
