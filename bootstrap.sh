@@ -95,7 +95,6 @@ install_dependencies_centos() {
     curl
     git
     rsync
-    python3-firewall
     https://kojipkgs.fedoraproject.org//vol/fedora_koji_archive02/packages/direnv/2.12.2/1.fc28/x86_64/direnv-2.12.2-1.fc28.x86_64.rpm
   )
   if [[ "$os_version" -eq 9 ]]; then
@@ -103,12 +102,14 @@ install_dependencies_centos() {
       python3
       python3-setuptools
       python3-pip
+      python3-firewall
     )
   elif [[ "$os_version" -eq 8 ]]; then
     REQUIRED_PACKAGES+=(
       python39
       python39-setuptools
       python39-pip
+      python3-firewall
       kmod-wireguard
       https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el8/x86_64/RPMS/kmod-wireguard-1.0.20220627-4.el8_7.elrepo.x86_64.rpm
     )
@@ -117,6 +118,7 @@ install_dependencies_centos() {
       python3
       python3-setuptools
       python3-pip
+      python-firewall
       kmod-wireguard
       https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el7/x86_64/RPMS/kmod-wireguard-1.0.20220627-1.el7_9.elrepo.x86_64.rpm
     )
