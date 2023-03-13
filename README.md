@@ -23,7 +23,12 @@ wget https://raw.githubusercontent.com/notthebee/ansible-easy-vpn/main/bootstrap
 
 ## Requirements
 * A KVM-based VPS (or an AWS EC2 instance) with a dedicated IPv4 address
-* Ubuntu Server 20.04/22.04 or Debian 11
+* One of the supported Linux distros:
+  * Ubuntu Server 22.04
+  * Ubuntu Server 20.04
+  * Debian 11
+  * Rocky Linux 9
+  * Rocky Linux 8
 
 ## Known issues with VPS providers
 Normally, the script should work on any KVM-based VPS.
