@@ -119,29 +119,6 @@ install_dependencies_centos() {
   $SUDO dnf install -y "${REQUIRED_PACKAGES[@]}"
 }
 
-
-if [[ "$os" == "debian" || "$os" == "ubuntu" ]]; then
-  install_dependencies_debian
-elif [[ "$os" == "centos" ]]; then
-  install_dependencies_centos
-fi
-
-
-set +e
-if which python3.9; then
-  PYTHON=$(which python3.9)
-else
-  PYTHON=$(which python3)
-fi
-set -e
-
-cd $HOME/ansible-easy-vpn
-[ -d $HOME/ansible-easy-vpn/.venv ] || $PYTHON -m venv .venv
-export VIRTUAL_ENV="$HOME/ansible-easy-vpn/.venv"
-export PATH="$HOME/ansible-easy-vpn/.venv/bin:$PATH"
-.venv/bin/python3 -m pip install --upgrade pip
-.venv/bin/python3 -m pip install -r requirements.txt
-
 # Clone the Ansible playbook
 if [ -d "$HOME/ansible-easy-vpn" ]; then
   pushd $HOME/ansible-easy-vpn
@@ -151,6 +128,31 @@ else
   git clone https://github.com/notthebee/ansible-easy-vpn $HOME/ansible-easy-vpn
 fi
 
+# Install all the dependencies
+if [[ "$os" == "debian" || "$os" == "ubuntu" ]]; then
+  install_dependencies_debian
+elif [[ "$os" == "centos" ]]; then
+  install_dependencies_centos
+fi
+
+# Set up a Python venv
+set +e
+if which python3.9; then
+  PYTHON=$(which python3.9)
+else
+  PYTHON=$(which python3)
+fi
+set -e
+cd $HOME/ansible-easy-vpn
+[ -d $HOME/ansible-easy-vpn/.venv ] || $PYTHON -m venv .venv
+export VIRTUAL_ENV="$HOME/ansible-easy-vpn/.venv"
+export PATH="$HOME/ansible-easy-vpn/.venv/bin:$PATH"
+.venv/bin/python3 -m pip install --upgrade pip
+.venv/bin/python3 -m pip install -r requirements.txt
+
+
+
+# Install the Galaxy requirements
 cd $HOME/ansible-easy-vpn && ansible-galaxy install --force -r requirements.yml
 
 # Check if we're running on an AWS EC2 instance
