@@ -34,7 +34,6 @@
         port: "{{ ssh_port }}/tcp"
 
 - name: Put the venv python interpreter back in place
-  when: ansible_distribution_major_version | int == 8
   set_fact:
     ansible_python_interpreter: "/{{ lookup('env', 'HOME') }}/ansible-easy-vpn/.venv/bin/python3"
 
