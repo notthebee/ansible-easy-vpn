@@ -80,13 +80,13 @@ jobs:
             # Only deploy on Ubuntu 20.04, don't use Letsencrypt Staging
             matrix=$(jq 'map(. | select((.os=="ubuntu-20.04")) )' .github/workflows/matrix_includes.json)
           elif [[ ${ONLY_DEBIAN_11} == 'true' ]]; then
-            # Only deploy on Ubuntu 11, don't use Letsencrypt Staging
+            # Only deploy on Debian 11, don't use Letsencrypt Staging
             matrix=$(jq 'map(. | select((.os=="debian-11")) )' .github/workflows/matrix_includes.json)
           elif [[ ${ONLY_ROCKY_8} == 'true' ]]; then
             # Only deploy on Rocky 8, don't use Letsencrypt Staging
             matrix=$(jq 'map(. | select((.os=="rocky-8")) )' .github/workflows/matrix_includes.json)
           elif [[ ${ONLY_ROCKY_9} == 'true' ]]; then
-            # Only deploy on Rocky 8, don't use Letsencrypt Staging
+            # Only deploy on Rocky 9, don't use Letsencrypt Staging
             matrix=$(jq 'map(. | select((.os=="rocky-9")) )' .github/workflows/matrix_includes.json)
           else
             # Deploy on all supported OSes, use Letsencrypt Staging to avoid rate-limiting
