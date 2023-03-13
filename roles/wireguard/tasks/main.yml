@@ -15,6 +15,12 @@
       {%- endif -%}
       {{- wg_dns -}}
 
+- name: Load the iptable_nat module (CentOS)
+  when: 'ansible_os_family == "RedHat"'
+  community.general.modprobe:
+    name: iptable_nat
+    persistent: present
+
 - name: Make sure the Wireguard container is created and running
   register: wireguard_result
   retries: 5
