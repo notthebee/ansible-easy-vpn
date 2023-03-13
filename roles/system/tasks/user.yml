@@ -37,35 +37,17 @@
     path: "/home/{{ username }}/ansible-easy-vpn"
   register: playbook_copied
 
-- name: Add the direnv hook to {{ username }}`s bashrc
-  ansible.builtin.blockinfile:
-    path: /home/{{ username }}/.bashrc
-    block: |
-      eval "$(direnv hook bash)"
-      direnv allow $HOME/ansible-easy-vpn
-
 - name: Handle user directory and playbook folder
   when: not playbook_copied.stat.exists
   block:
     - name: Copy the Ansible playbook to the new user
-      ansible.posix.synchronize:
+      ansible.builtin.copy:
         src: "/{{ lookup('env', 'HOME') }}/ansible-easy-vpn"
         dest: "/home/{{ username }}"
-
-    - name: Fix the user's venv copy
-      changed_when: true
-      ansible.builtin.shell:
-        cmd: 'cd /home/{{ username }}/ansible-easy-vpn/.venv/bin && sed -i "s|/root/ansible-easy-vpn|/home/{{ username }}/ansible-easy-vpn|g" *'
-
-    - name: Chmod the ansible-easy-vpn directory
-      ansible.builtin.file:
-        path: "/home/{{ username }}/ansible-easy-vpn"
-        state: directory
-        mode: 0755
         owner: "{{ username }}"
+        decrypt: no
         group: "{{ username }}"
-        recurse: yes
-      when: not enable_username_creation | default(False)
+        mode: 0750
 
     - name: Chmod the user home directory
       ansible.builtin.file:

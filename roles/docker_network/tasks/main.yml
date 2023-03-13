@@ -1,7 +1,0 @@
-- name: Create the wg network
-  community.general.docker_network:
-    name: wg_network
-    ipam_config:
-      - subnet: 10.8.2.0/24
-        gateway: 10.8.2.1
-        iprange: 10.8.2.0/24

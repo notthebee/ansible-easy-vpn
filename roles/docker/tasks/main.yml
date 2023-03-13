@@ -1,0 +1,77 @@
+---
+- name: Set amd64 arch
+  ansible.builtin.set_fact:
+    repo_arch: amd64
+  when: ansible_architecture == "x86_64"
+
+- name: Set arm64 arch
+  ansible.builtin.set_fact:
+    repo_arch: "{{ ansible_architecture }}"
+  when: (ansible_architecture == "arm64") or (ansible_architecture == "aarch64")
+
+- name: Include OS-specific variables
+  ansible.builtin.include_vars: "{{ ansible_facts['distribution'] }}.yml"
+
+- name: Install required system packages
+  ansible.builtin.package:
+    state: present
+    name: "{{ docker_deps }}"
+
+- name: Install Docker (Debian & Ubuntu)
+  when: ansible_facts['os_family'] == 'Debian'
+  block:
+    - name: Add Docker GPG apt Key
+      ansible.builtin.apt_key:
+        url: "https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}/gpg"
+        state: present
+
+    - name: Add Docker Repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch={{ repo_arch }}] https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }} {{ ansible_lsb['codename'] }} stable"
+        state: present
+
+- name: Update apt and install docker-ce
+  block:
+    - name: Attempt installation
+      ansible.builtin.apt:
+        update_cache: yes
+        name: "{{ docker_packages }}"
+        state: present
+  rescue:
+    - name: Fix the dumb Ubuntu Jammy error
+      ansible.builtin.replace:
+        path: /etc/systemd/system/multi-user.target.wants/docker.service
+        regexp: "fd://"
+        replace: "unix://"
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('22.04', '>=')
+
+- name: Ensure group docker exists
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+- name: Add user "{{ username }}" to group docker
+  ansible.builtin.user:
+    name: "{{ username }}"
+    groups:
+      - docker
+    append: yes
+
+- name: Install Docker Module for Python
+  ansible.builtin.pip:
+    name: docker
+
+- name: Make sure Docker is running and enabled
+  ansible.builtin.systemd:
+    name: docker
+    daemon_reload: yes
+    state: started
+    enabled: yes
+
+- name: Create the wg network
+  community.general.docker_network:
+    name: wg_network
+    ipam_config:
+      - subnet: 10.8.2.0/24
+        gateway: 10.8.2.1
+        iprange: 10.8.2.0/24

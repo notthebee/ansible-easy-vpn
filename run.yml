@@ -24,12 +24,7 @@
       tags:
         - system
 
-    
-    - role: geerlingguy.docker
-      tags:
-        - docker
-
-    - role: docker_network
+    - role: docker
       tags:
         - docker
 
@@ -37,6 +32,11 @@
       when: enable_fail2ban | default(False)
       tags:
         - fail2ban
+
+    - role: ufw
+      when: enable_ufw | default(False)
+      tags:
+        - ufw
 
     - role: dns
       when: enable_adguard_unbound_doh | default(False)

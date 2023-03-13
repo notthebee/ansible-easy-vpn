@@ -21,7 +21,7 @@
         proto: "{{ item.proto }}"
         port: "{{ item.port }}"
       with_items:
-        - "{{ firewall_ports }}"
+        - "{{ ufw_ports }}"
 
     - name: Deny everything else and enable UFW
       community.general.ufw:

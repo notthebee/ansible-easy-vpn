@@ -7,40 +7,23 @@ on:
   workflow_dispatch:
     inputs:
       only_ubuntu_22:
-        description: "Only run on Ubuntu 22.04"
+        description: "Only run on Ubuntu 22.04 and wait for manual input"
         required: false
         type: boolean
         default: false
 
       only_ubuntu_20:
-        description: "Only run on Ubuntu 20.04"
+        description: "Only run on Ubuntu 20.04 and wait for manual input"
         required: false
         type: boolean
         default: false
 
       only_debian_11:
-        description: "Only run on Debian 11"
+        description: "Only run on Debian 11 and wait for manual input"
         required: false
         type: boolean
         default: false
 
-      only_rocky_8:
-        description: "Only run on Rocky 8"
-        required: false
-        type: boolean
-        default: false
-
-      only_rocky_9:
-        description: "Only run on Rocky 9"
-        required: false
-        type: boolean
-        default: false
-
-      manual_mode:
-        description: "Don't destroy the server after the setup is complete"
-        required: false
-        type: boolean
-        default: false
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -77,17 +60,11 @@ jobs:
             # Only deploy on Ubuntu 22.04, don't use Letsencrypt Staging
             matrix=$(jq 'map(. | select((.os=="ubuntu-22.04")) )' .github/workflows/matrix_includes.json)
           elif [[ ${ONLY_UBUNTU_20} == 'true' ]]; then
-            # Only deploy on Ubuntu 20.04, don't use Letsencrypt Staging
+            # Only deploy on Ubuntu 22.04, don't use Letsencrypt Staging
             matrix=$(jq 'map(. | select((.os=="ubuntu-20.04")) )' .github/workflows/matrix_includes.json)
           elif [[ ${ONLY_DEBIAN_11} == 'true' ]]; then
-            # Only deploy on Debian 11, don't use Letsencrypt Staging
+            # Only deploy on Ubuntu 22.04, don't use Letsencrypt Staging
             matrix=$(jq 'map(. | select((.os=="debian-11")) )' .github/workflows/matrix_includes.json)
-          elif [[ ${ONLY_ROCKY_8} == 'true' ]]; then
-            # Only deploy on Rocky 8, don't use Letsencrypt Staging
-            matrix=$(jq 'map(. | select((.os=="rocky-8")) )' .github/workflows/matrix_includes.json)
-          elif [[ ${ONLY_ROCKY_9} == 'true' ]]; then
-            # Only deploy on Rocky 9, don't use Letsencrypt Staging
-            matrix=$(jq 'map(. | select((.os=="rocky-9")) )' .github/workflows/matrix_includes.json)
           else
             # Deploy on all supported OSes, use Letsencrypt Staging to avoid rate-limiting
             matrix=$(jq 'map(.)' .github/workflows/matrix_includes.json)
@@ -98,8 +75,6 @@ jobs:
           ONLY_UBUNTU_22: ${{ inputs.only_ubuntu_22 }}
           ONLY_UBUNTU_20: ${{ inputs.only_ubuntu_20 }}
           ONLY_DEBIAN_11: ${{ inputs.only_debian_11 }}
-          ONLY_ROCKY_8: ${{ inputs.only_rocky_8 }}
-          ONLY_ROCKY_9: ${{ inputs.only_rocky_9 }}
 
   build:
     runs-on: ubuntu-latest
@@ -141,14 +116,6 @@ jobs:
             echo "EASYVPN_USERNAME_3=$EASYVPN_USERNAME" >> $GITHUB_OUTPUT
             echo "EASYVPN_PASSWORD_3=$EASYVPN_PASSWORD" >> $GITHUB_OUTPUT
             ;;
-            "4")
-            echo "EASYVPN_USERNAME_4=$EASYVPN_USERNAME" >> $GITHUB_OUTPUT
-            echo "EASYVPN_PASSWORD_4=$EASYVPN_PASSWORD" >> $GITHUB_OUTPUT
-            ;;
-            "5")
-            echo "EASYVPN_USERNAME_5=$EASYVPN_USERNAME" >> $GITHUB_OUTPUT
-            echo "EASYVPN_PASSWORD_5=$EASYVPN_PASSWORD" >> $GITHUB_OUTPUT
-            ;;
             *)
             exit 1
             ;;
@@ -171,23 +138,9 @@ jobs:
 
       - name: Update apt cache
         run: ssh root@$SERVER_IPV4 apt update
-        if: |
-          matrix.os == 'debian-11' ||
-          matrix.os  == 'ubuntu-22.04' ||
-          matrix.os == 'ubuntu-20.04'
 
-      - name: Install git and expect (Debian-based)
+      - name: Install git and expect
         run: ssh root@$SERVER_IPV4 apt install -y git expect wamerican
-        if: |
-          matrix.os == 'debian-11' ||
-          matrix.os  == 'ubuntu-22.04' ||
-          matrix.os == 'ubuntu-20.04'
-
-      - name: Install git and expect (CentOS 8 and 9)
-        run: ssh root@$SERVER_IPV4 dnf install -y git expect words
-        if: |
-          matrix.os == 'rocky-8' ||
-          matrix.os == 'rocky-9'
 
       - uses: infraway/create-dns-record@v2.0
         with:
@@ -262,22 +215,17 @@ jobs:
         env:
           LETSENCRYPT_STAGING: ${{ needs.matrix_prep.outputs.letsencrypt_staging }}
 
-      - name: Sleep forever
-        run: sleep infinity
-        if: inputs.manual_mode
-
-
+      - name: Wait indefinitely before destroying the server
+        if: ${{ inputs.only_ubuntu_20 == true || inputs.only_ubuntu_22 == true || inputs.only_debian_11 == true }}
+        run: >-
+          sleep infinity
     outputs:
       EASYVPN_USERNAME_1: "${{ steps.random_username.outputs.EASYVPN_USERNAME_1 }}"
       EASYVPN_USERNAME_2: "${{ steps.random_username.outputs.EASYVPN_USERNAME_2 }}"
       EASYVPN_USERNAME_3: "${{ steps.random_username.outputs.EASYVPN_USERNAME_3 }}"
-      EASYVPN_USERNAME_4: "${{ steps.random_username.outputs.EASYVPN_USERNAME_4 }}"
-      EASYVPN_USERNAME_5: "${{ steps.random_username.outputs.EASYVPN_USERNAME_5 }}"
       EASYVPN_PASSWORD_1: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_1 }}"
       EASYVPN_PASSWORD_2: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_2 }}"
       EASYVPN_PASSWORD_3: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_3 }}"
-      EASYVPN_PASSWORD_4: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_4 }}"
-      EASYVPN_PASSWORD_5: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_5 }}"
 
   test:
     runs-on: ubuntu-latest

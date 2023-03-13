@@ -50,7 +50,7 @@ all:
     # Language and time settings
     # Check here for the list of possible locales
     # https://docs.oracle.com/cd/E23824_01/html/E26033/glset.html
-    locale: en_GB.UTF-8
+    locale: en_US.UTF-8
 
     timezone: Europe/Berlin
 
@@ -88,8 +88,10 @@ all:
 
     msmtp_alias_default: "{{ email }}"
 
-    enable_firewall: true
-    firewall_ports:
+    # By default, only access via the SSH port and 51820/udp is allowed
+    # The rest of the ports are closed
+    enable_ufw: true
+    ufw_ports:
       - port: "{{ wireguard_port }}"
         proto: "udp"
       - port: "80"
@@ -101,9 +103,3 @@ all:
 
     # Fail2Ban only comes with the SSH jail by default
     enable_fail2ban: true
-
-    pip_install_packages:
-      - name: docker
-
-    docker_users:
-      - "{{ username }}"

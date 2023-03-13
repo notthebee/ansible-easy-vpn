@@ -28,9 +28,9 @@ elif [[ -e /etc/debian_version ]]; then
 elif [[ -e /etc/almalinux-release || -e /etc/rocky-release || -e /etc/centos-release ]]; then
 	os="centos"
 	os_version=$(grep -shoE '[0-9]+' /etc/almalinux-release /etc/rocky-release /etc/centos-release | head -1)
-  if [[ "$os_version" -lt 8 ]]; then
-      echo "Rocky Linux 8 or higher is required to use this installer."
-      echo "This version of Rocky/CentOS is too old and unsupported."
+  if [[ "$os_version" -lt 7 ]]; then
+      echo "CentOS 7 or higher is required to use this installer."
+      echo "This version of CentOS is too old and unsupported."
       exit
   fi
 fi
@@ -52,6 +52,7 @@ install_dependencies_debian() {
   REQUIRED_PACKAGES=(
     sudo
     software-properties-common
+    certbot
     dnsutils
     curl
     git
@@ -61,10 +62,11 @@ install_dependencies_debian() {
     python3
     python3-setuptools
     python3-apt
-    python3-venv
     python3-pip
+    python3-passlib
+    python3-wheel
+    python3-bcrypt
     aptitude
-    direnv
   )
 
   REQUIRED_PACKAGES_ARM64=(
@@ -88,35 +90,30 @@ install_dependencies_debian() {
 }
 
 install_dependencies_centos() {
-  check_root
   REQUIRED_PACKAGES=(
     sudo
+    certbot
     bind-utils
     curl
     git
     rsync
-    https://kojipkgs.fedoraproject.org//vol/fedora_koji_archive02/packages/direnv/2.12.2/1.fc28/x86_64/direnv-2.12.2-1.fc28.x86_64.rpm
+    python3
+    python3-setuptools
+    python3-pip
+    python3-passlib
+    python3-wheel
+    python3-bcrypt
   )
-  if [[ "$os_version" -eq 9 ]]; then
-    REQUIRED_PACKAGES+=(
-      python3
-      python3-setuptools
-      python3-pip
-      python3-firewall
-    )
-  else 
-    REQUIRED_PACKAGES+=(
-      python39
-      python39-setuptools
-      python39-pip
-      python3-firewall
-      kmod-wireguard
-      https://ftp.gwdg.de/pub/linux/elrepo/elrepo/el8/x86_64/RPMS/kmod-wireguard-1.0.20220627-4.el8_7.elrepo.x86_64.rpm
-    )
+
+  if [[ "$os_version" -ge 8 ]]; then
+    $SUDO dnf update -y
+    $SUDO dnf install -y epel-release
+    $SUDO dnf install -y "${REQUIRED_PACKAGES[@]}"
+  elif [[ "$os_version" -eq 7 ]]; then
+    $SUDO yum update -y
+    $SUDO yum install -y epel-release
+    $SUDO yum install -y "${REQUIRED_PACKAGES[@]}"
   fi
-  $SUDO dnf update -y
-  $SUDO dnf install -y epel-release
-  $SUDO dnf install -y "${REQUIRED_PACKAGES[@]}"
 }
 
 
@@ -126,32 +123,15 @@ elif [[ "$os" == "centos" ]]; then
   install_dependencies_centos
 fi
 
+check_root "-H"
+$SUDO pip3 install "cryptography<=36.0.2" "pyOpenSSL<=20.0.1"
+$SUDO pip3 install ansible~=7.1 || $SUDO pip3 install ansible
 
-set +e
-if which python3.9; then
-  PYTHON=$(which python3.9)
-else
-  PYTHON=$(which python3)
-fi
-set -e
-
-cd $HOME/ansible-easy-vpn
-[ -d $HOME/ansible-easy-vpn/.venv ] || $PYTHON -m venv .venv
-export VIRTUAL_ENV="$HOME/ansible-easy-vpn/.venv"
-export PATH="$HOME/ansible-easy-vpn/.venv/bin:$PATH"
-.venv/bin/python3 -m pip install --upgrade pip
-.venv/bin/python3 -m pip install -r requirements.txt
-
+check_root
 # Clone the Ansible playbook
-if [ -d "$HOME/ansible-easy-vpn" ]; then
-  pushd $HOME/ansible-easy-vpn
-  git pull
-  popd
-else
-  git clone https://github.com/notthebee/ansible-easy-vpn $HOME/ansible-easy-vpn
-fi
+[ -d "$HOME/ansible-easy-vpn" ] || git clone https://github.com/notthebee/ansible-easy-vpn $HOME/ansible-easy-vpn
 
-cd $HOME/ansible-easy-vpn && ansible-galaxy install --force -r requirements.yml
+cd $HOME/ansible-easy-vpn && ansible-galaxy install -r requirements.yml
 
 # Check if we're running on an AWS EC2 instance
 set +e
@@ -267,9 +247,9 @@ done
 echo
 echo "Running certbot in dry-run mode to test the validity of the domain..."
 if [[ "$adguard_enable" =~ ^[yY]$ ]]; then
-  $SUDO certbot certonly --non-interactive --break-my-certs --force-renewal --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host -d adguard.$root_host || $SUDO certbot certonly --non-interactive --force-renewal --agree-tos --email root@localhost.com --standalone -d $root_host -d wg.$root_host -d auth.$root_host -d adguard.$root_host || exit
+  $SUDO certbot certonly --non-interactive --break-my-certs --force-renewal --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host -d adguard.$root_host || exit
 else
-  $SUDO certbot certonly --non-interactive --break-my-certs --force-renewal --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host || $SUDO certbot certonly --non-interactive --force-renewal --agree-tos --email root@localhost.com --standalone -d $root_host -d wg.$root_host -d auth.$root_host  || exit
+  $SUDO certbot certonly --non-interactive --break-my-certs --force-renewal --agree-tos --email root@localhost.com --standalone --staging -d $root_host -d wg.$root_host -d auth.$root_host || exit
 fi
 echo "OK"
 

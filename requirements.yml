@@ -2,11 +2,7 @@
 roles:
   - name: chriswayg.msmtp-mailer
     src: https://github.com/chriswayg/ansible-msmtp-mailer
-  - name: geerlingguy.docker
-    src: https://github.com/geerlingguy/ansible-role-docker
-  - name: geerlingguy.pip
-    src: https://github.com/geerlingguy/ansible-role-pip
-
+    version: v0.6.1
 
 collections:
   - name: https://github.com/ansible-collections/community.docker

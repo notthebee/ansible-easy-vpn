@@ -25,13 +25,3 @@
 
 - name: Configure the user account
   ansible.builtin.include_tasks: user.yml
-
-- name: Configure firewalld
-  ansible.builtin.include_tasks: firewall-RedHat.yml
-  when:
-    - ansible_os_family == 'RedHat' and (enable_firewall | default(True))
-
-- name: Configure ufw
-  ansible.builtin.include_tasks: firewall-Debian.yml
-  when:
-    - ansible_os_family == 'Debian' and (enable_firewall | default(True))
