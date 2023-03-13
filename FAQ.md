@@ -20,7 +20,7 @@ Alternatively, your ISP may be blocking the default Wireguard port (51820/udp). 
 
 ```
 cd $HOME/ansible-easy-vpn
-echo 'wireguard_port: 12345` >> custom.yml
+echo 'wireguard_port: "12345"` >> custom.yml
 bash bootstrap.sh
 ```
 
