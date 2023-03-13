@@ -119,6 +119,13 @@ install_dependencies_centos() {
   $SUDO dnf install -y "${REQUIRED_PACKAGES[@]}"
 }
 
+# Install all the dependencies
+if [[ "$os" == "debian" || "$os" == "ubuntu" ]]; then
+  install_dependencies_debian
+elif [[ "$os" == "centos" ]]; then
+  install_dependencies_centos
+fi
+
 # Clone the Ansible playbook
 if [ -d "$HOME/ansible-easy-vpn" ]; then
   pushd $HOME/ansible-easy-vpn
@@ -126,13 +133,6 @@ if [ -d "$HOME/ansible-easy-vpn" ]; then
   popd
 else
   git clone https://github.com/notthebee/ansible-easy-vpn $HOME/ansible-easy-vpn
-fi
-
-# Install all the dependencies
-if [[ "$os" == "debian" || "$os" == "ubuntu" ]]; then
-  install_dependencies_debian
-elif [[ "$os" == "centos" ]]; then
-  install_dependencies_centos
 fi
 
 # Set up a Python venv
