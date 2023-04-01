@@ -424,6 +424,6 @@ if [[ "$launch_playbook" =~ ^[yY]$ ]]; then
   fi
 else
   echo "You can run the playbook by executing the following command"
-  echo "cd ${HOME}/ansible-easy-vpn && ansible-playbook run.yml"
+  echo "cd ${HOME}/ansible-easy-vpn && source ./.venv/bin/activate && ansible-playbook run.yml"
   exit
 fi

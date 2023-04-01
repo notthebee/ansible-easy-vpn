@@ -52,8 +52,6 @@ all:
     # https://docs.oracle.com/cd/E23824_01/html/E26033/glset.html
     locale: en_US.UTF-8
 
-    timezone: Europe/Berlin
-
     # Set the time at which the system should reboot after installing updates (24H format)
     autoupdate_reboot_time: 03:00
 
