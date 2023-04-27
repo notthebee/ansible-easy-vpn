@@ -418,9 +418,9 @@ if [[ "$launch_playbook" =~ ^[yY]$ ]]; then
   if [[ $EUID -ne 0 ]]; then
     echo
     echo "Please enter your current sudo password now"
-    cd $HOME/ansible-easy-vpn && ansible-playbook -K run.yml
+    cd $HOME/ansible-easy-vpn && ansible-playbook -k -K run.yml
   else
-    cd $HOME/ansible-easy-vpn && ansible-playbook run.yml
+    cd $HOME/ansible-easy-vpn && ansible-playbook -k run.yml
   fi
 else
   echo "You can run the playbook by executing this script again"
