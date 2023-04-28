@@ -177,7 +177,7 @@ if [[ "$custom_filled" =~ "custom.yml" ]]; then
   echo "If you want to change something (e.g. username, domain name, etc.)"
   echo "Please edit custom.yml or secret.yml manually, and then re-run this script"
   echo
-  cd $HOME/ansible-easy-vpn && ansible-playbook run.yml
+  cd $HOME/ansible-easy-vpn && ansible-playbook --ask-vault-pass run.yml
   exit 0
 fi
 
@@ -418,12 +418,12 @@ if [[ "$launch_playbook" =~ ^[yY]$ ]]; then
   if [[ $EUID -ne 0 ]]; then
     echo
     echo "Please enter your current sudo password now"
-    cd $HOME/ansible-easy-vpn && ansible-playbook -k -K run.yml
+    cd $HOME/ansible-easy-vpn && ansible-playbook --ask-vault-pass -K run.yml
   else
-    cd $HOME/ansible-easy-vpn && ansible-playbook -k run.yml
+    cd $HOME/ansible-easy-vpn && ansible-playbook --ask-vault-pass run.yml
   fi
 else
-  echo "You can run the playbook by executing this script again"
-  echo "cd ${HOME}/ansible-easy-vpn && bash bootstrap.sh"
+  echo "You can run the playbook by executing the bootstrap script again:"
+  echo "cd ~/ansible-easy-vpn && bash bootstrap.sh"
   exit
 fi
