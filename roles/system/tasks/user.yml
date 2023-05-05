@@ -53,10 +53,11 @@
         dest: "/home/{{ username }}"
 
     - name: Fix the user's venv copy
+      tags:
+        - skip_ansible_lint # risky-pipe-shell confuses sed separators for pipes
       changed_when: true
       ansible.builtin.shell:
         cmd: >-
-          set -o pipefail &&
           cd /home/{{ username }}/ansible-easy-vpn/.venv/bin &&
           sed -i "s|/root/ansible-easy-vpn|/home/{{ username }}/ansible-easy-vpn|g" *
 
