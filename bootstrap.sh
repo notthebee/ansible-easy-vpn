@@ -423,7 +423,7 @@ if [[ "$launch_playbook" =~ ^[yY]$ ]]; then
     cd $HOME/ansible-easy-vpn && ansible-playbook run.yml
   fi
 else
-  echo "You can run the playbook by executing the following command"
-  echo "cd ${HOME}/ansible-easy-vpn && ansible-playbook run.yml"
+  echo "You can run the playbook by running this script again
+  echo "cd ${HOME}/ansible-easy-vpn && bash bootstrap.sh"
   exit
 fi
