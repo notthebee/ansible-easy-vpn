@@ -58,7 +58,7 @@
         cmd: >-
           set -o pipefail &&
           cd /home/{{ username }}/ansible-easy-vpn/.venv/bin &&
-          sed -i "s|/root/ansible-easy-vpn|/home/{{ username }}/ansible-easy-vpn|g" *'
+          sed -i "s|/root/ansible-easy-vpn|/home/{{ username }}/ansible-easy-vpn|g" *
 
     - name: Chmod the ansible-easy-vpn directory
       ansible.builtin.file:
