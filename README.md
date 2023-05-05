@@ -27,8 +27,8 @@ wget https://raw.githubusercontent.com/notthebee/ansible-easy-vpn/main/bootstrap
   * Ubuntu Server 22.04
   * Ubuntu Server 20.04
   * Debian 11
-  * Rocky Linux 9
-  * Rocky Linux 8
+  * ~~Rocky Linux 8~~ – not supported anymore
+  * ~~Rocky Linux 9~~ - not supported anymore
 
 ## Known issues with VPS providers
 Normally, the script should work on any KVM-based VPS.
