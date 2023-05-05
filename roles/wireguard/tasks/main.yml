@@ -42,6 +42,7 @@
     env:
       "WG_HOST": "{{ wireguard_host }}"
       "WG_DEFAULT_DNS": "{{ wg_dns }}"
+      "WG_DEFAULT_ADDRESS": "{{ wireguard_subnet }}"
       "WG_PORT": "{{ wireguard_port }}"
       "WG_PERSISTENT_KEEPALIVE": "25"
     ports:
