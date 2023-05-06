@@ -47,8 +47,3 @@
   ansible.builtin.command:
     cmd: localectl set-locale LANG={{ locale }} LANGUAGE={{ locale }}
   changed_when: locale_lang != locale or locale_language != locale
-
-- name: "Set timezone to {{ timezone }}"
-  community.general.timezone:
-    name: "{{ timezone }}"
-  notify: Restart cron
