@@ -1,5 +1,5 @@
-cryptography<=36.0.2
-pyOpenSSL<=20.0.1
+cryptography
+pyOpenSSL
 certbot
 requests<2.29.2
 passlib 
