@@ -1,3 +1,4 @@
+---
 - name: Create the wg network
   community.general.docker_network:
     name: wg_network

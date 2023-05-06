@@ -30,6 +30,8 @@ all:
 
     wireguard_host: "wg.{{ root_host }}"
 
+    wireguard_subnet: "10.8.0.x"
+
     adguard_host: "adguard.{{ root_host }}"
 
     wireguard_port: "51820"
