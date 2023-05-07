@@ -61,7 +61,7 @@ all:
 
     docker_subnet: "10.8.2.0/24"
 
-    docker_subnet_prefix: "{{ docker_subnet | regex_replace('0/[0-9]{1,2}') }}"
+    docker_subnet_prefix: "{{ docker_subnet | regex_replace('0/[0-9]{1,2}.') }}"
 
     # You can set it to a different port in order to avoid automated scanner bots
     ssh_port: 22
