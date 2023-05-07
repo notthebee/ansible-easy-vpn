@@ -3,7 +3,7 @@
   ansible.builtin.set_fact:
     wg_dns: >-
       {%- if enable_adguard_unbound_doh -%}
-        {%- set wg_dns = "10.8.2.2" -%}
+        {%- set wg_dns = "{{ docker_subnet_prefix }}.2" -%}
       {%- else -%}
         {%- if "cloudflare" in dns_nameservers -%}
           {%- set wg_dns = "1.1.1.1,1.0.0.1" -%}
@@ -31,7 +31,7 @@
     pull: yes
     networks:
       - name: wg_network
-        ipv4_address: 10.8.2.8
+        ipv4_address: "{{ docker_subnet_prefix }}.8"
     sysctls:
       "net.ipv4.conf.all.src_valid_mark": "1"
       "net.ipv4.ip_forward": "1"

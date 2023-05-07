@@ -9,6 +9,11 @@
     # yamllint disable-line
     logging: on
 
+- name: Template the UFW after.rules
+  ansible.builtin.blockinfile:
+    content: "{{ lookup('template', 'templates/ufw/after.rules.j2') }}"
+    dest: /etc/ufw/after.rules
+
 - name: Configure UFW
   block:
     - name: Reset all rules
