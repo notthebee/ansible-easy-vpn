@@ -19,9 +19,7 @@ all:
     enable_passwordless_sudo: yes
 
     # Whether or not you want to generate a public key pair for SSH auth
-    # The playbook will not generate a new pair if $HOME/.ssh/authorized_keys exists and isn't empty
-    enable_ssh_keygen: yes
-
+    # The playbook will not generate a new pair if $HOME/.ssh/authorized_keys exists and isn't empty enable_ssh_keygen: yes
     # Uncomment this line if you already have a public SSH key and put your public key in it
     # This overrides `enable_ssh_keygen`
     # ssh_public_key: ""
@@ -61,7 +59,7 @@ all:
 
     docker_subnet: "10.8.2.0/24"
 
-    docker_subnet_prefix: "{{ docker_subnet | regex_replace('0/[0-9]{1,2}.') }}"
+    docker_subnet_prefix: "{{ docker_subnet | regex_replace('.0/[0-9]{1,2}') }}"
 
     # You can set it to a different port in order to avoid automated scanner bots
     ssh_port: 22
