@@ -9,10 +9,7 @@
     # yamllint disable-line
     logging: on
 
-- name: Template the UFW after.rules
-  ansible.builtin.blockinfile:
-    content: "{{ lookup('template', 'templates/ufw/after.rules.j2') }}"
-    dest: /etc/ufw/after.rules
+
 
 - name: Configure UFW
   block:
@@ -43,3 +40,9 @@
       community.general.ufw:
         state: enabled
         policy: deny
+        
+- name: Template the UFW after.rules
+  ansible.builtin.blockinfile:
+    content: "{{ lookup('template', 'templates/ufw/after.rules.j2') }}"
+    insertbefore: "COMMIT"
+    dest: /etc/ufw/after.rules
