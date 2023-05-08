@@ -50,3 +50,12 @@
     volumes:
       - "{{ docker_dir }}/wg-easy:/etc/wireguard"
     restart_policy: unless-stopped
+
+- name: Allow access to the container via UFW
+  notify: Enable and reload ufw
+  community.general.ufw:
+    rule: allow
+    proto: udp
+    port: "51820"
+    from: any
+    to: "{{ docker_subnet_prefix }}.8"

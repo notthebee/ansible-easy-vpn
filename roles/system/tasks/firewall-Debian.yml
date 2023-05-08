@@ -40,6 +40,7 @@
         policy: deny
         
 - name: Template the UFW after.rules
+  notify: Enable and reload ufw
   ansible.builtin.blockinfile:
     content: "{{ lookup('template', 'templates/ufw/after.rules.j2') }}"
     insertbefore: "COMMIT"

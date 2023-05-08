@@ -92,12 +92,6 @@ all:
 
     enable_firewall: true
     firewall_ports:
-      - port: "{{ wireguard_port }}"
-        proto: "udp"
-      - port: "80"
-        proto: "tcp"
-      - port: "443"
-        proto: "tcp"
       - port: "{{ ssh_port }}"
         proto: "tcp"
 
