@@ -25,5 +25,4 @@
 -A ufw-docker-logging-deny -m limit --limit 3/min --limit-burst 10 -j LOG --log-prefix "[UFW DOCKER BLOCK] "
 -A ufw-docker-logging-deny -j DROP
 
-COMMIT
 # END UFW AND DOCKER
