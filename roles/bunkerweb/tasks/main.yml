@@ -47,6 +47,6 @@
     port: "{{ item }}"
     from: any
     to: "{{ docker_subnet_prefix }}.5"
-  with:
+  loop:
     - 8443
     - 8080
