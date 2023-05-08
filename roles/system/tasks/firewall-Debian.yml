@@ -9,8 +9,6 @@
     # yamllint disable-line
     logging: on
 
-
-
 - name: Configure UFW
   block:
     - name: Reset all rules
@@ -46,3 +44,5 @@
     content: "{{ lookup('template', 'templates/ufw/after.rules.j2') }}"
     insertbefore: "COMMIT"
     dest: /etc/ufw/after.rules
+  notify: 
+    - UFW enable
