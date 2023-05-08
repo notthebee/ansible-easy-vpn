@@ -9,6 +9,6 @@
     name: bunkerweb
     restart: yes
 
-- Enable and reload ufw
+- name: Enable and reload ufw
   community.general.ufw:
     state: enabled
