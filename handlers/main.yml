@@ -8,3 +8,7 @@
   community.general.docker_container:
     name: bunkerweb
     restart: yes
+
+- name: Enable and reload ufw
+  community.general.ufw:
+    state: enabled
