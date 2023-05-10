@@ -27,7 +27,7 @@
     image: "bunkerity/bunkerweb:{{ bunkerweb_version }}"
     networks:
       - name: wg_network
-        ipv4_address: "{{ docker_subnet_prefix }}.5"
+        ipv4_address: 10.8.2.5
     pull: yes
     state: "started"
     env_file: "{{ docker_dir }}/bunkerweb/.env"
@@ -38,15 +38,3 @@
       - "{{ docker_dir }}/bunkerweb/data:/data"
       - "/lib/modules:/lib/modules"
     restart_policy: unless-stopped
-
-- name: Allow access to the container via UFW
-  notify: Enable and reload ufw
-  community.general.ufw:
-    rule: allow
-    proto: tcp
-    port: "{{ item }}"
-    from: any
-    to: "{{ docker_subnet_prefix }}.5"
-  loop:
-    - 8443
-    - 8080

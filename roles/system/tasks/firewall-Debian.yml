@@ -38,12 +38,3 @@
       community.general.ufw:
         state: enabled
         policy: deny
-        
-- name: Template the UFW after.rules
-  notify: Enable and reload ufw
-  ansible.builtin.blockinfile:
-    content: "{{ lookup('template', 'templates/ufw/after.rules.j2') }}"
-    insertbefore: "COMMIT"
-    dest: /etc/ufw/after.rules
-  notify: 
-    - UFW enable

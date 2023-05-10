@@ -3,6 +3,6 @@
   community.general.docker_network:
     name: wg_network
     ipam_config:
-      - subnet: "{{ docker_subnet }}"
-        gateway: "{{ docker_subnet_prefix }}.1"
-        iprange: "{{ docker_subnet }}"
+      - subnet: 10.8.2.0/24
+        gateway: 10.8.2.1
+        iprange: 10.8.2.0/24
