@@ -1,40 +1,26 @@
 ---
-- name: Install UFW
+- name: Install iptables-persistent
   ansible.builtin.package:
-    name: ufw
-    state: present
+    name: iptables-persistent
 
-- name: Enable UFW logging
-  community.general.ufw:
-    # yamllint disable-line
-    logging: on
+- name: Allow related and established connections
+  ansible.builtin.iptables:
+    chain: INPUT
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+  become: yes
 
-- name: Configure UFW
-  block:
-    - name: Reset all rules
-      community.general.ufw:
-        state: reset
+- name: Allow the defined ports
+  ansible.builtin.iptables:
+    chain: INPUT
+    protocol: "{{ item.proto }}"
+    ctstate: NEW
+    destination_port: "{{ item.port }}"
+    jump: ACCEPT
+  with_items:
+    - "{{ firewall_ports }}"
 
-    - name: Allow the defined ports
-      community.general.ufw:
-        rule: allow
-        proto: "{{ item.proto }}"
-        port: "{{ item.port }}"
-      with_items:
-        - "{{ firewall_ports }}"
-
-    - name: Deny everything else and enable UFW
-      community.general.ufw:
-        state: enabled
-        policy: deny
-  rescue:
-    - name: Grant SSH access to prevent lockout
-      community.general.ufw:
-        rule: allow
-        port: "{{ ssh_port }}"
-        proto: "tcp"
-
-    - name: Deny everything else and enable UFW
-      community.general.ufw:
-        state: enabled
-        policy: deny
+- name: Save current state of the firewall in system file
+  community.general.iptables_state:
+    state: saved
+    path: /etc/iptables/rules.v4
