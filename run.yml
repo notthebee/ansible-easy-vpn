@@ -24,6 +24,11 @@
       tags:
         - system
 
+    - role: garutilorenzo.iptables-docker
+      tags:
+        - system
+        - docker
+
     - role: geerlingguy.docker
       tags:
         - docker
