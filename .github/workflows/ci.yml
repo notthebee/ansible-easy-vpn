@@ -209,7 +209,7 @@ jobs:
         run: sshpass -p$EASYVPN_PASSWORD scp root@$SERVER_IPV4:/tmp/id_ssh_ed25519 ~/.ssh/id_vpn
 
       - name: Regsiter the private key with the ssh-agent
-        run: expect -c "spawn ssh-add ~/.ssh/id_vpn; expect -re \"Enter passphrase.*\"; send -- \"$EASYVPN_PASSWORD\r\"; expect -re \"Identity added.*\""
+        run: expect -c "spawn ssh-add $HOME/.ssh/id_vpn; expect -re \"Enter passphrase.*\"; send -- \"$EASYVPN_PASSWORD\r\"; expect -re \"Identity added.*\""
 
       - name: Reboot the server
         run: ssh -t -t $EASYVPN_USERNAME@$SERVER_IPV4 "reboot"
