@@ -216,7 +216,7 @@ jobs:
 
       - name: Wait for the server to reboot
         run: >-
-          sleep 30s
+          sleep 60s
 
       - name: Log into the server and execute the script again for idempotency
         run: >-
