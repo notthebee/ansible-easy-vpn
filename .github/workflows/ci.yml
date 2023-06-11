@@ -212,8 +212,7 @@ jobs:
           spawn ssh $EASYVPN_USERNAME@$SERVER_IPV4 -i ~/.ssh/id_vpn;
           expect \"*Enter passphrase for key*\";
           send -- \"$EASYVPN_PASSWORD\r\";
-          set prompt \"{\$ $}\";
-          expect -re $prompt;
+          expect -re \".*\$$\";
           send reboot\r
           ";
 
@@ -227,10 +226,9 @@ jobs:
           spawn ssh $EASYVPN_USERNAME@$SERVER_IPV4 -i ~/.ssh/id_vpn;
           expect \"*Enter passphrase for key*\";
           send -- \"$EASYVPN_PASSWORD\r\";
-          set prompt \"{\$ $}\";
-          expect -re $prompt;
+          expect -re \".*\$.*$\";
           send -- \"export LETSENCRYPT_STAGING=$LETSENCRYPT_STAGING\";
-          expect -re $prompt;
+          expect -re \".*\$.*$\";
           send -- \"ansible-easy-vpn/testing/expect/idempotency.exp --password $EASYVPN_PASSWORD\"
           ";
         env:
