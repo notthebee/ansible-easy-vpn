@@ -5,4 +5,4 @@ repos:
   hooks:
     - id: ansible-lint
       files: \.(yaml|yml)$
-      entry: ansible-lint . --force-color -v -p
+      entry: ansible-lint .
