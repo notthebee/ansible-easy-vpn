@@ -276,7 +276,7 @@ jobs:
           path: $HOME/.ssh/id_vpn
 
       - name: Set the correct permissions for the SSH key
-        run: >-
+        run: |
           chmod 700 $HOME/.ssh
           chmod 600 $HOME/.ssh/id_vpn
 
