@@ -35,7 +35,7 @@
 - name: Check if the Ansible playbook is copied to the new user directory
   ansible.builtin.stat:
     path: "/home/{{ username }}/ansible-easy-vpn"
-  register: playbook_copied
+  register: system_playbook_copied
 
 - name: Add the direnv hook to {{ username }}`s bashrc
   ansible.builtin.blockinfile:
@@ -45,7 +45,7 @@
       direnv allow $HOME/ansible-easy-vpn
 
 - name: Handle user directory and playbook folder
-  when: not playbook_copied.stat.exists
+  when: not system_playbook_copied.stat.exists
   block:
     - name: Copy the Ansible playbook to the new user
       ansible.posix.synchronize:

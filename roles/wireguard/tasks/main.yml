@@ -1,19 +1,19 @@
 ---
 - name: Switch between encrypted and unencrypted DNS depending on the user choice
   ansible.builtin.set_fact:
-    wg_dns: >-
+    wireguard_dns: >-
       {%- if enable_adguard_unbound_doh -%}
-        {%- set wg_dns = "10.8.2.2" -%}
+        {%- set wireguard_dns = "10.8.2.2" -%}
       {%- else -%}
         {%- if "cloudflare" in dns_nameservers -%}
-          {%- set wg_dns = "1.1.1.1,1.0.0.1" -%}
+          {%- set wireguard_dns = "1.1.1.1,1.0.0.1" -%}
         {%- elif "quad9" in dns_nameservers -%}
-          {%- set wg_dns = "9.9.9.9,149.112.112.112" -%}
+          {%- set wireguard_dns = "9.9.9.9,149.112.112.112" -%}
         {%- else -%}
-          {%- set wg_dns = "8.8.8.8,8.8.4.4" -%}
+          {%- set wireguard_dns = "8.8.8.8,8.8.4.4" -%}
         {%- endif -%}
       {%- endif -%}
-      {{- wg_dns -}}
+      {{- wireguard_dns -}}
 
 - name: Load the iptable_nat module (CentOS)
   when: 'ansible_os_family == "RedHat"'
@@ -41,7 +41,7 @@
     state: "started"
     env:
       "WG_HOST": "{{ wireguard_host }}"
-      "WG_DEFAULT_DNS": "{{ wg_dns }}"
+      "WG_DEFAULT_DNS": "{{ wireguard_dns }}"
       "WG_DEFAULT_ADDRESS": "{{ wireguard_subnet }}"
       "WG_PORT": "{{ wireguard_port }}"
       "WG_PERSISTENT_KEEPALIVE": "25"
