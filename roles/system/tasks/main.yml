@@ -1,7 +1,4 @@
 ---
-- name: Configure the system
-  ansible.builtin.include_tasks: essential.yml
-
 - name: Update the packages and configure auto-updates
   ansible.builtin.include_tasks: setup.yml
 

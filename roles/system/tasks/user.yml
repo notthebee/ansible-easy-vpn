@@ -1,15 +1,15 @@
 ---
 - name: Ensure the root group exists
   ansible.builtin.group:
-    name: "{{ sudo_group }}"
+    name: "root"
     state: present
 
 - name: Allow sudo group to have passwordless sudo
   ansible.builtin.lineinfile:
     path: /etc/sudoers
     state: present
-    regexp: "^%{{ sudo_group }}"
-    line: "%{{ sudo_group }} ALL=(ALL) NOPASSWD: ALL"
+    regexp: "^%root"
+    line: "%root ALL=(ALL) NOPASSWD: ALL"
     validate: "/usr/sbin/visudo -cf %s"
   when: enable_passwordless_sudo | default(False)
 
@@ -19,7 +19,7 @@
     name: "{{ username }}"
     password: "{{ user_password | string | password_hash('sha512') }}"
     groups:
-      - "{{ sudo_group }}"
+      - root
       - users
     state: present
     append: true
