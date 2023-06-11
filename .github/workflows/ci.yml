@@ -138,7 +138,7 @@ jobs:
           hcloud-token: ${{ secrets.HCLOUD_TOKEN }}
           delete-server: false
 
-      - name: Add the private key to the ssh-agent
+      - name: Add the host key to known hosts
         run: mkdir -p ~/.ssh/ && ssh-keyscan -H $SERVER_IPV4 >> ~/.ssh/known_hosts
 
       - name: Update apt cache
@@ -146,6 +146,8 @@ jobs:
 
       - name: Install git and expect (Debian-based)
         run: ssh root@$SERVER_IPV4 apt install -y git expect wamerican
+
+
 
       - uses: infraway/create-dns-record@v2.0
         with:
@@ -206,15 +208,11 @@ jobs:
       - name: Copy the private key from the Hetzner host
         run: sshpass -p$EASYVPN_PASSWORD scp root@$SERVER_IPV4:/tmp/id_ssh_ed25519 ~/.ssh/id_vpn
 
+      - name: Regsiter the private key with the ssh-agent
+        run: expect -c "spawn ssh-add ~/.ssh/id_vpn; expect -re \"Enter passphrase.*\"; send -- \"$EASYVPN_PASSWORD\r\"; expect -re \"Identity added.*\""
+
       - name: Reboot the server
-        run: >-
-          expect -c "
-          spawn ssh $EASYVPN_USERNAME@$SERVER_IPV4 -i ~/.ssh/id_vpn;
-          expect \"*Enter passphrase for key*\";
-          send -- \"$EASYVPN_PASSWORD\r\";
-          expect -re \".*\$$\";
-          send reboot\r
-          ";
+        run: ssh -t -t $EASYVPN_USERNAME@$SERVER_IPV4 "reboot"
 
       - name: Wait for the server to reboot
         run: >-
@@ -222,15 +220,7 @@ jobs:
 
       - name: Log into the server and execute the script again for idempotency
         run: >-
-          expect -c "
-          spawn ssh $EASYVPN_USERNAME@$SERVER_IPV4 -i ~/.ssh/id_vpn;
-          expect \"*Enter passphrase for key*\";
-          send -- \"$EASYVPN_PASSWORD\r\";
-          expect -re \".*\$.*$\";
-          send -- \"export LETSENCRYPT_STAGING=$LETSENCRYPT_STAGING\";
-          expect -re \".*\$.*$\";
-          send -- \"ansible-easy-vpn/testing/expect/idempotency.exp --password $EASYVPN_PASSWORD\"
-          ";
+          ssh -t -t $EASYVPN_USERNAME@$SERVER_IPV4 "export LETSENCRYPT_STAGING=$LETSENCRYPT_STAGING; ansible-easy-vpn/testing/expect/idempotency.exp --password $EASYVPN_PASSWORD"
         env:
           LETSENCRYPT_STAGING: ${{ needs.matrix_prep.outputs.letsencrypt_staging }}
 
