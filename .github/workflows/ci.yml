@@ -291,6 +291,8 @@ jobs:
 
       - name: Regsiter the private key with the ssh-agent
         run: expect -c "spawn ssh-add $HOME/.ssh/id_vpn; expect -re \"Enter passphrase.*\"; send -- \"$EASYVPN_PASSWORD\r\"; expect -re \"Identity added.*\""
+        env:
+          EASYVPN_PASSWORD: "${{ needs.build.outputs[format('EASYVPN_PASSWORD_{0}', matrix.index)] }}"
 
       - name: Remove Chrome
         run: sudo apt purge google-chrome-stable
