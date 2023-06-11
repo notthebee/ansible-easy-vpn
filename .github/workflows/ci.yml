@@ -277,7 +277,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: private-ssh-key
-          path: /home/runner/.ssh/id_vpn
+          path: /home/runner/.ssh
 
       - name: Set the correct permissions for the SSH key
         run: |
