@@ -219,6 +219,9 @@ jobs:
         run: >-
           sleep 60s
 
+      - name: Copy the private key to the Github root
+        run: cp $HOME/.ssh/id_vpn id_vpn
+        
       - name: Log into the server and execute the script again for idempotency
         run: >-
           ssh -t -t $EASYVPN_USERNAME@$SERVER_IPV4 "export LETSENCRYPT_STAGING=$LETSENCRYPT_STAGING; ansible-easy-vpn/testing/expect/idempotency.exp --password $EASYVPN_PASSWORD"
@@ -233,7 +236,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: private-ssh-key
-          path: $HOME/.ssh/id_vpn
+          path: id_vpn
 
 
     outputs:
@@ -262,11 +265,20 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Create the .ssh folder
+        run: >-
+          mkdir $HOME/.ssh
+
       - name: Get the private SSH key artifact
         uses: actions/download-artifact@v3
         with:
           name: private-ssh-key
           path: $HOME/.ssh/id_vpn
+
+      - name: Set the correct permissions for the SSH key
+        run: >-
+          chmod 700 $HOME/.ssh
+          chmod 600 $HOME/.ssh/id_vpn
 
       - name: Initialize the ssh-agent
         uses: webfactory/ssh-agent@v0.4.1
