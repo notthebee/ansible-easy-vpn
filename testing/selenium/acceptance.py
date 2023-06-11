@@ -14,6 +14,9 @@ import pexpect
 import logging
 import argparse
 
+
+service = Service(executable_path=r'/snap/bin/chromium.chromedriver')
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--username', type=str, metavar="username")
 parser.add_argument('--password', type=str, metavar="password")
@@ -34,7 +37,7 @@ options = [
 for option in options:
     chrome_options.add_argument(option)
 
-driver = webdriver.Chrome('/snap/bin/chromium.chromedriver', options=chrome_options)
+driver = webdriver.Chrome(service=service, options=chrome_options)
 
 logger = logging.getLogger('ansible-easy-vpn')
 logging.basicConfig()
@@ -68,7 +71,7 @@ def register_2fa(driver, base_url, username, password):
     s.login(base_url, username, password)
     s.sendline('sudo show_2fa')
     s.prompt()
-    
+
     # Convert output to utf-8 due to pexpect weirdness
     notification = '\r\n'.join(s.before.decode('utf-8').splitlines()[1:])
     print(notification)
