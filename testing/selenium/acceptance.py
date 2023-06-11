@@ -68,7 +68,7 @@ def register_2fa(driver, base_url, username, password):
     logger.debug("Getting the notifications.txt from the server")
 
     s = pxssh.pxssh()
-    s.login(base_url, username, password)
+    s.login(base_url, username)
     s.sendline('sudo show_2fa')
     s.prompt()
 

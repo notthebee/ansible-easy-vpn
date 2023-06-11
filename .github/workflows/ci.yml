@@ -229,6 +229,12 @@ jobs:
         run: sleep infinity
         if: inputs.manual_mode
 
+      - name: Archive the private SSH key
+        uses: actions/upload-artifact@v3
+        with:
+          name: private-ssh-key
+          path: $HOME/.ssh/id_vpn
+
 
     outputs:
       EASYVPN_USERNAME_1: "${{ steps.random_username.outputs.EASYVPN_USERNAME_1 }}"
@@ -255,6 +261,20 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: "3.10"
+
+      - name: Get the private SSH key artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: private-ssh-key
+          path: $HOME/.ssh/id_vpn
+
+      - name: Initialize the ssh-agent
+        uses: webfactory/ssh-agent@v0.4.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Regsiter the private key with the ssh-agent
+        run: expect -c "spawn ssh-add $HOME/.ssh/id_vpn; expect -re \"Enter passphrase.*\"; send -- \"$EASYVPN_PASSWORD\r\"; expect -re \"Identity added.*\""
 
       - name: Remove Chrome
         run: sudo apt purge google-chrome-stable
