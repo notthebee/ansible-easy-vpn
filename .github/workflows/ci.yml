@@ -2,7 +2,7 @@
 name: CI
 run-name: ansible-easy-vpn Testing
 on:
-  push: 
+  push:
   pull_request_review:
   workflow_dispatch:
     inputs:
@@ -206,16 +206,33 @@ jobs:
       - name: Copy the private key from the Hetzner host
         run: sshpass -p$EASYVPN_PASSWORD scp root@$SERVER_IPV4:/tmp/id_ssh_ed25519 ~/.ssh/id_vpn
 
-      - name: Log into the server
+      - name: Reboot the server
         run: >-
-          expect -c "spawn ssh $EASYVPN_USERNAME@$SERVER_IPV4 -i ~/.ssh/id_vpn; expect \"*Enter passphrase for key*\"; send -- \"$EASYVPN_PASSWORD\r\""
+          expect -c "
+          spawn ssh $EASYVPN_USERNAME@$SERVER_IPV4 -i ~/.ssh/id_vpn;
+          expect \"*Enter passphrase for key*\";
+          send -- \"$EASYVPN_PASSWORD\r\";
+          set prompt {\$ $};
+          expect -re $prompt;
+          send reboot\r
+          ";
 
-      - name: Execute the script again to check idempotency
+      - name: Wait for the server to reboot
         run: >-
-          sshpass -p$EASYVPN_PASSWORD ssh -t -t $EASYVPN_USERNAME@$SERVER_IPV4
-          "export LETSENCRYPT_STAGING=$LETSENCRYPT_STAGING &&
-          ansible-easy-vpn/testing/expect/idempotency.exp
-          --password $EASYVPN_PASSWORD"
+          sleep 30s
+
+      - name: Log into the server and execute the script again for idempotency
+        run: >-
+          expect -c "
+          spawn ssh $EASYVPN_USERNAME@$SERVER_IPV4 -i ~/.ssh/id_vpn;
+          expect \"*Enter passphrase for key*\";
+          send -- \"$EASYVPN_PASSWORD\r\";
+          set prompt {\$ $};
+          expect -re $prompt;
+          send -- \"export LETSENCRYPT_STAGING=$LETSENCRYPT_STAGING\";
+          expect -re $prompt;
+          send -- \"ansible-easy-vpn/testing/expect/idempotency.exp --password $EASYVPN_PASSWORD\"
+          ";
         env:
           LETSENCRYPT_STAGING: ${{ needs.matrix_prep.outputs.letsencrypt_staging }}
 
