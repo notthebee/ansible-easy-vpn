@@ -267,13 +267,13 @@ jobs:
 
       - name: Create the .ssh folder
         run: >-
-          mkdir $HOME/.ssh
+          mkdir /home/runner/.ssh
 
       - name: Get the private SSH key artifact
         uses: actions/download-artifact@v3
         with:
           name: private-ssh-key
-          path: $HOME/.ssh/id_vpn
+          path: /home/runner/.ssh/id_vpn
 
       - name: Set the correct permissions for the SSH key
         run: |
