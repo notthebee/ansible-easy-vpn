@@ -212,7 +212,7 @@ jobs:
         run: expect -c "spawn ssh-add $HOME/.ssh/id_vpn; expect -re \"Enter passphrase.*\"; send -- \"$EASYVPN_PASSWORD\r\"; expect -re \"Identity added.*\""
 
       - name: Reboot the server
-        run: ssh -t -t $EASYVPN_USERNAME@$SERVER_IPV4 "reboot"
+        run: ssh -t -t $EASYVPN_USERNAME@$SERVER_IPV4 "sudo reboot"
 
       - name: Wait for the server to reboot
         run: >-
