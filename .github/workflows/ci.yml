@@ -212,7 +212,7 @@ jobs:
           spawn ssh $EASYVPN_USERNAME@$SERVER_IPV4 -i ~/.ssh/id_vpn;
           expect \"*Enter passphrase for key*\";
           send -- \"$EASYVPN_PASSWORD\r\";
-          set prompt {\$ $};
+          set prompt \"{\$ $}\";
           expect -re $prompt;
           send reboot\r
           ";
@@ -227,7 +227,7 @@ jobs:
           spawn ssh $EASYVPN_USERNAME@$SERVER_IPV4 -i ~/.ssh/id_vpn;
           expect \"*Enter passphrase for key*\";
           send -- \"$EASYVPN_PASSWORD\r\";
-          set prompt {\$ $};
+          set prompt \"{\$ $}\";
           expect -re $prompt;
           send -- \"export LETSENCRYPT_STAGING=$LETSENCRYPT_STAGING\";
           expect -re $prompt;
