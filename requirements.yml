@@ -9,7 +9,6 @@ roles:
   - name: garutilorenzo.iptables-docker
     src: https://github.com/notthebee/iptables-docker
 
-
 collections:
   - name: https://github.com/ansible-collections/community.docker
     type: git
