@@ -6,8 +6,6 @@ roles:
     src: https://github.com/geerlingguy/ansible-role-docker
   - name: geerlingguy.pip
     src: https://github.com/geerlingguy/ansible-role-pip
-  - name: garutilorenzo.iptables-docker
-    src: https://github.com/notthebee/iptables-docker
 
 collections:
   - name: https://github.com/ansible-collections/community.docker

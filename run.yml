@@ -1,6 +1,5 @@
 #!/usr/bin/env ansible-playbook
 ---
-
 - name: Install and configure ansible-easy-vpn
   hosts: all
   become: true
@@ -23,11 +22,6 @@
     - role: system
       tags:
         - system
-
-    - role: garutilorenzo.iptables-docker
-      tags:
-        - system
-        - docker
 
     - role: geerlingguy.docker
       tags:

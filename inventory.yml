@@ -89,19 +89,15 @@ all:
       - desc: "Allow Wireguard"
         proto: udp
         port: "{{ wireguard_port }}"
-        from: 0.0.0.0/0
       - desc: "Allow HTTP"
         proto: tcp
         port: "80"
-        from: 0.0.0.0/0
       - desc: "Allow HTTPS"
         proto: tcp
         port: "443"
-        from: 0.0.0.0/0
       - desc: "Allow SSH"
         proto: tcp
         port: "{{ ssh_port }}"
-        from: 0.0.0.0/0
 
     # Fail2Ban only comes with the SSH jail by default
     enable_fail2ban: true
