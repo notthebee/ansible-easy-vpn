@@ -35,7 +35,7 @@
       ansible.builtin.pause:
         prompt: |
           Almost done! Make sure to test your SSH connection in a new terminal window:
-          ssh -p {{ ssh_port }} {{ username }}@{{ ssh_ipify_public_ip }} -i .ssh/path-to-your-key
+          ssh -p {{ ssh_port }} {{ username }}@{{ ipify_public_ip }} -i .ssh/path-to-your-key
 
           After ensuring that it works, return to this terminal window and press [Enter]
           Your system will {{ ssh_notify_action }}. You will be logged out automatically
@@ -58,11 +58,11 @@
 
           2. Type the following commands:
           cd
-          scp -P 22 root@{{ ssh_ipify_public_ip }}:/tmp/id_ssh_ed25519 .ssh/id_vpn_{{ username }}
+          scp -P 22 root@{{ ipify_public_ip }}:/tmp/id_ssh_ed25519 .ssh/id_vpn_{{ username }}
 
           3. Test the SSH key by typing this command:
-          ssh -p 22 {{ username }}@{{ ssh_ipify_public_ip }} -i .ssh/id_vpn_{{ username }}
-          Make sure the password prompt says `Enter passphrase for key` and not `{{ username }}@{{ ssh_ipify_public_ip }} password`
+          ssh -p 22 {{ username }}@{{ ipify_public_ip }} -i .ssh/id_vpn_{{ username }}
+          Make sure the password prompt says `Enter passphrase for key` and not `{{ username }}@{{ ipify_public_ip }} password`
 
           4. After that's done, return to this terminal window and press [Enter].
           Your system will {{ ssh_notify_action }}. You will be logged out automatically
@@ -79,7 +79,7 @@
         prompt: |
 
           Almost done! Make sure to test your SSH connection in a new terminal window:
-          ssh -p {{ ssh_port }} {{ username }}@{{ ssh_ipify_public_ip }} -i ~/.ssh/path-to-your-key
+          ssh -p {{ ssh_port }} {{ username }}@{{ ipify_public_ip }} -i ~/.ssh/path-to-your-key
 
           After ensuring that it works, return to this terminal window and press [Enter]
           Your system will {{ ssh_notify_action }}. You will be logged out automatically
