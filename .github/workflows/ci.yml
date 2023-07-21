@@ -310,7 +310,7 @@ jobs:
         run: pip install webdriver-manager selenium pyotp pexpect
 
       - name: Run the testing script
-        run: python testing/selenium/acceptance.py --username $EASYVPN_USERNAME --password $EASYVPN_PASSWORD --base_url $DOMAIN
+        run: python testing/selenium/acceptance.py --username $EASYVPN_USERNAME --password $EASYVPN_PASSWORD --base_url $DOMAIN --ssh_agent $SSH_AUTH_SOCK
         env:
           EASYVPN_USERNAME: "${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}"
           EASYVPN_PASSWORD: "${{ needs.build.outputs[format('EASYVPN_PASSWORD_{0}', matrix.index)] }}"

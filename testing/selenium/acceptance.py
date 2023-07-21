@@ -9,6 +9,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from time import sleep
 import pyotp
 from pexpect import pxssh
+import getpass
 import re
 import pexpect
 import logging
@@ -21,6 +22,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--username', type=str, metavar="username")
 parser.add_argument('--password', type=str, metavar="password")
 parser.add_argument('--base_url', type=str, metavar="base_url")
+parser.add_argument('--ssh_agent', type=str, metavar="ssh_agent")
 
 args = parser.parse_args()
 
@@ -67,7 +69,7 @@ def register_2fa(driver, base_url, username, password):
 
     logger.debug("Getting the notifications.txt from the server")
 
-    s = pxssh.pxssh()
+    s = pxssh.pxssh(options={'IdentityAgent': ssh_agent})
     s.login(base_url, username)
     s.sendline('sudo show_2fa')
     s.prompt()

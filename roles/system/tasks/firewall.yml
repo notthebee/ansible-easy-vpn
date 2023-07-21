@@ -10,7 +10,7 @@
 - name: Copy the iptables systemd service
   ansible.builtin.copy:
     src: files/iptables.service
-    dest: /etc/system/system/iptables.service
+    dest: /etc/systemd/system/iptables.service
     owner: root
     group: root
     mode: "0644"
