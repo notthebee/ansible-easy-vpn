@@ -25,6 +25,9 @@
   community.general.docker_container:
     name: "bunkerweb"
     image: "bunkerity/bunkerweb:{{ bunkerweb_version }}"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      start_period: 10s
     networks:
       - name: wg_network
         ipv4_address: 10.8.2.5

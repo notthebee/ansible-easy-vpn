@@ -27,12 +27,15 @@
   notify: Restart authelia
 
 - name: Make sure the Redis container is created and running
-  register: redis_result
+  register: authelia_redis_result
   retries: 5
-  until: redis_result is succeeded
+  until: authelia_redis_result is succeeded
   community.general.docker_container:
     name: "redis"
     image: "redis:alpine"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      start_period: 5s
     networks:
       - name: wg_network
         ipv4_address: 10.8.2.3
@@ -47,6 +50,9 @@
   community.general.docker_container:
     name: "authelia"
     image: "authelia/authelia:{{ authelia_version }}"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091"]
+      start_period: 10s
     networks:
       - name: wg_network
         ipv4_address: 10.8.2.4

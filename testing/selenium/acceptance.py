@@ -9,19 +9,26 @@ from selenium.webdriver.common.action_chains import ActionChains
 from time import sleep
 import pyotp
 from pexpect import pxssh
+import getpass
 import re
 import pexpect
 import logging
 import argparse
 
+
+service = Service(executable_path=r'/snap/bin/chromium.chromedriver')
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--username', type=str, metavar="username")
 parser.add_argument('--password', type=str, metavar="password")
 parser.add_argument('--base_url', type=str, metavar="base_url")
+parser.add_argument('--ssh_agent', type=str, metavar="ssh_agent")
 
 args = parser.parse_args()
 
 chrome_options = Options()
+prefs = {"download.default_directory" : "/home/runner"}
+chrome_options.add_experimental_option("prefs",prefs)
 options = [
     "--headless",
     "--disable-gpu",
@@ -34,14 +41,14 @@ options = [
 for option in options:
     chrome_options.add_argument(option)
 
-driver = webdriver.Chrome('/snap/bin/chromium.chromedriver', options=chrome_options)
+driver = webdriver.Chrome(service=service, options=chrome_options)
 
 logger = logging.getLogger('ansible-easy-vpn')
 logging.basicConfig()
 logger.setLevel(logging.DEBUG)
 
 
-def register_2fa(driver, base_url, username, password):
+def register_2fa(driver, base_url, username, password, ssh_agent):
     logger.debug("Fetching {}".format(base_url))
     driver.get("https://wg.{}".format(base_url))
     sleep(0.5)
@@ -64,11 +71,11 @@ def register_2fa(driver, base_url, username, password):
 
     logger.debug("Getting the notifications.txt from the server")
 
-    s = pxssh.pxssh()
-    s.login(base_url, username, password)
+    s = pxssh.pxssh(options={'IdentityAgent': ssh_agent})
+    s.login(base_url, username)
     s.sendline('sudo show_2fa')
     s.prompt()
-    
+
     # Convert output to utf-8 due to pexpect weirdness
     notification = '\r\n'.join(s.before.decode('utf-8').splitlines()[1:])
     print(notification)
@@ -102,24 +109,24 @@ def register_2fa(driver, base_url, username, password):
 def download_wg_config(driver, base_url, client):
     logger.debug("Opening wg.{} in the browser".format(base_url))
     driver.get("https://wg.{}".format(base_url))
-    sleep(0.5)
+    sleep(2)
     logger.debug("Clicking on the 'New Client' button")
     new_client_button = driver.find_element("xpath", "//*[contains(text(), 'New Client')]")
     new_client_button.click()
-    sleep(0.5)
+    sleep(2)
     logger.debug("Filling out the 'Name' field with {}".format(client))
     name_field = driver.find_element("xpath", "//input[@placeholder='Name']")
     name_field.send_keys(client)
-    sleep(0.5)
+    sleep(2)
     logger.debug("Clicking on 'Create'")
     create_button = driver.find_element("xpath", "//*[contains(text(), 'Create')]")
     create_button.click()
-    sleep(0.5)
+    sleep(2)
     logger.debug("Downloading the configuration")
     download_config = driver.find_element("xpath", "//a[@title='Download Configuration']")
     download_config.click()
 
     return
 
-register_2fa(driver, args.base_url, args.username, args.password)
+register_2fa(driver, args.base_url, args.username, args.password, args.ssh_agent)
 download_wg_config(driver, args.base_url, args.username)

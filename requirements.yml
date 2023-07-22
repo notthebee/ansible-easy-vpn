@@ -7,7 +7,6 @@ roles:
   - name: geerlingguy.pip
     src: https://github.com/geerlingguy/ansible-role-pip
 
-
 collections:
   - name: https://github.com/ansible-collections/community.docker
     type: git

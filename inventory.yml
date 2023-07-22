@@ -49,11 +49,6 @@ all:
     # adguard.your_domain.com to set it up.
     enable_adguard_unbound_doh: false
 
-    # Language and time settings
-    # Check here for the list of possible locales
-    # https://docs.oracle.com/cd/E23824_01/html/E26033/glset.html
-    locale: en_US.UTF-8
-
     # Set the time at which the system should reboot after installing updates (24H format)
     autoupdate_reboot_time: 03:00
 
@@ -88,16 +83,21 @@ all:
 
     msmtp_alias_default: "{{ email }}"
 
-    enable_firewall: true
-    firewall_ports:
-      - port: "{{ wireguard_port }}"
-        proto: "udp"
-      - port: "80"
-        proto: "tcp"
-      - port: "443"
-        proto: "tcp"
-      - port: "{{ ssh_port }}"
-        proto: "tcp"
+    ssh_allow_cidr: 0.0.0.0/0
+
+    iptables_allow_rules:
+      - desc: "Allow Wireguard"
+        proto: udp
+        port: "{{ wireguard_port }}"
+      - desc: "Allow HTTP"
+        proto: tcp
+        port: "80"
+      - desc: "Allow HTTPS"
+        proto: tcp
+        port: "443"
+      - desc: "Allow SSH"
+        proto: tcp
+        port: "{{ ssh_port }}"
 
     # Fail2Ban only comes with the SSH jail by default
     enable_fail2ban: true

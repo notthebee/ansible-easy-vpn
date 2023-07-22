@@ -2,9 +2,9 @@
 - name: Get public IP
   community.general.ipify_facts:
     timeout: 20
-  register: ipify_result
+  register: ssh_ipify_result
   retries: 5
-  until: "ipify_result is not failed"
+  until: "ssh_ipify_result is not failed"
   delay: 2
 
 - name: Restart sshd
@@ -18,17 +18,17 @@
     - name: Schedule a reboot if required
       ansible.builtin.stat:
         path: /var/run/reboot-required
-      register: reboot_required
+      register: ssh_reboot_required
 
     - name: Specify the action after user input
       ansible.builtin.set_fact:
-        notify_action: "reboot to install the kernel updates"
-      when: reboot_required.stat.exists
+        ssh_notify_action: "reboot to install the kernel updates"
+      when: ssh_reboot_required.stat.exists
 
     - name: Specify the action after user input
       ansible.builtin.set_fact:
-        notify_action: "restart the SSH daemon to apply its settings"
-      when: not reboot_required.stat.exists
+        ssh_notify_action: "restart the SSH daemon to apply its settings"
+      when: not ssh_reboot_required.stat.exists
 
     - name: Display user instructions
       when: aws
@@ -38,7 +38,7 @@
           ssh -p {{ ssh_port }} {{ username }}@{{ ipify_public_ip }} -i .ssh/path-to-your-key
 
           After ensuring that it works, return to this terminal window and press [Enter]
-          Your system will {{ notify_action }}. You will be logged out automatically
+          Your system will {{ ssh_notify_action }}. You will be logged out automatically
 
           After a couple of minutes, you should be able to login to Wireguard WebUI in using your username and password
           http://{{ wireguard_host }}
@@ -65,7 +65,7 @@
           Make sure the password prompt says `Enter passphrase for key` and not `{{ username }}@{{ ipify_public_ip }} password`
 
           4. After that's done, return to this terminal window and press [Enter].
-          Your system will {{ notify_action }}. You will be logged out automatically
+          Your system will {{ ssh_notify_action }}. You will be logged out automatically
 
           5. After a couple of minutes, you should be able to login to Wireguard WebUI in using your username and password
           http://{{ wireguard_host }}
@@ -82,7 +82,7 @@
           ssh -p {{ ssh_port }} {{ username }}@{{ ipify_public_ip }} -i ~/.ssh/path-to-your-key
 
           After ensuring that it works, return to this terminal window and press [Enter]
-          Your system will {{ notify_action }}. You will be logged out automatically
+          Your system will {{ ssh_notify_action }}. You will be logged out automatically
 
           After a couple of minutes, you should be able to login to Wireguard WebUI in using your username and password
           http://{{ wireguard_host }}

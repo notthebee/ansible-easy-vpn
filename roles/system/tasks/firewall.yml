@@ -1,0 +1,22 @@
+---
+- name: Template the iptables rules
+  ansible.builtin.template:
+    src: iptables.conf
+    dest: /etc/iptables.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Copy the iptables systemd service
+  ansible.builtin.copy:
+    src: files/iptables.service
+    dest: /etc/systemd/system/iptables.service
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Enable and start the iptables service
+  ansible.builtin.service:
+    name: iptables
+    state: started
+    enabled: yes

@@ -51,6 +51,9 @@
   community.docker.docker_container:
     name: adguard-unbound-doh
     image: adguard-unbound-doh
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      start_period: 10s
     networks:
       - name: wg_network
         ipv4_address: 10.8.2.2

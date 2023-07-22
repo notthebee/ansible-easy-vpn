@@ -2,8 +2,8 @@
 - name: Check if there's authorized_keys
   ansible.builtin.stat:
     path: /home/{{ username }}/.ssh/authorized_keys
-  register: authorized_keys
-  changed_when: (not authorized_keys.stat.exists) or (authorized_keys.stat.size == 0)
+  register: ssh_authorized_keys
+  changed_when: (not ssh_authorized_keys.stat.exists) or (ssh_authorized_keys.stat.size == 0)
 
 - name: Create the SSH directory
   ansible.builtin.file:
@@ -14,7 +14,7 @@
     mode: 0700
 
 - name: Generate and install a public key pair
-  when: (not authorized_keys.stat.exists or authorized_keys.stat.size == 0) and not (ssh_public_key is defined) and not aws
+  when: (not ssh_authorized_keys.stat.exists or ssh_authorized_keys.stat.size == 0) and not (ssh_public_key is defined) and not aws
   block:
     - name: Generate an SSH key pair
       community.crypto.openssh_keypair:
@@ -67,5 +67,5 @@
       line: "X11Forwarding no"
 
 - name: Notify user about changes
-  when: (ssh_config.changed or authorized_keys.changed)
+  when: (ssh_config.changed or ssh_authorized_keys.changed)
   ansible.builtin.import_tasks: notify_user.yml
