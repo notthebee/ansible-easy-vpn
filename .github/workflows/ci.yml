@@ -208,6 +208,13 @@ jobs:
       - name: Copy the private key from the Hetzner host
         run: sshpass -p$EASYVPN_PASSWORD scp root@$SERVER_IPV4:/tmp/id_ssh_ed25519 ~/.ssh/id_vpn
 
+      - name: Initialize the ssh-agent
+        uses: webfactory/ssh-agent@v0.4.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+
+
       - name: Regsiter the private key with the ssh-agent
         run: expect -c "spawn ssh-add $HOME/.ssh/id_vpn; expect -re \"Enter passphrase.*\"; send -- \"$EASYVPN_PASSWORD\r\"; expect -re \"Identity added.*\""
 
@@ -319,8 +326,10 @@ jobs:
           chmod 700 $HOME/.ssh
           chmod 600 $HOME/.ssh/*
 
-      - name: Initialize the ssh-agent
         uses: webfactory/ssh-agent@v0.4.1
+        with:
+          ssh-private-key: "
+
 
       - name: Regsiter the private key with the ssh-agent
         run: expect -c "spawn ssh-add $HOME/.ssh/id_vpn; expect -re \"Enter passphrase.*\"; send -- \"$EASYVPN_PASSWORD\r\"; expect -re \"Identity added.*\""
