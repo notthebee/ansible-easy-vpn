@@ -233,21 +233,21 @@ jobs:
         if: inputs.manual_mode
 
       - name: Archive the private SSH key (Matrix 1)
-        if: matrix.index == "1"
+        if: ${{ matrix.index == "1" }}
         uses: actions/upload-artifact@v3
         with:
           name: "private-ssh-key-1"
           path: "id_vpn"
 
       - name: Archive the private SSH key (Matrix 2)
-        if: matrix.index == "2"
+        if: ${{ matrix.index == "2" }}
         uses: actions/upload-artifact@v3
         with:
           name: "private-ssh-key-2"
           path: "id_vpn"
 
       - name: Archive the private SSH key (Matrix 3)
-        if: matrix.index == "3"
+        if: ${{ matrix.index == "3" }}
         uses: actions/upload-artifact@v3
         with:
           name: "private-ssh-key-3"
