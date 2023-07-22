@@ -232,13 +232,30 @@ jobs:
         run: sleep infinity
         if: inputs.manual_mode
 
-      - name: Archive the private SSH key
+      - name: Archive the private SSH key (Matrix 1)
+        if: matrix.index == "1"
         uses: actions/upload-artifact@v3
         with:
-          name: "private-ssh-key-{{ INDEX }}"
-          path: "id_vpn-{{ INDEX }}"
-        env:
-          INDEX: ${{ matrix.index }}
+          name: "private-ssh-key-1"
+          path: "id_vpn"
+
+      - name: Archive the private SSH key (Matrix 2)
+        if: matrix.index == "2"
+        uses: actions/upload-artifact@v3
+        with:
+          name: "private-ssh-key-2"
+          path: "id_vpn"
+
+      - name: Archive the private SSH key (Matrix 3)
+        if: matrix.index == "3"
+        uses: actions/upload-artifact@v3
+        with:
+          name: "private-ssh-key-3"
+          path: "id_vpn"
+
+
+
+
 
 
 
@@ -276,14 +293,26 @@ jobs:
         run: >-
           mkdir /home/runner/.ssh
 
-      - name: Get the private SSH key artifact
+      - name: Get the private SSH key artifact (Matrix 1)
+        if: matrix.index == "1"
         uses: actions/download-artifact@v3
         with:
-          name: "private-ssh-key-{{ INDEX }}"
+          name: "private-ssh-key-1"
           path: /home/runner/.ssh
-        env:
-          INDEX: ${{ matrix.index }}
 
+      - name: Get the private SSH key artifact (Matrix 2)
+        if: matrix.index == "2"
+        uses: actions/download-artifact@v3
+        with:
+          name: "private-ssh-key-2"
+          path: /home/runner/.ssh
+
+      - name: Get the private SSH key artifact (Matrix 3)
+        if: matrix.index == "3"
+        uses: actions/download-artifact@v3
+        with:
+          name: "private-ssh-key-3"
+          path: /home/runner/.ssh
 
       - name: Set the correct permissions for the SSH key
         run: |
@@ -294,10 +323,9 @@ jobs:
         uses: webfactory/ssh-agent@v0.4.1
 
       - name: Regsiter the private key with the ssh-agent
-        run: expect -c "spawn ssh-add $HOME/.ssh/id_vpn-$INDEX; expect -re \"Enter passphrase.*\"; send -- \"$EASYVPN_PASSWORD\r\"; expect -re \"Identity added.*\""
+        run: expect -c "spawn ssh-add $HOME/.ssh/id_vpn; expect -re \"Enter passphrase.*\"; send -- \"$EASYVPN_PASSWORD\r\"; expect -re \"Identity added.*\""
         env:
           EASYVPN_PASSWORD: "${{ needs.build.outputs[format('EASYVPN_PASSWORD_{0}', matrix.index)] }}"
-          INDEX: ${{ matrix.index }}
 
       - name: Remove Chrome
         run: sudo apt purge google-chrome-stable
