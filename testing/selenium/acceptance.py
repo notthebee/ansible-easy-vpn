@@ -46,7 +46,7 @@ logging.basicConfig()
 logger.setLevel(logging.DEBUG)
 
 
-def register_2fa(driver, base_url, username, password):
+def register_2fa(driver, base_url, username, password, ssh_agent):
     logger.debug("Fetching {}".format(base_url))
     driver.get("https://wg.{}".format(base_url))
     sleep(0.5)
@@ -126,5 +126,5 @@ def download_wg_config(driver, base_url, client):
 
     return
 
-register_2fa(driver, args.base_url, args.username, args.password)
+register_2fa(driver, args.base_url, args.username, args.password, args.ssh_agent)
 download_wg_config(driver, args.base_url, args.username)
