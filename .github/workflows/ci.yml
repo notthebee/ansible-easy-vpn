@@ -365,10 +365,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: "wg-config-${{ matrix.index }}"
-          path: "/home/runner/wireguard/${{ EASYVPN_USERNAME }}.conf"
-        env:
-          EASYVPN_USERNAME: "${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}"
-
+          path: "/home/runner/wireguard/${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}.conf"
 
   connect:
     runs-on: ubuntu-latest
