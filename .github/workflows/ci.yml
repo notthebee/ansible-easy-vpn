@@ -235,8 +235,11 @@ jobs:
       - name: Archive the private SSH key
         uses: actions/upload-artifact@v3
         with:
-          name: private-ssh-key
-          path: id_vpn
+          name: "private-ssh-key-{{ INDEX }}"
+          path: "id_vpn-{{ INDEX }}"
+        env:
+          INDEX: ${{ matrix.index }}
+
 
 
     outputs:
@@ -276,23 +279,25 @@ jobs:
       - name: Get the private SSH key artifact
         uses: actions/download-artifact@v3
         with:
-          name: private-ssh-key
+          name: "private-ssh-key-{{ INDEX }}"
           path: /home/runner/.ssh
+        env:
+          INDEX: ${{ matrix.index }}
+
 
       - name: Set the correct permissions for the SSH key
         run: |
           chmod 700 $HOME/.ssh
-          chmod 600 $HOME/.ssh/id_vpn
+          chmod 600 $HOME/.ssh/*
 
       - name: Initialize the ssh-agent
         uses: webfactory/ssh-agent@v0.4.1
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Regsiter the private key with the ssh-agent
-        run: expect -c "spawn ssh-add $HOME/.ssh/id_vpn; expect -re \"Enter passphrase.*\"; send -- \"$EASYVPN_PASSWORD\r\"; expect -re \"Identity added.*\""
+        run: expect -c "spawn ssh-add $HOME/.ssh/id_vpn-$INDEX; expect -re \"Enter passphrase.*\"; send -- \"$EASYVPN_PASSWORD\r\"; expect -re \"Identity added.*\""
         env:
           EASYVPN_PASSWORD: "${{ needs.build.outputs[format('EASYVPN_PASSWORD_{0}', matrix.index)] }}"
+          INDEX: ${{ matrix.index }}
 
       - name: Remove Chrome
         run: sudo apt purge google-chrome-stable
