@@ -361,32 +361,14 @@ jobs:
           EASYVPN_PASSWORD: "${{ needs.build.outputs[format('EASYVPN_PASSWORD_{0}', matrix.index)] }}"
           DOMAIN: "${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
 
-      - name: Archive the wireguard configuration (Matrix 1)
-        if: ${{ matrix.index == '1' }}
+      - name: Archive the wireguard configuration
         uses: actions/upload-artifact@v3
         with:
-          name: "wg-config-1"
-          path: "/home/runner/wireguard/$EASYVPN_USERNAME.conf"
+          name: "wg-config-${{ matrix.index }}"
+          path: "/home/runner/wireguard/${{ EASYVPN_USERNAME }}.conf"
         env:
           EASYVPN_USERNAME: "${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}"
 
-      - name: Archive the wireguard configuration (Matrix 2)
-        if: ${{ matrix.index == '2' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: "wg-config-2"
-          path: "/home/runner/wireguard/$EASYVPN_USERNAME.conf"
-        env:
-          EASYVPN_USERNAME: "${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}"
-
-      - name: Archive the wireguard configuration (Matrix 3)
-        if: ${{ matrix.index == '3' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: "wg-config-3"
-          path: "/home/runner/wireguard/$EASYVPN_USERNAME.conf"
-        env:
-          EASYVPN_USERNAME: "${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}"
 
   connect:
     runs-on: ubuntu-latest
