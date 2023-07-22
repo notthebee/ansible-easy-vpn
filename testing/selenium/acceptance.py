@@ -27,6 +27,8 @@ parser.add_argument('--ssh_agent', type=str, metavar="ssh_agent")
 args = parser.parse_args()
 
 chrome_options = Options()
+prefs = {"download.default_directory" : "/home/runner"}
+chrome_options.add_experimental_option("prefs",prefs)
 options = [
     "--headless",
     "--disable-gpu",

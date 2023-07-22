@@ -274,7 +274,7 @@ jobs:
       EASYVPN_PASSWORD_2: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_2 }}"
       EASYVPN_PASSWORD_3: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_3 }}"
 
-  test:
+  fetch_config:
     runs-on: ubuntu-latest
     environment: cicd
     strategy:
@@ -351,12 +351,115 @@ jobs:
       - name: Install all necessary packages
         run: pip install webdriver-manager selenium pyotp pexpect
 
+      - name: Create the config dir
+        run: mkdir /home/runner/wireguard
+
       - name: Run the testing script
         run: python testing/selenium/acceptance.py --username $EASYVPN_USERNAME --password $EASYVPN_PASSWORD --base_url $DOMAIN --ssh_agent $SSH_AUTH_SOCK
         env:
           EASYVPN_USERNAME: "${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}"
           EASYVPN_PASSWORD: "${{ needs.build.outputs[format('EASYVPN_PASSWORD_{0}', matrix.index)] }}"
           DOMAIN: "${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
+
+      - name: Archive the wireguard configuration (Matrix 1)
+        if: ${{ matrix.index == '1' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: "wg-config-1"
+          path: "/home/runner/wireguard/$EASYVPN_USERNAME.conf"
+        env:
+          EASYVPN_USERNAME: "${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}"
+
+      - name: Archive the wireguard configuration (Matrix 2)
+        if: ${{ matrix.index == '2' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: "wg-config-2"
+          path: "/home/runner/wireguard/$EASYVPN_USERNAME.conf"
+        env:
+          EASYVPN_USERNAME: "${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}"
+
+      - name: Archive the wireguard configuration (Matrix 3)
+        if: ${{ matrix.index == '3' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: "wg-config-3"
+          path: "/home/runner/wireguard/$EASYVPN_USERNAME.conf"
+        env:
+          EASYVPN_USERNAME: "${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}"
+
+  connect:
+    runs-on: ubuntu-latest
+    environment: cicd
+    needs:
+      - build
+      - fetch_config
+    steps:
+      - name: Install wireguard
+        run: sudo apt update && sudo apt install wireguard wireguard-tools
+
+      - name: Get the wireguard config artifact (Matrix 1)
+        if: matrix.index == '1'
+        uses: actions/download-artifact@v3
+        with:
+          name: "wg-config-1"
+          path: /home/runner
+
+      - name: Get the wireguard config artifact (Matrix 2)
+        if: matrix.index == '2'
+        uses: actions/download-artifact@v3
+        with:
+          name: "wg-config-2"
+          path: /home/runner
+
+      - name: Get the wireguard config artifact (Matrix 3)
+        if: matrix.index == '3'
+        uses: actions/download-artifact@v3
+        with:
+          name: "wg-config-3"
+          path: /home/runner
+
+      - name: Copy the artifacts in place
+        run: cp /home/runner/*.conf /etc/wireguard
+
+      - name: Test configuration 1
+        run: wg-quick up $EASYVPN_USERNAME
+        env:
+          EASYVPN_USERNAME: "${{ needs.build.outputs[format('EASYVPN_USERNAME_1')] }}"
+
+      - name: Get public IP
+        run: "curl https://ipinfo.io/ip"
+
+      - name: Disconnect configuration 1
+        run: wg-quick down $EASYVPN_USERNAME
+        env:
+          EASYVPN_USERNAME: "${{ needs.build.outputs[format('EASYVPN_USERNAME_1')] }}"
+
+      - name: Test configuration 2
+        run: wg-quick up $EASYVPN_USERNAME
+        env:
+          EASYVPN_USERNAME: "${{ needs.build.outputs[format('EASYVPN_USERNAME_2')] }}"
+
+      - name: Get public IP
+        run: "curl https://ipinfo.io/ip"
+
+      - name: Disconnect configuration 2
+        run: wg-quick down $EASYVPN_USERNAME
+        env:
+          EASYVPN_USERNAME: "${{ needs.build.outputs[format('EASYVPN_USERNAME_2')] }}"
+
+      - name: Test configuration 3
+        run: wg-quick up $EASYVPN_USERNAME
+        env:
+          EASYVPN_USERNAME: "${{ needs.build.outputs[format('EASYVPN_USERNAME_3')] }}"
+
+      - name: Get public IP
+        run: "curl https://ipinfo.io/ip"
+
+      - name: Disconnect configuration 3
+        run: wg-quick down $EASYVPN_USERNAME
+        env:
+          EASYVPN_USERNAME: "${{ needs.build.outputs[format('EASYVPN_USERNAME_3')] }}"
 
   destroy:
     runs-on: ubuntu-latest
@@ -368,7 +471,8 @@ jobs:
     needs:
       - matrix_prep
       - build
-      - test
+      - fetch_config
+      - connect
     steps:
       - name: Destroy the Hetzner instances
         run: >-
