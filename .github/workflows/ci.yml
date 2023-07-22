@@ -186,6 +186,8 @@ jobs:
 
       - name: Clone the branch to the Hetzner instance
         run: ssh root@$SERVER_IPV4 git clone https://github.com/notthebee/ansible-easy-vpn -b ${{ github.head_ref || github.ref_name }}
+        env:
+          GIT_SSL_NO_VERIFY: "true"
 
       - name: Execute the automated bootstrap script
         run: >-
