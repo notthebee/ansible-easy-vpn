@@ -109,7 +109,7 @@ def register_2fa(driver, base_url, username, password, ssh_agent):
 def download_wg_config(driver, base_url, client):
     logger.debug("Opening wg.{} in the browser".format(base_url))
     driver.get("https://wg.{}".format(base_url))
-    sleep(0.5)
+    sleep(2)
     logger.debug("Clicking on the 'New Client' button")
     new_client_button = driver.find_element("xpath", "//*[contains(text(), 'New Client')]")
     new_client_button.click()
