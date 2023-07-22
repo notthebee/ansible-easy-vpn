@@ -294,21 +294,21 @@ jobs:
           mkdir /home/runner/.ssh
 
       - name: Get the private SSH key artifact (Matrix 1)
-        if: matrix.index == "1"
+        if: matrix.index == '1'
         uses: actions/download-artifact@v3
         with:
           name: "private-ssh-key-1"
           path: /home/runner/.ssh
 
       - name: Get the private SSH key artifact (Matrix 2)
-        if: matrix.index == "2"
+        if: matrix.index == '2'
         uses: actions/download-artifact@v3
         with:
           name: "private-ssh-key-2"
           path: /home/runner/.ssh
 
       - name: Get the private SSH key artifact (Matrix 3)
-        if: matrix.index == "3"
+        if: matrix.index == '3'
         uses: actions/download-artifact@v3
         with:
           name: "private-ssh-key-3"
