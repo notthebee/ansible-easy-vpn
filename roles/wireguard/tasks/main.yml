@@ -45,6 +45,7 @@
       "WG_DEFAULT_ADDRESS": "{{ wireguard_subnet }}"
       "WG_PORT": "{{ wireguard_port }}"
       "WG_PERSISTENT_KEEPALIVE": "25"
+      "WG_ALLOWED_IPS": "{{ wireguard_client_allowed_ips }}"
     ports:
       - "{{ wireguard_port }}:51820/udp"
     volumes:
