@@ -1,30 +1,31 @@
 #!/usr/bin/env python3
 
+from pexpect import pxssh
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from time import sleep
-import pyotp
-from pexpect import pxssh
-import re
-import logging
+
 import argparse
+import logging
+import pyotp
+import re
 
 
-service = Service(executable_path=r'/snap/bin/chromium.chromedriver')
+service = Service(executable_path=r"/snap/bin/chromium.chromedriver")
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--username', type=str, metavar="username")
-parser.add_argument('--password', type=str, metavar="password")
-parser.add_argument('--base_url', type=str, metavar="base_url")
-parser.add_argument('--ssh_agent', type=str, metavar="ssh_agent")
+parser.add_argument("--username", type=str, metavar="username")
+parser.add_argument("--password", type=str, metavar="password")
+parser.add_argument("--base_url", type=str, metavar="base_url")
+parser.add_argument("--ssh_agent", type=str, metavar="ssh_agent")
 
 args = parser.parse_args()
 
 chrome_options = Options()
-prefs = {"download.default_directory" : "/home/runner"}
-chrome_options.add_experimental_option("prefs",prefs)
+prefs = {"download.default_directory": "/home/runner"}
+chrome_options.add_experimental_option("prefs", prefs)
 options = [
     "--headless",
     "--disable-gpu",
@@ -32,14 +33,14 @@ options = [
     "--ignore-certificate-errors",
     "--disable-extensions",
     "--no-sandbox",
-    "--disable-dev-shm-usage"
+    "--disable-dev-shm-usage",
 ]
 for option in options:
     chrome_options.add_argument(option)
 
 driver = webdriver.Chrome(service=service, options=chrome_options)
 
-logger = logging.getLogger('ansible-easy-vpn')
+logger = logging.getLogger("ansible-easy-vpn")
 logging.basicConfig()
 logger.setLevel(logging.DEBUG)
 
@@ -67,23 +68,23 @@ def register_2fa(driver, base_url, username, password, ssh_agent):
 
     logger.debug("Getting the notifications.txt from the server")
 
-    s = pxssh.pxssh(options={'IdentityAgent': ssh_agent})
+    s = pxssh.pxssh(options={"IdentityAgent": ssh_agent})
     s.login(base_url, username)
-    s.sendline('sudo show_2fa')
+    s.sendline("sudo show_2fa")
     s.prompt()
 
     # Convert output to utf-8 due to pexpect weirdness
-    notification = '\r\n'.join(s.before.decode('utf-8').splitlines()[1:])
+    notification = "\r\n".join(s.before.decode("utf-8").splitlines()[1:])
     print(notification)
 
-    token = re.search('token=(.*)', notification).group(1)
+    token = re.search("token=(.*)", notification).group(1)
     driver.get(f"https://auth.{base_url}/one-time-password/register?token={token}")
     sleep(2)
     secret_field = driver.find_element("id", "secret-url")
     secret_field = secret_field.get_attribute("value")
     logger.debug("Scraping the TOTP secret")
 
-    secret = re.search('secret=(.*)', secret_field).group(1)
+    secret = re.search("secret=(.*)", secret_field).group(1)
 
     totp = pyotp.TOTP(secret)
     totp.now()
@@ -101,6 +102,7 @@ def register_2fa(driver, base_url, username, password, ssh_agent):
     logger.debug("We're in!")
     sleep(1)
     return
+
 
 def download_wg_config(driver, base_url, client):
     logger.debug(f"Opening wg.{base_url} in the browser")
@@ -123,6 +125,7 @@ def download_wg_config(driver, base_url, client):
     download_config.click()
 
     return
+
 
 register_2fa(driver, args.base_url, args.username, args.password, args.ssh_agent)
 download_wg_config(driver, args.base_url, args.username)
