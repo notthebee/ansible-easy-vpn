@@ -45,14 +45,14 @@ logger.setLevel(logging.DEBUG)
 
 
 def register_2fa(driver, base_url, username, password, ssh_agent):
-    logger.debug("Fetching {}".format(base_url))
-    driver.get("https://wg.{}".format(base_url))
+    logger.debug(f"Fetching {base_url}")
+    driver.get(f"https://wg.{base_url}")
     sleep(0.5)
-    logger.debug("Filling out the username field with {}".format(username))
+    logger.debug(f"Filling out the username field with {username}")
     username_field = driver.find_element("id", "username-textfield")
     username_field.send_keys(username)
     sleep(0.5)
-    logger.debug("Filling out the password field with {}".format(password))
+    logger.debug(f"Filling out the password field with {password}")
     password_field = driver.find_element("id", "password-textfield")
     password_field.send_keys(password)
     sleep(0.5)
@@ -77,7 +77,7 @@ def register_2fa(driver, base_url, username, password, ssh_agent):
     print(notification)
 
     token = re.search('token=(.*)', notification).group(1)
-    driver.get("https://auth.{}/one-time-password/register?token={}".format(base_url, token))
+    driver.get(f"https://auth.{base_url}/one-time-password/register?token={token}")
     sleep(2)
     secret_field = driver.find_element("id", "secret-url")
     secret_field = secret_field.get_attribute("value")
@@ -103,14 +103,14 @@ def register_2fa(driver, base_url, username, password, ssh_agent):
     return
 
 def download_wg_config(driver, base_url, client):
-    logger.debug("Opening wg.{} in the browser".format(base_url))
-    driver.get("https://wg.{}".format(base_url))
+    logger.debug(f"Opening wg.{base_url} in the browser")
+    driver.get(f"https://wg.{base_url}")
     sleep(2)
     logger.debug("Clicking on the 'New Client' button")
     new_client_button = driver.find_element("xpath", "//*[contains(text(), 'New Client')]")
     new_client_button.click()
     sleep(2)
-    logger.debug("Filling out the 'Name' field with {}".format(client))
+    logger.debug(f"Filling out the 'Name' field with {client}")
     name_field = driver.find_element("xpath", "//input[@placeholder='Name']")
     name_field.send_keys(client)
     sleep(2)
