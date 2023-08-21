@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 
 from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from time import sleep
 import pyotp
 from pexpect import pxssh
-import getpass
 import re
-import pexpect
 import logging
 import argparse
 
