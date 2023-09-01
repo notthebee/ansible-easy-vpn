@@ -16,7 +16,7 @@ wget https://notthebe.ee/vpn -O bootstrap.sh && bash bootstrap.sh
 * Two-factor authentication for the WebUI (Authelia)
 * Hardened web server (Bunkerweb)
 * Encrypted DNS resolution with optional ad-blocking functionality (Adguard Home, DNSCrypt and Unbound)
-* UFW and Fail2Ban
+* IPTables firewall with sane defaults and Fail2Ban
 * Automated and unattended upgrades
 * SSH hardening and public key pair generation (optional, you can also use your own keys)
 * E-mail notifications (using an external SMTP server, e.g. GMail)
