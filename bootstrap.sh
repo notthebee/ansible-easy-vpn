@@ -65,6 +65,7 @@ install_dependencies_debian() {
     python3-pip
     aptitude
     direnv
+    iptables
   )
 
   REQUIRED_PACKAGES_ARM64=(
