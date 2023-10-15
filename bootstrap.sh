@@ -393,7 +393,12 @@ else
   echo "email_password: \"${email_password}\"" >> $HOME/ansible-easy-vpn/secret.yml
 fi
 
-echo "user_password: \"${user_password}\"" >> $HOME/ansible-easy-vpn/secret.yml
+if [[ $user_password =~ '"' ]]; then
+  echo "user_password: '${user_password}'" >> $HOME/ansible-easy-vpn/secret.yml
+else
+  echo "user_password: \"${user_password}\"" >> $HOME/ansible-easy-vpn/secret.yml
+fi
+
 
 jwt_secret=$(openssl rand -hex 23)
 session_secret=$(openssl rand -hex 23)
