@@ -119,7 +119,7 @@ You will need to go to the control panel/WebUI of your VPS and add a new firewal
 
 ### Q: Opened ports on Oracle Instance but can't register domain
 
-A: You need install firewalld and allow ports.
+A: You need to install firewalld and allow ports.
 
 ```
 sudo apt install firewalld
