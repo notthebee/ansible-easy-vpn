@@ -9,7 +9,7 @@
 * [When I try to copy the SSH key to my Windows machine, I get an error](#q-when-i-try-to-copy-the-ssh-key-to-my-windows-machine-i-get-an-error)
 * [I've lost my second factor device. How do I reset the 2FA?](#q-ive-lost-my-second-factor-device-how-do-i-reset-the-2fa)
 * [I can't access the Internet after connecting to the Wireguard server](#q-i-cant-access-the-internet-after-connecting-to-the-wireguard-server)
-* [Opened ports on Oracle Instance but can't register domain](#q-opened-ports-onoracleinstance-but-cant-register-domain)
+* [Opened ports on Oracle Instance but can't register domain](#q-opened-ports-on-oracle-instance-but-cant-register-domain)
 
 ### Q: I can connect to the VPN, but can't access the Internet
 
