@@ -24,6 +24,12 @@ on:
         type: boolean
         default: false
 
+      only_debian_12:
+        description: "Only run on Debian 12"
+        required: false
+        type: boolean
+        default: false
+
       manual_mode:
         description: "Don't destroy the server after the setup is complete"
         required: false
@@ -70,6 +76,9 @@ jobs:
           elif [[ ${ONLY_DEBIAN_11} == 'true' ]]; then
             # Only deploy on Debian 11, don't use Letsencrypt Staging
             matrix=$(jq 'map(. | select((.os=="debian-11")) )' .github/workflows/matrix_includes.json)
+          elif [[ ${ONLY_DEBIAN_12} == 'true' ]]; then
+            # Only deploy on Debian 11, don't use Letsencrypt Staging
+            matrix=$(jq 'map(. | select((.os=="debian-12")) )' .github/workflows/matrix_includes.json)
           else
             # Deploy on all supported OSes, use Letsencrypt Staging to avoid rate-limiting
             matrix=$(jq 'map(.)' .github/workflows/matrix_includes.json)
@@ -80,6 +89,7 @@ jobs:
           ONLY_UBUNTU_22: ${{ inputs.only_ubuntu_22 }}
           ONLY_UBUNTU_20: ${{ inputs.only_ubuntu_20 }}
           ONLY_DEBIAN_11: ${{ inputs.only_debian_11 }}
+          ONLY_DEBIAN_11: ${{ inputs.only_debian_12 }}
 
   build:
     runs-on: ubuntu-latest
@@ -120,6 +130,10 @@ jobs:
             "3")
             echo "EASYVPN_USERNAME_3=$EASYVPN_USERNAME" >> $GITHUB_OUTPUT
             echo "EASYVPN_PASSWORD_3=$EASYVPN_PASSWORD" >> $GITHUB_OUTPUT
+            ;;
+            "4")
+            echo "EASYVPN_USERNAME_4=$EASYVPN_USERNAME" >> $GITHUB_OUTPUT
+            echo "EASYVPN_PASSWORD_4=$EASYVPN_PASSWORD" >> $GITHUB_OUTPUT
             ;;
             *)
             exit 1
@@ -272,9 +286,11 @@ jobs:
       EASYVPN_USERNAME_1: "${{ steps.random_username.outputs.EASYVPN_USERNAME_1 }}"
       EASYVPN_USERNAME_2: "${{ steps.random_username.outputs.EASYVPN_USERNAME_2 }}"
       EASYVPN_USERNAME_3: "${{ steps.random_username.outputs.EASYVPN_USERNAME_3 }}"
+      EASYVPN_USERNAME_4: "${{ steps.random_username.outputs.EASYVPN_USERNAME_4 }}"
       EASYVPN_PASSWORD_1: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_1 }}"
       EASYVPN_PASSWORD_2: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_2 }}"
       EASYVPN_PASSWORD_3: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_3 }}"
+      EASYVPN_PASSWORD_4: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_4 }}"
 
   fetch_config:
     runs-on: ubuntu-latest

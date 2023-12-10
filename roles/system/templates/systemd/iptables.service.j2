@@ -4,7 +4,7 @@ Before=network-pre.target
 
 [Service]
 Type=oneshot
-ExecStart=/sbin/iptables-restore -n /etc/iptables.conf
+ExecStart={{ iptables_restore.stdout }} -n /etc/iptables.conf
 
 [Install]
 WantedBy=multi-user.target
