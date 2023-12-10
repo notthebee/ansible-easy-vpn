@@ -2,7 +2,7 @@
 - name: Make sure Watchtower is created and running
   register: watchtower_result
   retries: 5
-  until: authelia_result is succeeded
+  until: watchtower_result is succeeded
   community.general.docker_container:
     name: "watchtower"
     image: "containrrr/watchtower"
