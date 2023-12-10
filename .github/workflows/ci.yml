@@ -276,6 +276,15 @@ jobs:
           name: "private-ssh-key-3"
           path: "id_vpn"
 
+      - name: Archive the private SSH key (Matrix 4)
+        if: ${{ matrix.index == '4' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: "private-ssh-key-4"
+          path: "id_vpn"
+
+
+
 
 
 
@@ -338,6 +347,15 @@ jobs:
         with:
           name: "private-ssh-key-3"
           path: /home/runner/.ssh
+
+      - name: Get the private SSH key artifact (Matrix 4)
+        if: matrix.index == '4'
+        uses: actions/download-artifact@v3
+        with:
+          name: "private-ssh-key-4"
+          path: /home/runner/.ssh
+
+
 
       - name: Set the correct permissions for the SSH key
         run: |
