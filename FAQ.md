@@ -9,6 +9,7 @@
 * [When I try to copy the SSH key to my Windows machine, I get an error](#q-when-i-try-to-copy-the-ssh-key-to-my-windows-machine-i-get-an-error)
 * [I've lost my second factor device. How do I reset the 2FA?](#q-ive-lost-my-second-factor-device-how-do-i-reset-the-2fa)
 * [I can't access the Internet after connecting to the Wireguard server](#q-i-cant-access-the-internet-after-connecting-to-the-wireguard-server)
+* [Opened ports on Oracle Instance but can't register domain](#q-opened-ports-on-oracle-instance-but-cant-register-domain)
 
 ### Q: I can connect to the VPN, but can't access the Internet
 
@@ -115,3 +116,17 @@ bash bootstrap.sh
 A: Most likely, your VPS features a firewall that is enabled by default and blocks access on non-standard ports. 
 
 You will need to go to the control panel/WebUI of your VPS and add a new firewall rule to open the Wireguard port (51820/udp by default).
+
+### Q: Opened ports on Oracle Instance but can't register domain
+
+A: You need to install firewalld and allow ports.
+
+```
+sudo apt install firewalld
+```
+
+```
+sudo firewall-cmd --permanent --zone=public --add-port=80/tcp
+sudo firewall-cmd --permanent --zone=public --add-port=443/tcp
+sudo firewall-cmd --permanent --zone=public --add-port=51820/udp
+```
