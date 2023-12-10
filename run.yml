@@ -41,6 +41,10 @@
       tags:
         - dns
 
+    - role: watchtower
+      tags:
+        - watchtower
+
     - role: authelia
       tags:
         - authelia
