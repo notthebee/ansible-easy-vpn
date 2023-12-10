@@ -6,6 +6,7 @@ warn_list:
   - package-latest
   - yaml
   - fqcn
+  - var-naming[no-role-prefix]
 skip_list:
   - command-instead-of-shell
   - experimental
