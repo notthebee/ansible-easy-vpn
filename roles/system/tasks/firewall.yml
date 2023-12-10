@@ -10,7 +10,7 @@
 - name: Check the location of iptables-restore
   register: "iptables_restore"
   changed_when: no
-  failed_when: "iptables_restore is ''"
+  failed_when: "iptables_restore.stdout | length == 0"
   ansible.builtin.command:
     cmd: "which iptables-restore"
 
