@@ -89,7 +89,7 @@ jobs:
           ONLY_UBUNTU_22: ${{ inputs.only_ubuntu_22 }}
           ONLY_UBUNTU_20: ${{ inputs.only_ubuntu_20 }}
           ONLY_DEBIAN_11: ${{ inputs.only_debian_11 }}
-          ONLY_DEBIAN_11: ${{ inputs.only_debian_12 }}
+          ONLY_DEBIAN_12: ${{ inputs.only_debian_12 }}
 
   build:
     runs-on: ubuntu-latest
