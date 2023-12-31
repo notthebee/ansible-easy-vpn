@@ -110,7 +110,7 @@ def download_wg_config(driver, base_url, client):
     logger.debug(f"Opening wg.{base_url} in the browser")
     try:
         driver.get(f"https://wg.{base_url}")
-    except WebDriverException:
+    except:
         mkdir("screenshots")
         driver.save_screenshot("screenshots/ss.png")
         exit(0)
