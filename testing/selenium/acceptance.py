@@ -49,7 +49,12 @@ logger.setLevel(logging.DEBUG)
 
 def register_2fa(driver, base_url, username, password, ssh_agent):
     logger.debug(f"Fetching wg.{base_url}")
-    driver.get(f"https://wg.{base_url}")
+    try:
+        driver.get(f"https://wg.{base_url}")
+    except:
+        mkdir("screenshots")
+        driver.save_screenshot("screenshots/ss.png")
+        exit(1)
     sleep(0.5)
     logger.debug(f"Filling out the username field with {username}")
     username_field = driver.find_element("id", "username-textfield")
@@ -108,12 +113,7 @@ def register_2fa(driver, base_url, username, password, ssh_agent):
 
 def download_wg_config(driver, base_url, client):
     logger.debug(f"Opening wg.{base_url} in the browser")
-    try:
-        driver.get(f"https://wg.{base_url}")
-    except:
-        mkdir("screenshots")
-        driver.save_screenshot("screenshots/ss.png")
-        exit(0)
+    driver.get(f"https://wg.{base_url}")
     sleep(2)
     logger.debug("Clicking on the 'New Client' button")
     new_client_button = driver.find_element("xpath", "//*[contains(text(), 'New Client')]")
