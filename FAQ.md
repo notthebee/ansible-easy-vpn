@@ -8,7 +8,6 @@
 * [I'd like to completely automate the process of setting up the VPN on my machines. How can I do that?](#q-id-like-to-completely-automate-the-process-of-setting-up-the-vpn-on-my-machines-how-can-i-do-that)
 * [When I try to copy the SSH key to my Windows machine, I get an error](#q-when-i-try-to-copy-the-ssh-key-to-my-windows-machine-i-get-an-error)
 * [I've lost my second factor device. How do I reset the 2FA?](#q-ive-lost-my-second-factor-device-how-do-i-reset-the-2fa)
-* [I can't access the Internet after connecting to the Wireguard server](#q-i-cant-access-the-internet-after-connecting-to-the-wireguard-server)
 
 ### Q: I can connect to the VPN, but can't access the Internet
 
@@ -109,9 +108,3 @@ sudo rm -rf /opt/docker/authelia
 cd $HOME/ansible-easy-vpn
 bash bootstrap.sh
 ```
-
-### Q: I can't access the Internet after connecting to the Wireguard server
-
-A: Most likely, your VPS features a firewall that is enabled by default and blocks access on non-standard ports. 
-
-You will need to go to the control panel/WebUI of your VPS and add a new firewall rule to open the Wireguard port (51820/udp by default).
