@@ -1,0 +1,13 @@
+---
+- name: Make sure Watchtower is created and running
+  register: watchtower_result
+  retries: 5
+  until: watchtower_result is succeeded
+  community.general.docker_container:
+    name: "watchtower"
+    image: "containrrr/watchtower"
+    pull: yes
+    state: "started"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    restart_policy: unless-stopped

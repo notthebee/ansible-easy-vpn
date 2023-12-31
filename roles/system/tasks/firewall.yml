@@ -7,9 +7,16 @@
     group: root
     mode: "0644"
 
-- name: Copy the iptables systemd service
-  ansible.builtin.copy:
-    src: files/iptables.service
+- name: Check the location of iptables-restore
+  register: "iptables_restore"
+  changed_when: no
+  failed_when: "iptables_restore.stdout | length == 0"
+  ansible.builtin.command:
+    cmd: "which iptables-restore"
+
+- name: Template the iptables systemd service
+  ansible.builtin.template:
+    src: systemd/iptables.service.j2
     dest: /etc/systemd/system/iptables.service
     owner: root
     group: root

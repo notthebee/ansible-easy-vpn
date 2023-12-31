@@ -27,7 +27,7 @@
   until: wireguard_result is succeeded
   community.general.docker_container:
     name: "wg-easy"
-    image: "weejewel/wg-easy:{{ wg_easy_version }}"
+    image: "ghcr.io/wg-easy/wg-easy:{{ wg_easy_version }}"
     pull: yes
     networks:
       - name: wg_network

@@ -7,6 +7,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from time import sleep
 
+from os import mkdir
 import argparse
 import logging
 import pyotp
@@ -46,7 +47,7 @@ logger.setLevel(logging.DEBUG)
 
 
 def register_2fa(driver, base_url, username, password, ssh_agent):
-    logger.debug(f"Fetching {base_url}")
+    logger.debug(f"Fetching wg.{base_url}")
     driver.get(f"https://wg.{base_url}")
     sleep(0.5)
     logger.debug(f"Filling out the username field with {username}")

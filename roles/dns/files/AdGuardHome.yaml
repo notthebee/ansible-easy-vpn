@@ -14,11 +14,11 @@ dns:
     - 0.0.0.0
   port: 53
   statistics_interval: 1
-  querylog_enabled: true
-  querylog_file_enabled: true
+  querylog_enabled: false
+  querylog_file_enabled: false
   querylog_interval: 2160h
   querylog_size_memory: 1000
-  anonymize_client_ip: false
+  anonymize_client_ip: true
   protection_enabled: true
   blocking_mode: default
   blocking_ipv4: ""
