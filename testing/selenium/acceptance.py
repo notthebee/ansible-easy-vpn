@@ -5,7 +5,6 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.common.exceptions import WebDriverException
 from time import sleep
 
 from os import mkdir
@@ -49,12 +48,7 @@ logger.setLevel(logging.DEBUG)
 
 def register_2fa(driver, base_url, username, password, ssh_agent):
     logger.debug(f"Fetching wg.{base_url}")
-    try:
-        driver.get(f"https://wg.{base_url}")
-    except:
-        mkdir("screenshots")
-        driver.save_screenshot("screenshots/ss.png")
-        exit(1)
+    driver.get(f"https://wg.{base_url}")
     sleep(0.5)
     logger.debug(f"Filling out the username field with {username}")
     username_field = driver.find_element("id", "username-textfield")
