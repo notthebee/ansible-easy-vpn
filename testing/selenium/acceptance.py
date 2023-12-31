@@ -5,7 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.exceptions import WebDriverException
+from selenium.common.exceptions import WebDriverException
 from time import sleep
 
 from os import mkdir
