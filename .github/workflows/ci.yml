@@ -397,6 +397,13 @@ jobs:
           EASYVPN_PASSWORD: "${{ needs.build.outputs[format('EASYVPN_PASSWORD_{0}', matrix.index)] }}"
           DOMAIN: "${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}.${{ secrets.CLOUDFLARE_DOMAIN }}"
 
+      - name: Upload Selenium testing screenshots 
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "Screenshots"
+          path: "screenshots/"
+
   destroy:
     runs-on: ubuntu-latest
     environment: cicd

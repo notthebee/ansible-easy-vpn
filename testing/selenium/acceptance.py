@@ -5,8 +5,10 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.exceptions import WebDriverException
 from time import sleep
 
+from os import mkdir
 import argparse
 import logging
 import pyotp
@@ -46,7 +48,7 @@ logger.setLevel(logging.DEBUG)
 
 
 def register_2fa(driver, base_url, username, password, ssh_agent):
-    logger.debug(f"Fetching {base_url}")
+    logger.debug(f"Fetching wg.{base_url}")
     driver.get(f"https://wg.{base_url}")
     sleep(0.5)
     logger.debug(f"Filling out the username field with {username}")
@@ -106,7 +108,12 @@ def register_2fa(driver, base_url, username, password, ssh_agent):
 
 def download_wg_config(driver, base_url, client):
     logger.debug(f"Opening wg.{base_url} in the browser")
-    driver.get(f"https://wg.{base_url}")
+    try:
+        driver.get(f"https://wg.{base_url}")
+    except WebDriverException:
+        mkdir("screenshots")
+        driver.save_screenshot("screenshots/ss.png")
+        exit(0)
     sleep(2)
     logger.debug("Clicking on the 'New Client' button")
     new_client_button = driver.find_element("xpath", "//*[contains(text(), 'New Client')]")
