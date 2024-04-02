@@ -161,8 +161,6 @@ jobs:
       - name: Install git and expect (Debian-based)
         run: ssh root@$SERVER_IPV4 apt install -y git expect wamerican
 
-
-
       - uses: infraway/create-dns-record@v2.0
         with:
           type: "A"
@@ -429,15 +427,13 @@ jobs:
 
       - name: Delete all Cloudflare domains
         run: >-
-          curl -s -X GET https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?per_page=500
-          -H "Authorization: Bearer $CLOUDFLARE_TOKEN"
-          -H "Content-Type: application/json" |
-          jq .result[].id |
-          tr -d '"' |
-          ( while read id; do curl -s -X DELETE
-          https://api.cloudflare.com/client/v4/zones/5420f91fefac252d89d9495a8d35ae73/dns_records/${id}
-          -H "Authorization: Bearer $CLOUDFLARE_TOKEN"
-          -H "Content-Type: application/json";   done;   )
+          curl --silent "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records?per_page=50000" \
+          --header "Authorization: Bearer $CLOUDFLARE_TOKEN" \
+          | jq --raw-output '.result[].id' | while read id
+          do
+            curl --silent --request DELETE "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records/$id" \
+          --header "Authorization: Bearer $CLOUDFLARE_TOKEN"
+          done
         env:
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
           ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE }}

@@ -9,6 +9,7 @@ destemail = {{ email }}
 sender = {{ email }}
 
 [sshd]
+backend = systemd
 enabled = true
 port = {{ ssh_port }}
 filter = sshd
