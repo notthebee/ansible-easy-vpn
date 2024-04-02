@@ -426,7 +426,7 @@ jobs:
           SERVER_NAME: ansible-easy-vpn-${{ needs.build.outputs[format('EASYVPN_USERNAME_{0}', matrix.index)] }}
 
       - name: Delete all Cloudflare domains
-        run: >-
+        run: |
           curl --silent "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records?per_page=50000" \
           --header "Authorization: Bearer $CLOUDFLARE_TOKEN" \
           | jq --raw-output '.result[].id' | while read id
