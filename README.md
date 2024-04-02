@@ -27,6 +27,7 @@ wget https://notthebe.ee/vpn -O bootstrap.sh && bash bootstrap.sh
   * Ubuntu Server 22.04
   * Ubuntu Server 20.04
   * Debian 11
+  * Debian 12
   * ~~Rocky Linux 8~~ – not supported anymore
   * ~~Rocky Linux 9~~ - not supported anymore
 
