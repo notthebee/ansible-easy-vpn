@@ -15,6 +15,7 @@
     cmd: "which iptables-restore"
 
 - name: Template the iptables systemd service
+  notify: Restart iptables
   ansible.builtin.template:
     src: systemd/iptables.service.j2
     dest: /etc/systemd/system/iptables.service

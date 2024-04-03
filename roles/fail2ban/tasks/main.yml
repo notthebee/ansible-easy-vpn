@@ -29,3 +29,12 @@
     name: fail2ban
     state: started
     enabled: yes
+
+- name: Check the fail2ban service status
+  register: fail2ban_service
+  ansible.builtin.systemd_service:
+    name: fail2ban
+
+- name: Fail if fail2ban failed
+  ansible.builtin.assert:
+    that: fail2ban_service.StatusErrno != "0"
