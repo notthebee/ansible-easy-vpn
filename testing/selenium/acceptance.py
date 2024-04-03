@@ -67,7 +67,7 @@ def register_2fa(driver, base_url, username, password, ssh_agent):
     register_device = driver.find_element("id", "register-link")
     register_device.click()
 
-    sleep(0.5)
+    sleep(2)
     logger.debug("Clicking on 'One-Time Password'")
     one_time_password_add = driver.find_element("id", "one-time-password-add")
     one_time_password_add.click()
@@ -87,13 +87,13 @@ def register_2fa(driver, base_url, username, password, ssh_agent):
 
     one_time_password = driver.find_element("id", "one-time-code")
     one_time_password.click()
-    sleep(0.5)
+    sleep(1)
 
     actions = ActionChains(driver)
     actions.send_keys(token)
     actions.perform()
 
-    sleep(0.5)
+    sleep(1)
 
     verify_button = driver.find_element("id", "dialog-verify")
     verify_button.click()
