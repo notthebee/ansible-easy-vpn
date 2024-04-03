@@ -148,7 +148,11 @@ def download_wg_config(driver, base_url, client, secret):
     actions.send_keys(totp.now())
     actions.perform()
 
-    sleep(1)
+    sleep(2)
+
+    logger.debug(f"Opening wg.{base_url} in the browser")
+    driver.get(f"https://wg.{base_url}")
+    sleep(2)
 
     logger.debug("Clicking on the 'New Client' button")
     new_client_button = driver.find_element("xpath", "//*[contains(text(), 'New Client')]")
