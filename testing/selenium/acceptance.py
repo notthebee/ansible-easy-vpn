@@ -49,7 +49,7 @@ logger.setLevel(logging.DEBUG)
 def register_2fa(driver, base_url, username, password, ssh_agent):
     logger.debug(f"Fetching wg.{base_url}")
     driver.get(f"https://wg.{base_url}")
-    sleep(0.5)
+    sleep(2)
     logger.debug(f"Filling out the username field with {username}")
     username_field = driver.find_element("id", "username-textfield")
     username_field.send_keys(username)
@@ -67,20 +67,44 @@ def register_2fa(driver, base_url, username, password, ssh_agent):
     register_device = driver.find_element("id", "register-link")
     register_device.click()
 
+    sleep(0.5)
+    logger.debug("Clicking on 'One-Time Password'")
+    one_time_password_add = driver.find_element("id", "one-time-password-add")
+    one_time_password_add.click()
+
     logger.debug("Getting the notifications.txt from the server")
 
     s = pxssh.pxssh(options={"IdentityAgent": ssh_agent})
-    s.login(base_url, username)
-    s.sendline("sudo show_2fa")
+    s.login(base_url, username, ssh_key="/Users/notthebee/.ssh/notthebee")
+    s.sendline("show_2fa")
     s.prompt()
 
     # Convert output to utf-8 due to pexpect weirdness
     notification = "\r\n".join(s.before.decode("utf-8").splitlines()[1:])
     print(notification)
 
-    token = re.search("token=(.*)", notification).group(1)
-    driver.get(f"https://auth.{base_url}/one-time-password/register?token={token}")
-    sleep(2)
+    token = re.search("single-use code: (.*)", notification).group(1)
+
+    one_time_password = driver.find_element("id", "one-time-code")
+    one_time_password.click()
+    sleep(0.5)
+
+    actions = ActionChains(driver)
+    actions.send_keys(token)
+    actions.perform()
+
+    sleep(0.5)
+
+    verify_button = driver.find_element("id", "dialog-verify")
+    verify_button.click()
+
+    sleep(3)
+
+    next_button = driver.find_element("id", "dialog-next")
+    next_button.click()
+
+    sleep(3)
+
     secret_field = driver.find_element("id", "secret-url")
     secret_field = secret_field.get_attribute("value")
     logger.debug("Scraping the TOTP secret")
@@ -91,9 +115,11 @@ def register_2fa(driver, base_url, username, password, ssh_agent):
     totp.now()
     logger.debug("Generating the OTP")
 
-    otp_done_button = driver.find_element("xpath", "//*[contains(text(), 'Done')]")
-    otp_done_button.click()
-    sleep(2)
+    next_button = driver.find_element("id", "dialog-next")
+    next_button.click()
+
+    sleep(3)
+
     logger.debug("Entering the OTP")
 
     actions = ActionChains(driver)
@@ -102,13 +128,28 @@ def register_2fa(driver, base_url, username, password, ssh_agent):
 
     logger.debug("We're in!")
     sleep(1)
-    return
+    return secret
 
 
-def download_wg_config(driver, base_url, client):
+def download_wg_config(driver, base_url, client, secret):
     logger.debug(f"Opening wg.{base_url} in the browser")
     driver.get(f"https://wg.{base_url}")
     sleep(2)
+
+    totp = pyotp.TOTP(secret)
+
+    actions = ActionChains(driver)
+    actions.send_keys(totp.now())
+    actions.perform()
+
+    sleep(1)
+
+    actions = ActionChains(driver)
+    actions.send_keys(totp.now())
+    actions.perform()
+
+    sleep(1)
+
     logger.debug("Clicking on the 'New Client' button")
     new_client_button = driver.find_element("xpath", "//*[contains(text(), 'New Client')]")
     new_client_button.click()
@@ -128,5 +169,5 @@ def download_wg_config(driver, base_url, client):
     return
 
 
-register_2fa(driver, args.base_url, args.username, args.password, args.ssh_agent)
-download_wg_config(driver, args.base_url, args.username)
+secret = register_2fa(driver, args.base_url, args.username, args.password, args.ssh_agent)
+download_wg_config(driver, args.base_url, args.username, secret)
