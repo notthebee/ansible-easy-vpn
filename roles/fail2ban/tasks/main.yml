@@ -37,4 +37,4 @@
 
 - name: Fail if fail2ban failed
   ansible.builtin.assert:
-    that: fail2ban_service.StatusErrno != "0"
+    that: fail2ban_service.status.StatusErrno != "0"
