@@ -75,7 +75,7 @@ def register_2fa(driver, base_url, username, password, ssh_agent):
     logger.debug("Getting the notifications.txt from the server")
 
     s = pxssh.pxssh(options={"IdentityAgent": ssh_agent})
-    s.login(base_url, username, ssh_key="/Users/notthebee/.ssh/notthebee")
+    s.login(base_url, username)
     s.sendline("show_2fa")
     s.prompt()
 
