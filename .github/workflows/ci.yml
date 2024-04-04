@@ -290,7 +290,6 @@ jobs:
   debug:
     runs-on: ubuntu-latest
     environment: cicd
-    if: always()
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.matrix_prep.outputs.matrix)}}

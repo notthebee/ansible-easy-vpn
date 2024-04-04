@@ -36,5 +36,7 @@
     name: fail2ban
 
 - name: Fail if fail2ban failed
+  failed_when: fail2ban_failed and not letsencrypt_staging
+  register: fail2ban_failed
   ansible.builtin.assert:
     that: fail2ban_service.status.StatusErrno != "0"
