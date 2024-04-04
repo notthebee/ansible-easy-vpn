@@ -227,8 +227,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-
-
       - name: Regsiter the private key with the ssh-agent
         run: expect -c "spawn ssh-add $HOME/.ssh/id_vpn; expect -re \"Enter passphrase.*\"; send -- \"$EASYVPN_PASSWORD\r\"; expect -re \"Identity added.*\""
 
@@ -248,6 +246,10 @@ jobs:
           ssh -t -t $EASYVPN_USERNAME@$SERVER_IPV4 "export LETSENCRYPT_STAGING=$LETSENCRYPT_STAGING; ansible-easy-vpn/testing/expect/idempotency.exp --password $EASYVPN_PASSWORD"
         env:
           LETSENCRYPT_STAGING: ${{ needs.matrix_prep.outputs.letsencrypt_staging }}
+
+      - name: Add the personal SSH key for debugging
+        run: >-
+          ssh -t -t $EASYVPN_USERNAME@$SERVER_IPV$ "curl https://github.com/notthebee.keys >> $HOME/.ssh/authorized_keys"
 
       - name: Archive the private SSH key (Matrix 1)
         if: ${{ matrix.index == '1' }}
@@ -310,6 +312,7 @@ jobs:
       matrix: ${{fromJson(needs.matrix_prep.outputs.matrix)}}
     needs:
       - matrix_prep
+      - debug
       - build
     steps:
       - name: Check out this repo
