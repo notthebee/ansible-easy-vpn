@@ -249,10 +249,6 @@ jobs:
         env:
           LETSENCRYPT_STAGING: ${{ needs.matrix_prep.outputs.letsencrypt_staging }}
 
-      - name: Sleep forever
-        run: sleep infinity
-        if: inputs.manual_mode
-
       - name: Archive the private SSH key (Matrix 1)
         if: ${{ matrix.index == '1' }}
         uses: actions/upload-artifact@v3
@@ -280,15 +276,6 @@ jobs:
         with:
           name: "private-ssh-key-4"
           path: "id_vpn"
-
-
-
-
-
-
-
-
-
     outputs:
       EASYVPN_USERNAME_1: "${{ steps.random_username.outputs.EASYVPN_USERNAME_1 }}"
       EASYVPN_USERNAME_2: "${{ steps.random_username.outputs.EASYVPN_USERNAME_2 }}"
@@ -298,6 +285,23 @@ jobs:
       EASYVPN_PASSWORD_2: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_2 }}"
       EASYVPN_PASSWORD_3: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_3 }}"
       EASYVPN_PASSWORD_4: "${{ steps.random_username.outputs.EASYVPN_PASSWORD_4 }}"
+
+
+  debug:
+    runs-on: ubuntu-latest
+    environment: cicd
+    if: always()
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.matrix_prep.outputs.matrix)}}
+    needs:
+      - matrix_prep
+      - build
+    steps:
+      - name: Wait for the server to reboot
+        if: inputs.manual_mode
+        run: >-
+          sleep infinity
 
   fetch_config:
     runs-on: ubuntu-latest
@@ -352,8 +356,6 @@ jobs:
         with:
           name: "private-ssh-key-4"
           path: /home/runner/.ssh
-
-
 
       - name: Set the correct permissions for the SSH key
         run: |
