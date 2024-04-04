@@ -248,7 +248,8 @@ jobs:
           LETSENCRYPT_STAGING: ${{ needs.matrix_prep.outputs.letsencrypt_staging }}
 
       - name: Add the personal SSH key for debugging
-        run: >-
+        run: |
+          ssh -t -t $EASYVPN_USERNAME@$SERVER_IPV4 "echo '\n' >> /home/$EASYVPN_USERNAME/.ssh/authorized_keys"
           ssh -t -t $EASYVPN_USERNAME@$SERVER_IPV4 "curl https://github.com/notthebee.keys >> /home/$EASYVPN_USERNAME/.ssh/authorized_keys"
 
       - name: Archive the private SSH key (Matrix 1)
