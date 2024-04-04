@@ -414,6 +414,7 @@ jobs:
     needs:
       - matrix_prep
       - build
+      - debug
       - fetch_config
     steps:
       - name: Destroy the Hetzner instances
