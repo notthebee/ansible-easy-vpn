@@ -249,7 +249,7 @@ jobs:
 
       - name: Add the personal SSH key for debugging
         run: >-
-          ssh -t -t $EASYVPN_USERNAME@$SERVER_IPV$ "curl https://github.com/notthebee.keys >> $HOME/.ssh/authorized_keys"
+          ssh -t -t $EASYVPN_USERNAME@$SERVER_IPV4 "curl https://github.com/notthebee.keys >> $HOME/.ssh/authorized_keys"
 
       - name: Archive the private SSH key (Matrix 1)
         if: ${{ matrix.index == '1' }}
