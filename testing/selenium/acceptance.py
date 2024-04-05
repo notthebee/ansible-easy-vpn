@@ -18,7 +18,6 @@ import pyotp
 import re
 
 
-#service = Service(executable_path=r"/opt/homebrew/bin/chromedriver")
 service = Service(executable_path=r"/snap/bin/chromium.chromedriver")
 
 parser = argparse.ArgumentParser()
@@ -31,10 +30,9 @@ args = parser.parse_args()
 
 chrome_options = Options()
 prefs = {"download.default_directory": "/home/runner"}
-#prefs = {"download.default_directory": "/Users/notthebee/Downloads"}
 chrome_options.add_experimental_option("prefs", prefs)
 options = [
-    #"--headless",
+    "--headless",
     "--disable-gpu",
     "--window-size=1920,1200",
     "--ignore-certificate-errors",
