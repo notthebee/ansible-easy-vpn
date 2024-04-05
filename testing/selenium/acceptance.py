@@ -52,7 +52,6 @@ logger.setLevel(logging.DEBUG)
 
 def save_screenshot(screenshot_name):
     screenshot_path = "/home/runner/screenshots/"
-    #screenshot_path = "/Users/notthebee/Downloads/"
     driver.save_screenshot(screenshot_path + screenshot_name)
     return
 
@@ -99,13 +98,18 @@ def register_2fa(driver, base_url, username, password, ssh_agent):
     WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID, "dialog-verify"))).click()
     WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID, "dialog-next"))).click()
 
-    secret_field = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "secret-url"))).get_attribute("value")
-    save_screenshot("6_SecetURL.png")
-
     logger.debug("Scraping the TOTP secret")
 
-    secret = re.search("secret=(.*)", secret_field).group(1)
+    attempts = 0
+    while attempts < 5:
+        try:
+            secret_field = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "secret-url"))).get_attribute("value")
+            secret = re.search("secret=(.*)", secret_field).group(1)
+            break
+        except AttributeError:
+            attempts += 1
 
+    save_screenshot("6_SecetURL.png")
     totp = pyotp.TOTP(secret)
     totp.now()
     logger.debug("Generating the OTP")

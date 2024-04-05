@@ -343,7 +343,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "Screenshots-${{ matrix.index }}"
-          path: "/home/runner/screenshots"
+          path: "/home/runner/screenshots/*"
 
       - name: Archive the Wireguard config
         uses: actions/upload-artifact@v3
