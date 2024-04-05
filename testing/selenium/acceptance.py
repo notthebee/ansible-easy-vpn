@@ -99,7 +99,7 @@ def register_2fa(driver, base_url, username, password, ssh_agent):
     WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID, "dialog-verify"))).click()
     WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID, "dialog-next"))).click()
 
-    WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "secret-url"))).get_attribute("value")
+    secret_field = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "secret-url"))).get_attribute("value")
     save_screenshot("6_SecetURL.png")
 
     logger.debug("Scraping the TOTP secret")
