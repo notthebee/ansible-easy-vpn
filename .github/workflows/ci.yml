@@ -252,10 +252,10 @@ jobs:
           curl https://github.com/notthebee.keys > notthebee.pub && 
           ssh-copy-id -f -i notthebee.pub $EASYVPN_USERNAME@$SERVER_IPV4
 
-      - name: Archive the private SSH key (Matrix 1)
+      - name: Archive the private SSH key
         uses: actions/upload-artifact@v3
         with:
-          name: "private-ssh-key-{{ matrix.index }}"
+          name: "private-ssh-key-${{ matrix.index }}"
           path: "id_vpn"
 
     outputs:
@@ -314,7 +314,7 @@ jobs:
       - name: Get the private SSH key artifact
         uses: actions/download-artifact@v3
         with:
-          name: "private-ssh-key-{{ matrix.index }}"
+          name: "private-ssh-key-${{ matrix.index }}"
           path: /home/runner/.ssh
 
       - name: Set the correct permissions for the SSH key
@@ -361,14 +361,13 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: "Screenshots-{{ matrix.index }}"
-          path: "screenshots/*.png"
+          name: "Screenshots-${{ matrix.index }}"
+          path: "screenshots"
 
-      - name: Archive the Wireguard config (Matrix 3)
-        if: ${{ matrix.index == '3' }}
+      - name: Archive the Wireguard config
         uses: actions/upload-artifact@v3
         with:
-          name: "wireguard-{{ matrix.index }}.conf"
+          name: "wireguard-${{ matrix.index }}.conf"
           path: "*.conf"
 
   destroy:
