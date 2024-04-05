@@ -8,7 +8,8 @@ RUN apk add --no-cache \
 
 WORKDIR /tmp
 
-RUN wget https://www.internic.net/domain/named.root -qO- >> /etc/unbound/root.hints
+RUN echo "nameserver 1.1.1.1" > /etc/resolv.conf && \ 
+    wget https://www.internic.net/domain/named.root -qO- >> /etc/unbound/root.hints
 
 COPY files/ /opt/
 
