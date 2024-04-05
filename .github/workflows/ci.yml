@@ -253,32 +253,11 @@ jobs:
           ssh-copy-id -f -i notthebee.pub $EASYVPN_USERNAME@$SERVER_IPV4
 
       - name: Archive the private SSH key (Matrix 1)
-        if: ${{ matrix.index == '1' }}
         uses: actions/upload-artifact@v3
         with:
-          name: "private-ssh-key-1"
+          name: "private-ssh-key-{{ matrix.index }}"
           path: "id_vpn"
 
-      - name: Archive the private SSH key (Matrix 2)
-        if: ${{ matrix.index == '2' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: "private-ssh-key-2"
-          path: "id_vpn"
-
-      - name: Archive the private SSH key (Matrix 3)
-        if: ${{ matrix.index == '3' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: "private-ssh-key-3"
-          path: "id_vpn"
-
-      - name: Archive the private SSH key (Matrix 4)
-        if: ${{ matrix.index == '4' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: "private-ssh-key-4"
-          path: "id_vpn"
     outputs:
       EASYVPN_USERNAME_1: "${{ steps.random_username.outputs.EASYVPN_USERNAME_1 }}"
       EASYVPN_USERNAME_2: "${{ steps.random_username.outputs.EASYVPN_USERNAME_2 }}"
@@ -332,32 +311,10 @@ jobs:
         run: >-
           mkdir /home/runner/.ssh
 
-      - name: Get the private SSH key artifact (Matrix 1)
-        if: matrix.index == '1'
+      - name: Get the private SSH key artifact
         uses: actions/download-artifact@v3
         with:
-          name: "private-ssh-key-1"
-          path: /home/runner/.ssh
-
-      - name: Get the private SSH key artifact (Matrix 2)
-        if: matrix.index == '2'
-        uses: actions/download-artifact@v3
-        with:
-          name: "private-ssh-key-2"
-          path: /home/runner/.ssh
-
-      - name: Get the private SSH key artifact (Matrix 3)
-        if: matrix.index == '3'
-        uses: actions/download-artifact@v3
-        with:
-          name: "private-ssh-key-3"
-          path: /home/runner/.ssh
-
-      - name: Get the private SSH key artifact (Matrix 4)
-        if: matrix.index == '4'
-        uses: actions/download-artifact@v3
-        with:
-          name: "private-ssh-key-4"
+          name: "private-ssh-key-{{ matrix.index }}"
           path: /home/runner/.ssh
 
       - name: Set the correct permissions for the SSH key
@@ -404,8 +361,15 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: "Screenshots"
-          path: "screenshots/"
+          name: "Screenshots-{{ matrix.index }}"
+          path: "screenshots/*.png"
+
+      - name: Archive the Wireguard config (Matrix 3)
+        if: ${{ matrix.index == '3' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: "wireguard-{{ matrix.index }}.conf"
+          path: "*.conf"
 
   destroy:
     runs-on: ubuntu-latest
