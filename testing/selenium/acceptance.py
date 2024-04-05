@@ -18,8 +18,8 @@ import pyotp
 import re
 
 
-service = Service(executable_path=r"/opt/homebrew/bin/chromedriver")
-#service = Service(executable_path=r"/snap/bin/chromium.chromedriver")
+#service = Service(executable_path=r"/opt/homebrew/bin/chromedriver")
+service = Service(executable_path=r"/snap/bin/chromium.chromedriver")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--username", type=str, metavar="username")
