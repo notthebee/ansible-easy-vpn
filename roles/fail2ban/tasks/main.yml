@@ -1,8 +1,9 @@
 ---
 - name: Install fail2ban
-  ansible.builtin.package:
-    name: fail2ban
-    state: present
+  ansible.builtin.apt:
+    name:
+      - fail2ban
+      - python3-systemd
 
 - name: Disable e-mail notifications on jail stop and start
   ansible.builtin.copy:

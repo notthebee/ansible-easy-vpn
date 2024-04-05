@@ -5,7 +5,7 @@
     state: directory
     owner: "{{ username }}"
     group: "{{ username }}"
-    mode: 0755
+    mode: "0755"
   loop:
     - adguard-unbound-doh
     - adguard-unbound-doh/adguard
@@ -21,6 +21,14 @@
     recursive: yes
     rsync_opts:
       - "--ignore-existing"
+
+- name: Template the Adguard Dockerfile
+  ansible.builtin.template:
+    src: Dockerfile
+    dest: "{{ docker_dir }}/adguard-unbound-doh/build/Dockerfile"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: "0775"
 
 - name: Build the adguard-unbound Docker image
   community.docker.docker_image:
