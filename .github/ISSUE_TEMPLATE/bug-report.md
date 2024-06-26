@@ -3,11 +3,11 @@ name: Bug report
 about: The script doesn't work on my VPS
 title: ''
 labels: ''
-assignees: notthebee
+assignees: MacchiaGuardala
 
 ---
 
-- [ ] I've read the [FAQ](https://github.com/notthebee/ansible-easy-vpn/blob/main/FAQ.md) and my problem isn't described there.
+- [ ] I've read the [FAQ](https://github.com/MacchiaGuardala/ansible-easy-vpn/blob/main/FAQ.md) and my problem isn't described there.
 - [ ] I've also searched through the existing issues, and my problem hasn't been brought up
 
 **Describe the issue**
