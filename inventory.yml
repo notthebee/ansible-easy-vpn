@@ -37,6 +37,12 @@ all:
     adguard_host: "adguard.{{ root_host }}"
 
     wireguard_port: "51820"
+    
+    publicserver_host: "{{ root_host }}"
+    
+    protectedserver_host: "protected.{{ root_host }}"
+    
+    anythingllm_host: "chat.{{ root_host }}"
 
     # Possible choices: cloudflare, quad9, google
     #

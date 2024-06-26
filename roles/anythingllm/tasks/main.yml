@@ -1,0 +1,35 @@
+---
+- name: Create the folders
+  ansible.builtin.file:
+    path: "{{ docker_dir }}/{{ item }}"
+    state: directory
+    owner: root
+    group: 101
+    mode: 0775
+  loop:
+    - anythingllm/
+    - anythingllm/website
+
+- name: Copy the index file
+  ansible.builtin.template:
+    src: index.j2
+    owner: root
+    group: 101
+    mode: 0664
+    dest: "{{ docker_dir }}/anythingllm/website/index.html"
+
+- name: Make sure the Anythingllm container is created and running
+  register: anythingllm_result
+  retries: 5
+  until: anythingllm_result is succeeded
+  community.general.docker_container:
+    name: "anythingllm"
+    image: "httpd:{{ httpd_version }}"
+    pull: yes
+    networks:
+      - name: wg_network
+        ipv4_address: 10.8.2.16
+    state: "started"
+    volumes:
+      - "{{ docker_dir }}/anythingllm/website:/usr/local/apache2/htdocs"
+    restart_policy: unless-stopped

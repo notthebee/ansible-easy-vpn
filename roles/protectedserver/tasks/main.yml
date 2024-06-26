@@ -1,0 +1,35 @@
+---
+- name: Create the folders
+  ansible.builtin.file:
+    path: "{{ docker_dir }}/{{ item }}"
+    state: directory
+    owner: root
+    group: 101
+    mode: 0775
+  loop:
+    - protectedserver/
+    - protectedserver/website
+
+- name: Copy the index file
+  ansible.builtin.template:
+    src: index.j2
+    owner: root
+    group: 101
+    mode: 0664
+    dest: "{{ docker_dir }}/protectedserver/website/index.html"
+
+- name: Make sure the Protectedserver container is created and running
+  register: protectedserver_result
+  retries: 5
+  until: protectedserver_result is succeeded
+  community.general.docker_container:
+    name: "protectedserver"
+    image: "httpd:{{ httpd_version }}"
+    pull: yes
+    networks:
+      - name: wg_network
+        ipv4_address: 10.8.2.12
+    state: "started"
+    volumes:
+      - "{{ docker_dir }}/protectedserver/website:/usr/local/apache2/htdocs"
+    restart_policy: unless-stopped

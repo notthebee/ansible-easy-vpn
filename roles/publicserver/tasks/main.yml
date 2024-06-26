@@ -1,0 +1,35 @@
+---
+- name: Create the folders
+  ansible.builtin.file:
+    path: "{{ docker_dir }}/{{ item }}"
+    state: directory
+    owner: root
+    group: 101
+    mode: 0775
+  loop:
+    - publicserver/
+    - publicserver/website
+
+- name: Copy the index file
+  ansible.builtin.template:
+    src: index.j2
+    owner: root
+    group: 101
+    mode: 0664
+    dest: "{{ docker_dir }}/publicserver/website/index.html"
+
+- name: Make sure the Publicserver container is created and running
+  register: publicserver_result
+  retries: 5
+  until: publicserver_result is succeeded
+  community.general.docker_container:
+    name: "publicserver"
+    image: "httpd:{{ httpd_version }}"
+    pull: yes
+    networks:
+      - name: wg_network
+        ipv4_address: 10.8.2.11
+    state: "started"
+    volumes:
+      - "{{ docker_dir }}/publicserver/website:/usr/local/apache2/htdocs"
+    restart_policy: unless-stopped

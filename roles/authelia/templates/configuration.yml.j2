@@ -30,10 +30,25 @@ access_control:
       policy: bypass
     - domain: {{ wireguard_host }}
       policy: two_factor
+      subject:
+      - 'group:admin'
+      - 'group:dev'
 {% if enable_adguard_unbound_doh %}
     - domain: {{ adguard_host }}
       policy: two_factor
+      subject:
+      - 'group:admin'
 {% endif %}
+    - domain: {{ protectedserver_host }}
+      policy: two_factor
+      subject:
+      - 'group:admin'
+      - 'group:dev'
+      - 'group:users'
+    - domain: {{ anythingllm_host }}
+      policy: one_factor
+      subject:
+      - 'group:users'
 
 session:
   name: authelia_session

@@ -65,3 +65,15 @@
     - role: ssh
       tags:
         - ssh
+
+    - role: publicserver
+      tags:
+        - publicserver
+
+    - role: protectedserver
+      tags:
+        - protectedserver
+
+    - role: anythingllm
+      tags:
+        - anythingllm

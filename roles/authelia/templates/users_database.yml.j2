@@ -14,3 +14,10 @@ users:
     groups:
       - admins
       - dev
+      - users
+  demo:
+    displayname: 'demo'
+    password: "{{ 'password' | string | password_hash('sha512') }}"
+    email: 'demo@localhost'
+    groups:
+      - users

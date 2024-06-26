@@ -3,3 +3,4 @@ secret.yml
 .vscode
 .venv
 .ansible
+custom.yml
