@@ -73,7 +73,3 @@
     - role: protectedserver
       tags:
         - protectedserver
-
-    - role: anythingllm
-      tags:
-        - anythingllm
