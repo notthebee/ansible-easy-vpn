@@ -1,42 +1,33 @@
-# ansible-easy-vpn
-![CI](https://github.com/notthebee/ansible-easy-vpn/actions/workflows/ci.yml/badge.svg)
+# Why is this project archived?
+TL;DR: It wasn't as "easy" as the name suggested, and took too much time to develop, test and debug.
 
-A simple interactive script that sets up a Wireguard VPN server with Adguard, Unbound and DNSCrypt-Proxy on your VPS of choice, and lets you manage the config files using a simple WebUI protected by two-factor-authentication.
+**Long version**
 
-**Have a question or an issue? Read the [FAQ](FAQ.md) first!**
+When developing ansible-easy-vpn, I tried to come up with an easy turn-key solution that would work for everyone, no matter their knowledge of Docker, Ansible, Linux, etc.
 
-## Usage
+Unfortunately, due to just how different OS configurations and environments are across different VPS/cloud providers, this playbook does not work everywhere.
 
+Moreover, by presenting it as an "easy" solution that doesn't require a deep knowledge of Linux shell, Ansible or Docker, I obfuscated a lot of complexities in the setup, making it difficult for the end user to fix any potential errors. 
+
+At the same time, the errors in question were tricky to debug for me, since I'm not [eating my own dogfood](https://en.wikipedia.org/wiki/Eating_your_own_dog_food) and do not have time to test this playbook on every popular VPS/cloud server there is.
+
+Finally, this playbook was way too intrusive – it was made for setting up a single-purpose VPN server from scratch, taking care of automatic updates, SSH hardening and SSL certificates.
+
+However, most people would want to use their VPS for things other than just a VPN server, and due to the aforementioned reasons, modifying and extending this playbook is difficult unless you know Ansible and Docker well enough.
+
+# So what do I do now?
+
+If you want to get rid of the services managed by this playbook, you will need to stop and remove the Docker containers, and delete their persistent storage:
+```bash
+docker stop authelia wg-easy adguard-unbound-doh watchtower bunkerweb
+docker rm authelia wg-easy adguard-unbound-doh watchtower bunkerweb
+sudo rm -rf /opt/docker
+docker system prune -a
 ```
-wget https://notthebe.ee/vpn -O bootstrap.sh && bash bootstrap.sh
-```
+The configuration for unattended upgrades, SSH and the non-root user created by the playbook will remain in place.
 
-## Features
-* Wireguard WebUI (via wg-easy)
-* Two-factor authentication for the WebUI (Authelia)
-* Hardened web server (Bunkerweb)
-* Encrypted DNS resolution with optional ad-blocking functionality (Adguard Home, DNSCrypt and Unbound)
-* IPTables firewall with sane defaults and Fail2Ban
-* Automated and unattended upgrades
-* SSH hardening and public key pair generation (optional, you can also use your own keys)
-* E-mail notifications (using an external SMTP server, e.g. GMail)
+If you're interested in a similar setup, I recommend using this project as a starting point: https://github.com/notthebee/cloud-homeserver
 
-## Requirements
-* A KVM-based VPS (or an AWS EC2 instance) with a dedicated IPv4 address
-* One of the supported Linux distros:
-  * Ubuntu Server 22.04
-  * Ubuntu Server 20.04
-  * Debian 11
-  * Debian 12
-  * ~~Rocky Linux 8~~ – not supported anymore
-  * ~~Rocky Linux 9~~ - not supported anymore
+This Compose project sets up other services and uses Traefik instead of Bunkerweb, but follows the same purpose – running Dockerized web applications on a cloud server, protected by Authelia.
 
-## Known issues with VPS providers
-Normally, the script should work on any KVM-based VPS.
-
-However, some VPS providers use non-standard versions of Ubuntu/Debian OS images, which might lead to issues with the script.
-
-Additionally, some providers require additional firewall configuration in the server control panel to unblock the Wireguard port.
-
-* **AlexHost** – runs `apt-get dist-upgrade` after the VPS is provisioned, which results in a dpkg lock
-* **IONOS** – includes a firewall with default rules, which blocks Wireguard traffic. User needs to open the Wireguard port (51820/udp) in the control panel to make the VPN work.
+So long, and thanks for all the fish!
